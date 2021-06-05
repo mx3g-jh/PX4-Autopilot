@@ -31,32 +31,4 @@
 #
 ############################################################################
 
-add_library(afbrs50_m4_fpu STATIC IMPORTED GLOBAL)
-set_property(TARGET afbrs50_m4_fpu PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/Lib/libafbrs50_m4_fpu.a)
-
-px4_add_module(
-	MODULE drivers__distance_sensor__afbrs50
-	MAIN afbrs50
-	COMPILE_FLAGS
-		-Wno-error
-	STACK_MAIN
-		8192
-	INCLUDES
-		Inc
-		API/Inc
-		Core/Inc
-		Drivers/CMSIS/Include
-	SRCS
-		AFBRS50.cpp
-		AFBRS50.hpp
-		afbrs50_main.cpp
-		API/Src/irq.c
-		API/Src/s2pi.c
-		API/Src/timer.c
-	DEPENDS
-		px4_work_queue
-		drivers_rangefinder
-		afbrs50_m4_fpu
-	)
-
-target_link_libraries(afbrs50_m4_fpu INTERFACE drivers__distance_sensor__afbrs50)
+#add_subdirectory(afbrs50) # not suitable for general inclusion
