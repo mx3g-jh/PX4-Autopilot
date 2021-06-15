@@ -64,10 +64,10 @@ static constexpr uint32_t MR72_MEASURE_INTERVAL{10_ms};	// 50ms default sensor c
 #define _MF_WINDOW_SIZE 4		/* window size for median filter on RANDAR range */
 
 
-#define NAR15_HEAD1  0XAA  //43690
-#define NAR15_HEAD2  0XAA
-#define NAR15_END1   0X55  //21845
-#define NAR15_END2   0X55
+#define MR72_HEAD1  0XAA  //43690
+#define MR72_HEAD2  0XAA
+#define MR72_END1   0X55  //21845
+#define MR72_END2   0X55
 #define UART_BUFFER_SIZE 		30
 #define DATA_PAYLOAD_NUM 8
 

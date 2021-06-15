@@ -196,7 +196,7 @@ MR72::read_uart_data(int uart_fd, UART_BUF *const uart_buf)
 		i = bytes_read - 14;
 
 		while(i > 0){
-			if (_linebuf[i] == NAR15_HEAD1 && _linebuf[i+1] == NAR15_HEAD2) {
+			if (_linebuf[i] == MR72_HEAD1 && _linebuf[i+1] == MR72_HEAD2) {
 				bytes_processed = i;
 
 
@@ -230,16 +230,16 @@ MR72::mr72_parser(uint8_t c, Packet *const packetdata,PARSR_mr72_STATE &state)
 	int ret = -1;
 	switch (state) {
 	case HEAD1:
-	if (c == NAR15_HEAD1) {
+	if (c == MR72_HEAD1) {
 			state = HEAD2;
-			packetdata->start_sequence1 = NAR15_HEAD1;
+			packetdata->start_sequence1 = MR72_HEAD1;
 		}
 	break;
 
 	case HEAD2:
-	if (c == NAR15_HEAD2) {
+	if (c == MR72_HEAD2) {
 			state = ID1;
-			packetdata->start_sequence2 = NAR15_HEAD2;
+			packetdata->start_sequence2 = MR72_HEAD2;
 		}else {
 			state = HEAD1;
 		}
@@ -269,15 +269,15 @@ MR72::mr72_parser(uint8_t c, Packet *const packetdata,PARSR_mr72_STATE &state)
 	break;
 
 	case END1:
-	if (c == NAR15_END1) {
-		packetdata->stop_sequence1 = NAR15_END1; //just_keep the format
+	if (c == MR72_END1) {
+		packetdata->stop_sequence1 = MR72_END1; //just_keep the format
 		state = END2;
 		}
 	break;
 
 	case END2:
-	if (c == NAR15_END2) {
-		packetdata->stop_sequence2 = NAR15_END2; //just_keep the format
+	if (c == MR72_END2) {
+		packetdata->stop_sequence2 = MR72_END2; //just_keep the format
 		state = HEAD1;
 				}
 	break;
