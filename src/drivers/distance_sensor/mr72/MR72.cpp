@@ -51,7 +51,7 @@ MR72::MR72(const char *port, uint8_t rotation) :
 	_px4_rangefinder.set_max_distance(7.9f);	// Datasheet: 8.0m
 	_px4_rangefinder.set_fov(0.0488692f);
 
-
+	_rotation = rotation;
 	_last_value = 0;
 	_valid_orign_distance = 0;
 	_keep_valid_time = 0;
@@ -359,6 +359,30 @@ MR72::_median_filter(float value)
 void
 MR72::print_info()
 {
+	switch (_rotation) {
+		case 25:
+		PX4_INFO("driver rotation ： ROTATION DOWNWARD FACING");
+		break;
+		case 24:
+		PX4_INFO("driver rotation ： ROTATION UPWARD FACING");
+		break;
+		case 12:
+		PX4_INFO("driver rotation ： ROTATION BACKWARD FACING");
+		break;
+		case 0:
+		PX4_INFO("driver rotation ： ROTATION FORWARD FACING");
+		break;
+		case 6:
+		PX4_INFO("driver rotation ： ROTATION LEFT FACING");
+		break;
+		case 2:
+		PX4_INFO("driver rotation ： ROTATION RIGHT FACING");
+		break;
+		default:
+		break;
+	}
+	PX4_INFO("UART port --Device_Path %s", _port);
+	PX4_INFO("UART port --Output_Baud_Rate : 115200");
 	perf_print_counter(_sample_perf);
 	perf_print_counter(_comms_errors);
 }

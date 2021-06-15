@@ -193,6 +193,7 @@ private:
 	uint8_t tmp_serial_buf[UART_BUFFER_SIZE] {};
 	int mr72_parser(uint8_t c, Packet *const packetdata,PARSR_mr72_STATE &state);
 	uint8_t data_index;
+	uint8_t _rotation;
 
 
 
