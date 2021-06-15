@@ -33,9 +33,9 @@
 
 /**
  * @file mr72.cpp
- * @author Claudio Micheli <claudio@auterion.com>
+ * @author mx3g-jh
  *
- * Driver for the Lanbao PSK-MR72-CC5 distance sensor.
+ * Driver for the MR72 distance sensor.
  * Make sure to disable MAVLINK messages (MAV_0_CONFIG PARAMETER)
  * on the serial port you connect the sensor,i.e TELEM2.
  *
@@ -179,7 +179,6 @@ private:
 
 
 	int read_uart_data(int uart_fd, UART_BUF *const uart_buf);
-	bool public_distance_sensor(uint16_t message_id);
 	float _calc_variance(float value);
 	float _median_filter(float value);
 	int _mf_cycle_counter;
