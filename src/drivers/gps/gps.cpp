@@ -606,7 +606,7 @@ GPS::run()
 {
 	if (!_fake_gps) {
 		/* open the serial port */
-		_serial_fd = ::open(_port, O_RDWR | O_NOCTTY);
+		_serial_fd = ::open(_port, O_RDWR | O_NOCTTY | O_NONBLOCK);
 
 		if (_serial_fd < 0) {
 			PX4_ERR("GPS: failed to open serial port: %s err: %d", _port, errno);

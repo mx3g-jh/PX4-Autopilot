@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2018-2019 PX4 Development Team. All rights reserved.
+ *   Copyright (C) 2017-2019 Intel Corporation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,32 +31,21 @@
  *
  ****************************************************************************/
 
-/**
- * @file mr72.cpp
- * @author Claudio Micheli <claudio@auterion.com>
- *
- * Driver for the Lanbao PSK-MR72-CC5 distance sensor.
- * Make sure to disable MAVLINK messages (MAV_0_CONFIG PARAMETER)
- * on the serial port you connect the sensor,i.e TELEM2.
- *
- */
-
 #pragma once
 
 #include <termios.h>
-
 #include <drivers/drv_hrt.h>
-#include <drivers/rangefinder/PX4Rangefinder.hpp>
-#include <perf/perf_counter.h>
+#include <lib/drivers/rangefinder/PX4Rangefinder.hpp>
+#include <lib/perf/perf_counter.h>
 #include <px4_platform_common/px4_config.h>
+#include <px4_platform_common/defines.h>
 #include <px4_platform_common/px4_work_queue/ScheduledWorkItem.hpp>
-
+#include <systemlib/mavlink_log.h>
 
 using namespace time_literals;
 
-/* Configuration Constants */
-static constexpr uint32_t MR72_MEASURE_INTERVAL{10_ms};	// 50ms default sensor conversion time.
 
+#define MR72_MEASURE_INTERVAL     100_ms // 10Hz
 #define ULANDING_MIN_DISTANCE		0.1f
 #define ULANDING_MAX_DISTANCE		100.0f
 #define RANDAR_DATA_ABNORMAL_TIMEOUT (0.5 * 1000 * 1000)	/**< RANDAR finder data abnormal timeout */
@@ -68,10 +57,8 @@ static constexpr uint32_t MR72_MEASURE_INTERVAL{10_ms};	// 50ms default sensor c
 #define NAR15_HEAD2  0XAA
 #define NAR15_END1   0X55  //21845
 #define NAR15_END2   0X55
-#define UART_BUFFER_SIZE 		30
+#define UART_BUFFER_SIZE 		14
 #define DATA_PAYLOAD_NUM 8
-
-
 
 
 
@@ -79,20 +66,9 @@ static constexpr uint32_t MR72_MEASURE_INTERVAL{10_ms};	// 50ms default sensor c
 class MR72 : public px4::ScheduledWorkItem
 {
 public:
-	/**
-	 * Default Constructor
-	 * @param port The serial port to open for communicating with the sensor.
-	 * @param rotation The sensor rotation relative to the vehicle body.
-	 */
-	MR72(const char *port, uint8_t rotation = distance_sensor_s::ROTATION_DOWNWARD_FACING);
+	MR72(const char *port, const uint8_t device_orientation = distance_sensor_s::ROTATION_DOWNWARD_FACING);
+	~MR72() override;
 
-	/** Virtual destructor */
-	virtual ~MR72() override;
-
-	/**
-	 * Method : init()
-	 * This method initializes the general driver for a range finder sensor.
-	 */
 	int init();
 
 	/**
@@ -100,8 +76,27 @@ public:
 	 */
 	void print_info();
 
+	/**
+	 * Initialise the automatic measurement state machine and start it.
+	 */
+	void start();
+
+	/**
+	 * Stop the automatic measurement state machine.
+	 */
+	void stop();
+
 private:
 
+
+	enum class PARSE_STATE {
+		WAITING_FRAME = 0,
+		DIGIT_1,
+		DIGIT_2,
+		MSB_DATA,
+		LSB_DATA,
+		CHECKSUM
+	};
 
 	typedef struct {
 		uint16_t data;// bit0-6 actl_mode MR72 is 1;bit 8-9 rollcount;bit10-11 rsvdl;bit 12-15 cfgstatus MR72 is 1.
@@ -150,7 +145,6 @@ private:
 
 	}PARSR_mr72_STATE;
 
-	PARSR_mr72_STATE _parse_state;
 	typedef  struct {
 		uint8_t head;
 		uint8_t tail;
@@ -179,6 +173,7 @@ private:
 
 
 	int read_uart_data(int uart_fd, UART_BUF *const uart_buf);
+	int parse_uart_data(UART_BUF *const serial_buf, Packet *const packetdata);
 	bool public_distance_sensor(uint16_t message_id);
 	float _calc_variance(float value);
 	float _median_filter(float value);
@@ -189,19 +184,11 @@ private:
 	float _variance_window[_VAR_WINDOW_SIZE] = {};
 	float _last_value;
 	float _valid_orign_distance;
-	int  _distance_mm;
+	uint16_t distance_mm;
 	hrt_abstime _keep_valid_time;
 	uint8_t tmp_serial_buf[UART_BUFFER_SIZE] {};
-	int mr72_parser(uint8_t c, Packet *const packetdata,PARSR_mr72_STATE &state);
-	uint8_t data_index;
-
-
-
-
-
-
 	/**
-	 * Reads data from serial UART and places it into a buffer.
+	 * Reads the data measrurement from serial UART.
 	 */
 	int collect();
 
@@ -211,33 +198,18 @@ private:
 	 */
 	int open_serial_port(const speed_t speed = B115200);
 
-	/**
-	 * Perform a reading cycle; collect from the previous measurement
-	 * and start a new one.
-	 */
 	void Run() override;
 
-	/**
-	 * Initialise the automatic measurement state machine and start it.
-	 * @note This function is called at open and error time.  It might make sense
-	 *       to make it more aggressive about resetting the bus in case of errors.
-	 */
-	void start();
-
-	/**
-	 * Stops the automatic measurement state machine.
-	 */
-	void stop();
-
-
-	PX4Rangefinder	_px4_rangefinder;
-
+	//const char *_serial_port{nullptr};
 	char _port[20] {};
+	PX4Rangefinder _px4_rangefinder;
 
 	int _file_descriptor{-1};
 
-	uint8_t _linebuf[UART_BUFFER_SIZE ] {};
 
-	perf_counter_t _comms_errors{perf_alloc(PC_COUNT, MODULE_NAME": com_err")};
-	perf_counter_t _sample_perf{perf_alloc(PC_ELAPSED, MODULE_NAME": read")};
+
+	hrt_abstime _measurement_time{0};
+
+	perf_counter_t _comms_error{perf_alloc(PC_COUNT, MODULE_NAME": comms_error")};
+	perf_counter_t _sample_perf{perf_alloc(PC_ELAPSED, MODULE_NAME": sample")};
 };

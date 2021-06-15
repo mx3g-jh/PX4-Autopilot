@@ -107,7 +107,7 @@ private:
 		LSB_DATA,
 		CHECKSUM
 	};
-
+	uint16_t distance_mm;
 	/**
 	 * Calculates the 16 byte crc value for the data frame.
 	 * @param data_frame The data frame to compute a checksum for.

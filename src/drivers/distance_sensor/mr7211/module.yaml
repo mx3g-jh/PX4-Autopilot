@@ -1,0 +1,6 @@
+module_name: MR72 Rangefinder
+serial_config:
+    - command: mr72 start -d ${SERIAL_DEV}
+      port_config_param:
+        name: SENS_LEDDAR2_CFG
+        group: Sensors
