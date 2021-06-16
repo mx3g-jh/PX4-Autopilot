@@ -56,7 +56,8 @@ public:
 	void set_fov(const float fov) { set_hfov(fov); set_vfov(fov); }
 	void set_hfov(const float fov) { _distance_sensor_pub.get().h_fov = fov; }
 	void set_vfov(const float fov) { _distance_sensor_pub.get().v_fov = fov; }
-
+	void set_id(const uint8_t target_id) { _distance_sensor_pub.get().target_id = target_id; }
+	void set_rcs(const uint8_t rcs) { _distance_sensor_pub.get().rcs = rcs; }
 	void set_max_distance(const float distance) { _distance_sensor_pub.get().max_distance = distance; }
 	void set_min_distance(const float distance) { _distance_sensor_pub.get().min_distance = distance; }
 	void set_covariance(const float covariance) { _distance_sensor_pub.get().covariance = covariance; }

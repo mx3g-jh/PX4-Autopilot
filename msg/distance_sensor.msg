@@ -9,6 +9,10 @@ float32 variance		# Measurement variance (in m^2), 0 for unknown / invalid readi
 float32 covariance		# Measurement covariance (in m), 0 for unknown / invalid readings
 int8 signal_quality		# Signal quality in percent (0...100%), where 0 = invalid signal, 100 = perfect signal, and -1 = unknown signal quality.
 
+int8 target_id
+int8 rcs
+
+
 uint8 type			# Type from MAV_DISTANCE_SENSOR enum
 uint8 MAV_DISTANCE_SENSOR_LASER = 0
 uint8 MAV_DISTANCE_SENSOR_ULTRASOUND = 1

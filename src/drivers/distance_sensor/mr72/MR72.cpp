@@ -48,7 +48,7 @@ MR72::MR72(const char *port, uint8_t rotation) :
 
 	// Use conservative distance bounds, to make sure we don't fuse garbage data
 	_px4_rangefinder.set_min_distance(0.2f);	// Datasheet: 0.17m
-	_px4_rangefinder.set_max_distance(7.9f);	// Datasheet: 8.0m
+	_px4_rangefinder.set_max_distance(119.0f);	// Datasheet: 8.0m
 	_px4_rangefinder.set_fov(0.0488692f);
 
 	_rotation = rotation;
@@ -81,8 +81,11 @@ MR72::collect()
 	if (packet_message_id== TARGET_INFO) {
 				float range = 0;
 				uint16_t tmp;
-
+				uint8_t RCS;
+				uint8_t ID;
 				TargetInfo &feed_back_data = _packet.payload.runinfo;
+				RCS = feed_back_data.Rcs*0.5-50;
+				ID = feed_back_data.Index;
 				tmp  = (uint16_t)(feed_back_data.RangeH << 8);
 				tmp |= (uint16_t)(feed_back_data.RangeL);
 				range = tmp * 0.01;
@@ -91,10 +94,12 @@ MR72::collect()
 				variance_after_filter = _calc_variance(range);
 				range_value_after_filter = _median_filter(_valid_orign_distance);
 				range_value_after_filter = range_value_after_filter > ULANDING_MAX_DISTANCE ? ULANDING_MAX_DISTANCE :
-							  range_value_after_filter;
+							range_value_after_filter;
 				range_value_after_filter = range_value_after_filter < ULANDING_MIN_DISTANCE ? ULANDING_MIN_DISTANCE :
-							  range_value_after_filter;
-							  _px4_rangefinder.set_covariance(variance_after_filter);
+							range_value_after_filter;
+				_px4_rangefinder.set_covariance(variance_after_filter);
+				_px4_rangefinder.set_rcs(RCS);
+				_px4_rangefinder.set_id(ID);
 				const hrt_abstime timestamp_sample = hrt_absolute_time();
 				_px4_rangefinder.update(timestamp_sample, range_value_after_filter);
 
