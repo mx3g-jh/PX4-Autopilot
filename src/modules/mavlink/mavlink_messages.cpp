@@ -118,6 +118,10 @@
 #include <uORB/topics/vehicle_trajectory_waypoint.h>
 #include <uORB/topics/vtol_vehicle_status.h>
 #include <uORB/topics/wind_estimate.h>
+//mx3g-jh
+//yuneec
+#include <uORB/topics/vehicle_gimbal_control.h>
+
 
 using matrix::Vector3f;
 using matrix::wrap_2pi;
@@ -5243,6 +5247,81 @@ protected:
 	}
 };
 
+#ifdef YUNEEC_INPUT_RC_MAP_MANUAL_CONTROL
+
+class MavlinkStreamGimbalControl : public MavlinkStream
+{
+public:
+	const char *get_name() const override
+	{
+		return MavlinkStreamGimbalControl::get_name_static();
+	}
+
+	static constexpr const char *get_name_static()
+	{
+		return "gimbal_control";
+	}
+
+	static constexpr uint16_t get_id_static()
+	{
+		return MAVLINK_MSG_ID_GIMBAL_CONTROL;
+	}
+
+	uint16_t get_id() override
+	{
+		return get_id_static();
+	}
+
+	static MavlinkStream *new_instance(Mavlink *mavlink)
+	{
+		return new MavlinkStreamGimbalControl(mavlink);
+	}
+
+	unsigned get_size() override
+	{
+		return _gimbal_control_sub.advertised() ? MAVLINK_MSG_ID_GIMBAL_CONTROL_LEN + MAVLINK_NUM_NON_PAYLOAD_BYTES : 0;
+	}
+
+private:
+	uORB::Subscription _gimbal_control_sub{ORB_ID(vehicle_gimbal_control)};
+	/* do not allow top copying this class */
+	MavlinkStreamGimbalControl(MavlinkStreamGimbalControl &) = delete;
+	MavlinkStreamGimbalControl &operator = (const MavlinkStreamGimbalControl &) = delete;
+
+protected:
+	explicit MavlinkStreamGimbalControl(Mavlink *mavlink) : MavlinkStream(mavlink)
+	{}
+
+	bool send(const hrt_abstime t) override
+	{
+		vehicle_gimbal_control_s _gimbal_control;
+
+		if (_gimbal_control_sub.update(&_gimbal_control)) {
+			mavlink_gimbal_control_t msg = {};
+			msg.quaternion[0] 	= _gimbal_control.quaternion[0];
+			msg.quaternion[1] 	= _gimbal_control.quaternion[1];
+			msg.quaternion[2] 	= _gimbal_control.quaternion[2];
+			msg.quaternion[3]	= _gimbal_control.quaternion[3];
+			msg.hvel		    = _gimbal_control.hvel;
+			msg.hacc            = _gimbal_control.hacc;
+			msg.yaw_deg_desire  = _gimbal_control.yaw_deg_desire;
+			msg.yaw_channel     = _gimbal_control.yaw_channel;
+			msg.pitch_channel   = _gimbal_control.pitch_channel;
+			msg.roll_channel    = _gimbal_control.roll_channel;
+			msg.yaw_mode        = _gimbal_control.yaw_mode;
+			msg.pitch_mode      = _gimbal_control.pitch_mode;
+			msg.roll_mode       = _gimbal_control.roll_mode;
+
+			mavlink_msg_gimbal_control_send_struct(_mavlink->get_channel(), &msg);
+
+			return true;
+		}
+
+		return false;
+	}
+};
+#endif
+
 static const StreamListItem streams_list[] = {
 	create_stream_list_item<MavlinkStreamHeartbeat>(),
 	create_stream_list_item<MavlinkStreamStatustext>(),
@@ -5307,7 +5386,12 @@ static const StreamListItem streams_list[] = {
 	create_stream_list_item<MavlinkStreamProtocolVersion>(),
 	create_stream_list_item<MavlinkStreamFlightInformation>(),
 	create_stream_list_item<MavlinkStreamStorageInformation>(),
+#ifdef YUNEEC_INPUT_RC_MAP_MANUAL_CONTROL
+	create_stream_list_item<MavlinkStreamRawRpm>(),
+	create_stream_list_item<MavlinkStreamGimbalControl>()
+#else
 	create_stream_list_item<MavlinkStreamRawRpm>()
+#endif
 };
 
 const char *get_stream_name(const uint16_t msg_id)

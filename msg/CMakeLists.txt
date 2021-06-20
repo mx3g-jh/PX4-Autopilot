@@ -168,6 +168,7 @@ set(msg_files
 	wind_estimate.msg
 	yaw_estimator_status.msg
 	my_test_public.msg
+	vehicle_gimbal_control.msg
 )
 
 set(deprecated_msgs

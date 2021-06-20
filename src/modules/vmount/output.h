@@ -48,6 +48,7 @@
 #include <uORB/topics/vehicle_attitude.h>
 #include <uORB/topics/vehicle_global_position.h>
 #include <uORB/topics/vehicle_local_position.h>
+#include <uORB/topics/vehicle_angular_velocity.h>
 
 namespace vmount
 {
@@ -69,6 +70,15 @@ struct OutputConfig {
 
 	uint32_t mavlink_sys_id;	/**< Mavlink target system id for mavlink output */
 	uint32_t mavlink_comp_id;
+
+	//mx3g-jh
+	/* serial output */
+	const char *device;
+	int baudrate;
+
+	float nav_acc_rad; /**< Lock gimbal motion within acceptance if gibmal control depends on position */
+
+
 };
 
 
@@ -122,8 +132,11 @@ protected:
 	float _angle_outputs[3] = { 0.f, 0.f, 0.f }; ///< calculated output angles (roll, pitch, yaw) [rad]
 	hrt_abstime _last_update;
 
-private:
+	//mx3g-jh
 	uORB::Subscription _vehicle_attitude_sub{ORB_ID(vehicle_attitude)};
+	uORB::Subscription _angular_velocity_sub{ORB_ID(vehicle_angular_velocity)};
+private:
+
 	uORB::Subscription _vehicle_global_position_sub{ORB_ID(vehicle_global_position)};
 	uORB::Subscription _vehicle_local_position_sub{ORB_ID(vehicle_local_position)};
 

@@ -55,12 +55,15 @@
 #include <lib/parameters/param.h>
 #include <px4_platform_common/defines.h>
 #include <px4_platform_common/tasks.h>
+#include <px4_platform_common/getopt.h>
 
 #include "input_mavlink.h"
 #include "input_rc.h"
 #include "input_test.h"
+#include "input_rc_yuneec.h"
 #include "output_rc.h"
 #include "output_mavlink.h"
+#include "output_serial.h"
 
 #include <uORB/Subscription.hpp>
 #include <uORB/topics/parameter_update.h>
@@ -100,27 +103,31 @@ struct Parameters {
 	float mnt_off_pitch;
 	float mnt_off_roll;
 	float mnt_off_yaw;
+	float stick_deadzone;
+	float nav_acc_rad;
 
 	bool operator!=(const Parameters &p)
 	{
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
-		return mnt_mode_in != p.mnt_mode_in ||
-		       mnt_mode_out != p.mnt_mode_out ||
-		       mnt_mav_sysid != p.mnt_mav_sysid ||
-		       mnt_mav_compid != p.mnt_mav_compid ||
-		       fabsf(mnt_ob_lock_mode - p.mnt_ob_lock_mode) > 1e-6f ||
-		       fabsf(mnt_ob_norm_mode - p.mnt_ob_norm_mode) > 1e-6f ||
-		       mnt_man_pitch != p.mnt_man_pitch ||
-		       mnt_man_roll != p.mnt_man_roll ||
-		       mnt_man_yaw != p.mnt_man_yaw ||
-		       mnt_do_stab != p.mnt_do_stab ||
-		       mnt_range_pitch != p.mnt_range_pitch ||
-		       mnt_range_roll != p.mnt_range_roll ||
-		       mnt_range_yaw != p.mnt_range_yaw ||
-		       mnt_off_pitch != p.mnt_off_pitch ||
-		       mnt_off_roll != p.mnt_off_roll ||
-		       mnt_off_yaw != p.mnt_off_yaw;
+		return 	mnt_mode_in != p.mnt_mode_in ||
+		       	mnt_mode_out != p.mnt_mode_out ||
+		       	mnt_mav_sysid != p.mnt_mav_sysid ||
+		       	mnt_mav_compid != p.mnt_mav_compid ||
+		       	fabsf(mnt_ob_lock_mode - p.mnt_ob_lock_mode) > 1e-6f ||
+		       	fabsf(mnt_ob_norm_mode - p.mnt_ob_norm_mode) > 1e-6f ||
+		       	mnt_man_pitch != p.mnt_man_pitch ||
+		       	mnt_man_roll != p.mnt_man_roll ||
+		       	mnt_man_yaw != p.mnt_man_yaw ||
+		       	mnt_do_stab != p.mnt_do_stab ||
+		       	mnt_range_pitch != p.mnt_range_pitch ||
+		       	mnt_range_roll != p.mnt_range_roll ||
+		       	mnt_range_yaw != p.mnt_range_yaw ||
+		 	mnt_off_pitch != p.mnt_off_pitch ||
+		       	mnt_off_roll != p.mnt_off_roll ||
+			mnt_off_yaw != p.mnt_off_yaw ||
+			stick_deadzone != p.stick_deadzone ||
+		       	nav_acc_rad != p.nav_acc_rad;
 #pragma GCC diagnostic pop
 
 	}
@@ -143,6 +150,8 @@ struct ParameterHandles {
 	param_t mnt_off_pitch;
 	param_t mnt_off_roll;
 	param_t mnt_off_yaw;
+	param_t stick_deadzone;
+	param_t nav_acc_rad;
 };
 
 
@@ -160,6 +169,10 @@ static int vmount_thread_main(int argc, char *argv[])
 	Parameters params {};
 	OutputConfig output_config;
 	ThreadData thread_data;
+	//mx3g-jh
+	//set defaults
+	output_config.device = "/dev/ttyS1";
+	output_config.baudrate = 57600;
 
 	InputTest *test_input = nullptr;
 
@@ -209,6 +222,29 @@ static int vmount_thread_main(int argc, char *argv[])
 		}
 	}
 
+	/* parse parameters */
+	int myoptind = 1;
+	int ch;
+	const char *myoptarg = nullptr;
+
+	while ((ch = px4_getopt(argc, argv, "d:b:", &myoptind, &myoptarg)) != EOF) {
+		switch (ch) {
+
+		case 'b':
+			output_config.baudrate = strtoul(myoptarg, nullptr, 10);
+			break;
+
+		case 'd':
+			output_config.device = myoptarg;
+			break;
+
+		default:
+			//ignore this, since it could be a negative test angle input
+			break;
+		}
+	}
+
+
 	if (!get_params(param_handles, params)) {
 		PX4_ERR("could not get mount parameters!");
 		delete test_input;
@@ -236,6 +272,7 @@ static int vmount_thread_main(int argc, char *argv[])
 			output_config.yaw_offset = params.mnt_off_yaw * M_DEG_TO_RAD_F;
 			output_config.mavlink_sys_id = params.mnt_mav_sysid;
 			output_config.mavlink_comp_id = params.mnt_mav_compid;
+			output_config.nav_acc_rad = params.nav_acc_rad;
 
 			bool alloc_failed = false;
 			thread_data.input_objs_len = 1;
@@ -273,6 +310,17 @@ static int vmount_thread_main(int argc, char *argv[])
 					thread_data.input_objs[0] = new InputMavlinkCmdMount(params.mnt_do_stab);
 					break;
 
+				case 4: // Auto with RC support for Yuneec
+					thread_data.input_objs[0] = new InputMavlinkCmdMount(false);
+					thread_data.input_objs[1] = new InputMavlinkROI();
+
+					// RC is on purpose last here so that if there are any mavlink
+					// messages, they will take precedence over RC.
+					// This logic is done further below while update() is called.
+					thread_data.input_objs[2] = new InputRCYuneec(params.stick_deadzone);
+					thread_data.input_objs_len = 3;
+					break;
+
 				default:
 					PX4_ERR("invalid input mode %i", params.mnt_mode_in);
 					break;
@@ -299,6 +347,11 @@ static int vmount_thread_main(int argc, char *argv[])
 				if (!thread_data.output_obj) { alloc_failed = true; }
 
 				break;
+
+			case 2: //SERIAL
+				thread_data.output_obj = new OutputSerial(output_config);
+				break;
+
 
 			default:
 				PX4_ERR("invalid output mode %i", params.mnt_mode_out);
@@ -546,6 +599,8 @@ void update_params(ParameterHandles &param_handles, Parameters &params, bool &go
 	param_get(param_handles.mnt_off_pitch, &params.mnt_off_pitch);
 	param_get(param_handles.mnt_off_roll, &params.mnt_off_roll);
 	param_get(param_handles.mnt_off_yaw, &params.mnt_off_yaw);
+	param_get(param_handles.stick_deadzone, &params.stick_deadzone);
+	param_get(param_handles.nav_acc_rad, &params.nav_acc_rad);
 
 	got_changes = prev_params != params;
 }
@@ -568,6 +623,8 @@ bool get_params(ParameterHandles &param_handles, Parameters &params)
 	param_handles.mnt_off_pitch = param_find("MNT_OFF_PITCH");
 	param_handles.mnt_off_roll = param_find("MNT_OFF_ROLL");
 	param_handles.mnt_off_yaw = param_find("MNT_OFF_YAW");
+	param_handles.stick_deadzone = param_find("MPC_HOLD_DZ");
+	param_handles.nav_acc_rad = param_find("NAV_ACC_RAD");
 
 	if (param_handles.mnt_mode_in == PARAM_INVALID ||
 	    param_handles.mnt_mode_out == PARAM_INVALID ||
@@ -584,7 +641,9 @@ bool get_params(ParameterHandles &param_handles, Parameters &params)
 	    param_handles.mnt_range_yaw == PARAM_INVALID ||
 	    param_handles.mnt_off_pitch == PARAM_INVALID ||
 	    param_handles.mnt_off_roll == PARAM_INVALID ||
-	    param_handles.mnt_off_yaw == PARAM_INVALID) {
+	    param_handles.mnt_off_yaw == PARAM_INVALID ||
+		param_handles.stick_deadzone == PARAM_INVALID ||
+		param_handles.nav_acc_rad == PARAM_INVALID) {
 		return false;
 	}
 

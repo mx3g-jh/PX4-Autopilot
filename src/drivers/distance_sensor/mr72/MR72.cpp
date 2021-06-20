@@ -398,7 +398,7 @@ MR72::Run()
 
 	// Ensure the serial port is open.
 	open_serial_port();
-
+	//mavlink_log_critical(&_mavlink_log_pub, "mr72 RUN");
 	// Perform collection.
 	collect();
 }

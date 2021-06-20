@@ -67,7 +67,7 @@ struct ControlData {
 	union TypeData {
 		struct TypeAngle {
 			float angles[3];         /**< attitude angles (roll, pitch, yaw) in rad, [-pi, +pi] or rad/s (if is angular rate) */
-
+			bool is_speed[3];        /**< if true, the angle is the angular speed in rad/s */
 			enum class Frame : uint8_t {
 				AngleBodyFrame = 0, /**< Angle in body frame. */
 				AngularRate,        /**< Angular rate in rad/s. */

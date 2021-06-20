@@ -44,7 +44,7 @@
 #pragma once
 
 #include <termios.h>
-
+#include <systemlib/mavlink_log.h>
 #include <drivers/drv_hrt.h>
 #include <drivers/rangefinder/PX4Rangefinder.hpp>
 #include <perf/perf_counter.h>
@@ -99,6 +99,7 @@ public:
 	 * Diagnostics - print some basic information about the driver.
 	 */
 	void print_info();
+	orb_advert_t _mavlink_log_pub = nullptr;
 
 private:
 

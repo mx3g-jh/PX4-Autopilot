@@ -162,7 +162,7 @@
 #define BOARD_HAS_PWM	DIRECT_PWM_OUTPUT_CHANNELS
 
 //mx3g-jh
-//#define YUNEEC_INPUT_RC_MAP_MANUAL_CONTROL
+#define YUNEEC_INPUT_RC_MAP_MANUAL_CONTROL
 
 
 /* This board provides a DMA pool and APIs */
@@ -171,6 +171,12 @@
 #define BOARD_HAS_ON_RESET 1
 
 #define BOARD_DSHOT_MOTOR_ASSIGNMENT {3, 2, 1, 0, 4, 5};
+
+
+
+
+
+
 
 __BEGIN_DECLS
 

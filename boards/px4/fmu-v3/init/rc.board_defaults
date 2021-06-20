@@ -32,3 +32,10 @@ if [ $AUTOCNF = yes ]
 then
 
 fi
+
+#mx3g-jh
+set OFDM_TTY /dev/ttyS4
+set GIMBAL_TTY /dev/ttyS1
+
+set MAV_RATE 40000
+set BAUDRATE 500000

@@ -1940,11 +1940,7 @@ MavlinkReceiver::handle_message_rc_channels(mavlink_message_t *msg)
 	rc.rc_total_frame_count = 1;
 	rc.rc_ppm_frame_length = 0;
 	rc.input_source = input_rc_s::RC_INPUT_SOURCE_MAVLINK;
-	// channels
-	rc.values[0] = man.chan1_raw*1000/4000+1000;
-	rc.values[1] = man.chan2_raw*1000/4000+1000;
-	rc.values[2] = man.chan3_raw*1000/4000+1000;
-	rc.values[3] = man.chan4_raw*1000/4000+1000;
+
 	// rc.values[4] = man.chan5_raw*1000/4000+1000;
 	// rc.values[5] = man.chan6_raw*1000/4000+1000;
 	// rc.values[6] = man.chan7_raw*1000/4000+1000;
@@ -1959,11 +1955,18 @@ MavlinkReceiver::handle_message_rc_channels(mavlink_message_t *msg)
 	// rc.values[15] = man.chan16_raw*1000/4000+1000;
 	// rc.values[16] = man.chan17_raw*1000/4000+1000;
 	// rc.values[17] = man.chan18_raw*1000/4000+1000;
-
-	// rc.values[0] = man.chan1_raw;
-	// rc.values[1] = man.chan2_raw;
-	// rc.values[2] = man.chan3_raw;
-	// rc.values[3] = man.chan4_raw;
+#ifdef YUNEEC_INPUT_RC_MAP_MANUAL_CONTROL
+	rc.values[0] = man.chan1_raw;
+	rc.values[1] = man.chan2_raw;
+	rc.values[2] = man.chan3_raw;
+	rc.values[3] = man.chan4_raw;
+#else
+	// channels
+	rc.values[0] = man.chan1_raw*1000/4000+1000;
+	rc.values[1] = man.chan2_raw*1000/4000+1000;
+	rc.values[2] = man.chan3_raw*1000/4000+1000;
+	rc.values[3] = man.chan4_raw*1000/4000+1000;
+#endif
 	rc.values[4] = man.chan5_raw;
 	rc.values[5] = man.chan6_raw;
 	rc.values[6] = man.chan7_raw;
@@ -1997,9 +2000,7 @@ MavlinkReceiver::handle_message_rc_channels(mavlink_message_t *msg)
 
 	// publish uORB message
 	_rc_pub.publish(rc);
-	// int instance; // provides the instance ID or the publication
-	// ORB_PRIO priority = ORB_PRIO_HIGH; // since it is an override, set priority high
-	// orb_publish_auto(ORB_ID(input_rc), &_rc_pub, &rc, &instance, priority);
+
 }
 
 
@@ -2086,9 +2087,7 @@ MavlinkReceiver::handle_message_rc_slave_channels(mavlink_message_t *msg)
 	}
 
 	_slave_rc_pub.publish(slave_rc);
-	// int instance; // provides the instance ID or the publication
-	// ORB_PRIO priority = ORB_PRIO_HIGH; // since it is an override, set priority high
-	// orb_publish_auto(ORB_ID(slave_rc), &_slave_rc_pub, &slave_rc, &instance, priority);
+
 
 }
 

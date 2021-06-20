@@ -1,0 +1,47 @@
+#!/bin/sh
+#
+# YUNEEC TAP-v3 specific board defaults
+#------------------------------------------------------------------------------
+
+set GIMBAL_TTY /dev/ttyS3
+set ESC_TTY /dev/ttyS4
+set OFDM_TTY /dev/ttyS2
+
+if param compare GPS_RTK 1
+then
+	set GPS_PORT /dev/ttyS1
+	set GPS_ARGS "-b 115200"
+fi
+
+#
+# This is to migrate everyone from 6001 to param 6021.
+# TODO: remove this again once enough time has passed
+#
+if param compare SYS_HITL 0
+then
+	if param compare SYS_AUTOSTART 6001
+	then
+		param set SYS_AUTOSTART 6021
+	fi
+
+	#
+	# Set parameters and env variables for selected AUTOSTART
+	#
+	if param compare SYS_AUTOSTART 0
+	then
+		param set SYS_AUTOSTART 6021
+		param set SYS_AUTOCONFIG 1
+	fi
+else
+
+fi
+
+
+#
+# 3DR-specific:
+# Override RC loss parameter
+# This parameter has been opened up for a use-case with 3DR. However, we want
+# to make sure, that it always defaults to `1`. This means the external
+# application will have to change the parameter after every reboot.
+#
+param set COM_RC_LOSS_MAN 1

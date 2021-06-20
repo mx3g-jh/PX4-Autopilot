@@ -1,0 +1,638 @@
+#!/bin/sh
+# Un comment and use set +e to ignore and set -e to enable 'exit on error control'
+set +e
+# Un comment the line below to help debug scripts by printing a trace of the script commands
+#set -x
+# PX4FMU startup script.
+#
+# NOTE: environment variable references:
+#    If the dollar sign ('$') is followed by a left bracket ('{') then the
+#    variable name is terminated with the right bracket character ('}').
+#    Otherwise, the variable name goes to the end of the argument.
+#
+#
+# NOTE: COMMENT LINES ARE REMOVED BEFORE STORED IN ROMFS.
+#
+#------------------------------------------------------------------------------
+
+#
+# TAP startup script.
+#
+# NOTE: COMMENT LINES ARE REMOVED BEFORE STORED IN ROMFS.
+#
+
+# V1 HW Serial map:
+# /dev/ttyS0: GPS
+# /dev/ttyS1: GIMBAL
+# /dev/ttyS2: nsh shell / console
+# /dev/ttyS3: payload
+# /dev/ttyS4: esc bus
+# /dev/ttyS5: RC input
+
+# V2 HW Serial map:
+# /dev/ttyS0: GPS
+# /dev/ttyS1: GIMBAL
+# /dev/ttyS2: esc bus / console (mux s7)
+# /dev/ttyS3: payload
+# /dev/ttyS4: RC input
+
+# V3 HW Serial map:
+# /dev/ttyS0: GPS / J32   			(USART1)
+# /dev/ttyS1: OFS / J34 			(USART2)
+# /dev/ttyS2: OFDM / J47			(USART3)
+# /dev/ttyS3: GIMBAL / J29 (wired as CAN)	(UART4)
+# /dev/ttyS4: esc bus TX:J15 RX:J18  		(UART5)   #PB12 RX #PB13 TX
+# /dev/ttyS5: RC  / J28 Receiver 		(USART6)
+# /dev/ttyS6: Smart Battery (Not connected on H520S-000-R1)(UART7)
+# /dev/ttyS7: console / J23			(UART8)
+
+# YUNEEC_TAP_V4 HW Serial map:
+# /dev/ttyS0: GPS     		(USART1)
+# /dev/ttyS1: Sonar(Front)	(USART2)
+# /dev/ttyS2: OF+Sonar		(USART3)
+# /dev/ttyS3: Camera  		(UART4)
+# /dev/ttyS4: esc bus 		(UART5)
+# /dev/ttyS5: Avoid/Telem	(USART6)
+# /dev/ttyS6: Smart Battery	(UART7)
+# /dev/ttyS7: console		(UART8)
+
+
+#
+# Set default paramter values.
+# Do not add intra word spaces
+# it wastes flash
+#
+set AUTOCNF no
+set AUX_MODE pwm
+set DATAMAN_OPT ""
+set FAILSAFE none
+set FAILSAFE_AUX none
+set FCONFIG /fs/microsd/etc/config.txt
+set FEXTRAS /fs/microsd/etc/extras.txt
+set FMU_MODE pwm
+set FRC /fs/microsd/etc/rc.txt
+set IOFW none   #"/etc/extras/px4_io-v2_default.bin"
+set IO_PRESENT no
+set LOG_FILE /fs/microsd/bootlog.txt
+set LOGGER_ARGS ""
+set LOGGER_BUF  14
+set MAV_TYPE none
+set MIXER none
+set MIXER_AUX none
+set MIXER_FILE none
+set MK_MODE none
+set MKBLCTRL_ARG ""
+set OUTPUT_MODE tap_esc
+set PARAM_FILE /fs/microsd/params
+set PWM_AUX_DISARMED p:PWM_AUX_DISARMED
+set PWM_AUX_MAX p:PWM_AUX_MAX
+set PWM_AUX_MIN p:PWM_AUX_MIN
+set PWM_AUX_OUT none
+set PWM_AUX_RATE p:PWM_AUX_RATE
+set PWM_DISARMED p:PWM_DISARMED
+set PWM_MAX p:PWM_MAX
+set PWM_MIN p:PWM_MIN
+set PWM_OUT none
+set PWM_RATE p:PWM_RATE
+set SDCARD_MIXERS_PATH /fs/microsd/etc/mixers
+set STARTUP_TUNE 1
+set USE_IO no
+set VEHICLE_TYPE none
+
+# Airframe parameter versioning: airframe maintainers can set this in the
+# airframe startup script, and then increase it by one whenever an airframe
+# parameter is updated - it will ensure that these parameters will be updated
+# when the firmware is flashed.
+
+set DEFAULTS_VER 5
+set RELEASE_VER 111  # release-1.11
+#
+# Mount the procfs.
+#
+mount -t procfs /proc
+
+#
+# Start CDC/ACM serial driver.
+#
+sercon
+
+#
+# Print full system version.
+#
+ver all
+
+#
+# Start the ORB (first app to start)
+# tone_alarm and tune_control
+# is dependent.
+#
+uorb start
+
+#
+# Try to mount the microSD card.
+#
+# REBOOTWORK this needs to start after the flight control loop.
+if mount -t vfat /dev/mmcsd0 /fs/microsd
+then
+	if hardfault_log check
+	then
+		# Error tune.
+		set STARTUP_TUNE 2
+		if hardfault_log commit
+		then
+			hardfault_log reset
+		fi
+	fi
+
+	# Prevent MacOS and Ubuntu from creating unnecessary temporary files on the microSD card
+
+	# block MacOS Spotlight indexing (.Spotlight-V100 folder)
+	if [ ! -f "/fs/microsd/.metadata_never_index" ]; then
+		cat > /fs/microsd/.metadata_never_index
+	fi
+
+	# block MacOS trashes
+	if [ ! -f "/fs/microsd/.Trashes" ]; then
+		cat > /fs/microsd/.Trashes
+	fi
+
+	# block MacOS logging of filesystem events
+	if [ ! -d "/fs/microsd/.fseventsd" ]; then
+		mkdir /fs/microsd/.fseventsd
+	fi
+
+	if [ ! -f "/fs/microsd/.fseventsd/no_log" ]; then
+		cat > /fs/microsd/.fseventsd/no_log
+	fi
+
+	# block Ubuntu trash
+	if [ ! -f "/fs/microsd/.Trash-1000" ]; then
+		cat > /fs/microsd/.Trash-1000
+	fi
+
+else
+	# tune SD_INIT
+	set STARTUP_TUNE 16
+	if mkfatfs /dev/mmcsd0
+	then
+		if mount -t vfat /dev/mmcsd0 /fs/microsd
+		then
+			echo "INFO [init] card formatted"
+		else
+			set STARTUP_TUNE 17
+			echo "ERROR [init] format failed"
+			set LOG_FILE /dev/null
+		fi
+	else
+		set LOG_FILE /dev/null
+	fi
+fi
+
+#
+# Look for an init script on the microSD card.
+# Disable autostart if the script found.
+#
+if [ -f $FRC ]
+then
+	sh $FRC
+else
+
+	#
+# Start the MTD
+#
+mtd start
+
+#
+# Load parameters
+#
+if ver hwcmp YUNEEC_TAP_V2 YUNEEC_TAP_V3 YUNEEC_TAP_V4 YUNEEC_TAP_H920E
+then
+	# now load from SD card, which can override the temp calib params
+	param select ${PARAM_FILE}
+	# we need to use param import (instead of load), because load will cause a reset
+	if param load
+	then
+	else
+		# Param load failed
+		# wipe the SD card to restore the system
+		mount -t vfat /dev/mmcsd0 /fs/microsd
+		param reset
+		param save
+	fi
+	#For H920E,Not import param from mtd, We have did import in factory branch.
+	if ver hwcmp YUNEEC_TAP_H920E
+	then
+		#Fix sensor ID for H920E
+		param set TC_B0_ID 4290081
+	else
+		# YUNEEC_TAP_V2 YUNEEC_TAP_V3 YUNEEC_TAP_V4 load the temperature calibration data from EEPROM.
+		param import /fs/mtd_caldata
+	fi
+
+else
+# tap v1
+	if param load
+	then
+	else
+		param reset
+	fi
+fi
+
+unset PARAM_FILE
+
+	#
+	# Set AUTOCNF flag to use it in AUTOSTART scripts.
+	#
+	if param greater SYS_AUTOCONFIG 0
+	then
+		if param compare SYS_AUTOCONFIG 1
+		then
+			# Wipe out params except RC*, flight modes, total flight time, accel cal, gyro cal, next flight UUID
+			param reset_nostart RC* COM_FLTMODE* LND_FLIGHT_T_* TC_* CAL_ACC* CAL_GYRO* COM_FLIGHT_UUID
+		fi
+
+		set AUTOCNF yes
+	fi
+
+set NEW_DEFAULTS no
+
+if param compare SYS_PARAM_VER ${DEFAULTS_VER}
+then
+else
+	echo "New parameter VER: Resetting params"
+	set NEW_DEFAULTS yes
+fi
+
+# Check if release version train changed
+if param compare SYS_RELEASE_VER ${RELEASE_VER}
+then
+else
+	echo "New release VER: Resetting params"
+	set NEW_DEFAULTS yes
+fi
+
+	#
+	# Play the startup tune (if not disabled or there is an error)
+	#
+	param compare CBRK_BUZZER 782090
+	if [ $? != 0 -o $STARTUP_TUNE != 1 ]
+	then
+		tune_control play -t $STARTUP_TUNE
+	fi
+
+	#
+	# Optional board defaults: rc.board_defaults
+	#
+	set BOARD_RC_DEFAULTS /etc/init.d/rc.board_defaults
+	if [ -f $BOARD_RC_DEFAULTS ]
+	then
+		echo "Board defaults: ${BOARD_RC_DEFAULTS}"
+		sh $BOARD_RC_DEFAULTS
+	fi
+	unset BOARD_RC_DEFAULTS
+
+	#
+	# Waypoint storage.
+	# REBOOTWORK this needs to start in parallel.
+	#
+	dataman start $DATAMAN_OPT
+
+	#
+	# Start the socket communication send_event handler.
+	#
+	send_event start
+
+	#
+	# Start the resource load monitor.
+	#
+	load_mon start
+
+	#
+	# Start system state indicator.
+	#
+	# rgbled start -X
+	# rgbled_ncp5623c start -X
+
+	if param greater LIGHT_EN_BLINKM 0
+	then
+		if blinkm start -X
+		then
+			blinkm systemstate
+		fi
+	fi
+
+	#
+	# Start the tone_alarm driver.
+	# Needs to be started after the parameters are loaded (for CBRK_BUZZER).
+	# Note that this will still play the already published startup tone.
+	#
+	# tone_alarm start
+
+	#
+	# Set parameters and env variables for selected AUTOSTART.
+	#
+	if ! param compare SYS_AUTOSTART 0
+	then
+		sh /etc/init.d/rc.autostart
+	fi
+
+	#
+	# Override parameters from user configuration file.
+	#
+	if [ -f $FCONFIG ]
+	then
+		echo "Custom: ${FCONFIG}"
+		sh $FCONFIG
+	fi
+
+	#
+	# If autoconfig parameter was set, reset it and save parameters.
+	#
+	if [ $AUTOCNF = yes ]
+	then
+		param set SYS_AUTOCONFIG 0
+	fi
+
+	if [ ${NEW_DEFAULTS} = yes ]
+	then
+		param set SYS_PARAM_VER ${DEFAULTS_VER}
+		param set SYS_RELEASE_VER ${RELEASE_VER}
+		param save
+		set NEW_DEFAULTS no
+		#reboot
+	fi
+
+	#
+	# RC update (map raw RC input to calibrate manual control)
+	#  start before commander
+	#
+	rc_update start
+
+	#
+	# Sensors System (start before Commander so Preflight checks are properly run).
+	# Commander needs to be this early for in-air-restarts.
+	#
+	if param greater SYS_HITL 0
+	then
+		set OUTPUT_MODE hil
+		sensors start -h
+		commander start -h
+		# disable GPS
+		param set GPS_1_CONFIG 0
+
+		# start the simulator in hardware if needed
+		if param compare SYS_HITL 2
+		then
+			sih start
+		fi
+
+	else
+		#
+		# board sensors: rc.sensors
+		#
+		set BOARD_RC_SENSORS /etc/init.d/rc.board_sensors
+		if [ -f $BOARD_RC_SENSORS ]
+		then
+			echo "Board sensors: ${BOARD_RC_SENSORS}"
+			sh $BOARD_RC_SENSORS
+		fi
+		unset BOARD_RC_SENSORS
+
+		sh /etc/init.d/rc.sensors
+		#h520 h920
+		battery_status start
+
+		commander start
+	fi
+
+	# Sensors on the PWM interface bank.
+	if param compare -s SENS_EN_LL40LS 1
+	then
+		# Clear pins 5 and 6.
+		set FMU_MODE pwm4
+		set AUX_MODE pwm4
+	fi
+
+
+	# Check if ATS is enabled
+	if param compare FD_EXT_ATS_EN 1
+	then
+		# Clear pins 5 and 6.
+		set FMU_MODE pwm4
+		set AUX_MODE pwm4
+	fi
+
+	if param greater TRIG_MODE 0
+	then
+		# We ONLY support trigger on pins 5+6 or 7+8 when simultanously using AUX for actuator output.
+		if param compare TRIG_PINS 56
+		then
+			# clear pins 5 and 6
+			set FMU_MODE pwm4
+			set AUX_MODE pwm4
+		else
+			if param compare TRIG_PINS 78
+			then
+				# clear pins 7 and 8
+				set FMU_MODE pwm6
+				set AUX_MODE pwm6
+			else
+				set FMU_MODE none
+				set AUX_MODE none
+			fi
+		fi
+
+		camera_trigger start
+		camera_feedback start
+	fi
+
+#YUNEEC
+	if ver hwcmp YUNEEC_TAP_V2 YUNEEC_TAP_V3 YUNEEC_TAP_V4 YUNEEC_TAP_H920E
+	then
+
+		if ver hwcmp YUNEEC_TAP_H920E
+		then
+			pwm_out mode_pwm4
+		else
+			pwm_out mode_pwm3
+		fi
+
+		if ver hwcmp YUNEEC_TAP_V1
+		then
+		# On TAP-V1 use 400 Hz PWM output for landing gear
+			pwm rate -c 1 -r 400
+		else
+		# Use 50 Hz PWM output for landing gear
+		# Set g 1 (Sonar) to 20 Hz which has the side effect of
+		# setting the other group:g 1 (landing gear) to the default 50 Hz
+		# Throwing switch(h920e)
+			pwm rate -g 1 -r 20
+		fi
+		#
+		# Load the gear mixer onto fmu
+		#
+		if mixer load /dev/px4fmu /etc/mixers/gear.mix
+		then
+			echo "INFO  [init] Mixer: gear on /dev/px4fmu"
+		else
+			echo "ERROR [init] Error loading mixer: gear"
+			echo "ERROR [init] Error loading mixer: gear" >> $LOG_FILE
+		fi
+
+		#
+		# Set Landing gear pwm configuration directly for the only channel we use
+		# such that landing gear lowers on kill switch lockdown
+		pwm disarmed -c 1 -p 1500
+		pwm failsafe -c 1 -p 1000
+	fi
+#YUNEEC PWM OUT
+
+		#
+		# Check if UAVCAN is enabled, default to it for ESCs.
+		#
+		if param greater -s UAVCAN_ENABLE 0
+		then
+			# Start core UAVCAN module.
+			if uavcan start
+			then
+				if param greater UAVCAN_ENABLE 1
+				then
+					# Start UAVCAN firmware update server and dynamic node ID allocation server.
+					uavcan start fw
+
+					if param greater UAVCAN_ENABLE 2
+					then
+						set OUTPUT_MODE uavcan_esc
+					fi
+				fi
+			else
+				# Error tune.
+				tune_control play -t 2
+			fi
+		fi
+
+	#
+	# Optional board mavlink streams: rc.board_mavlink
+	#
+	set BOARD_RC_MAVLINK /etc/init.d/rc.board_mavlink
+	if [ -f $BOARD_RC_MAVLINK ]
+	then
+		echo "Board extras: ${BOARD_RC_MAVLINK}"
+		sh $BOARD_RC_MAVLINK
+	fi
+	unset BOARD_RC_MAVLINK
+
+	# Must be started after the serial config is read
+	rc_input start
+
+	#
+	# Configure vehicle type specific parameters.
+	# Note: rc.vehicle_setup is the entry point for rc.interface,
+	#       rc.fw_apps, rc.mc_apps, rc.rover_apps, and rc.vtol_apps.
+	#
+	sh /etc/init.d/rc.vehicle_setup
+
+	# Camera capture driver
+	if param greater -s CAM_CAP_FBACK 0
+	then
+		if camera_capture start
+		then
+			camera_capture on
+		fi
+	fi
+
+	#
+	# Start the navigator.
+	#
+	navigator start
+
+	#
+	# Start a thermal calibration if required.
+	#
+	sh /etc/init.d/rc.thermal_cal
+
+	#
+	# Optional board supplied extras: rc.board_extras
+	#
+	set BOARD_RC_EXTRAS /etc/init.d/rc.board_extras
+	if [ -f $BOARD_RC_EXTRAS ]
+	then
+		echo "Board extras: ${BOARD_RC_EXTRAS}"
+		sh $BOARD_RC_EXTRAS
+	fi
+	unset BOARD_RC_EXTRAS
+
+	#
+	# Start any custom addons from the sdcard.
+	#
+	if [ -f $FEXTRAS ]
+	then
+		echo "Addons script: ${FEXTRAS}"
+		sh $FEXTRAS
+	fi
+
+	#
+	# Start the logger.
+	#
+	sh /etc/init.d/rc.logging
+
+	#
+	# Set additional parameters and env variables for selected AUTOSTART.
+	#
+	if ! param compare SYS_AUTOSTART 0
+	then
+		sh /etc/init.d/rc.autostart.post
+	fi
+
+#
+# End of autostart.
+#
+fi
+
+#
+# Unset all script parameters to free RAM.
+#
+unset NEW_DEFAULTS
+unset DEFAULTS_VER
+unset RELEASE_VER
+unset AUTOCNF
+unset AUX_MODE
+unset DATAMAN_OPT
+unset FAILSAFE
+unset FAILSAFE_AUX
+unset FCONFIG
+unset FEXTRAS
+unset FMU_MODE
+unset FRC
+unset IO_PRESENT
+unset IOFW
+unset LOG_FILE
+unset LOGGER_ARGS
+unset LOGGER_BUF
+unset MAV_TYPE
+unset MIXER
+unset MIXER_AUX
+unset MIXER_FILE
+unset MK_MODE
+unset MKBLCTRL_ARG
+unset OUTPUT_MODE
+unset PWM_AUX_DISARMED
+unset PWM_AUX_MAX
+unset PWM_AUX_MIN
+unset PWM_AUX_OUT
+unset PWM_AUX_RATE
+unset PWM_DISARMED
+unset PWM_MAX
+unset PWM_MIN
+unset PWM_OUT
+unset PWM_RATE
+unset RC_INPUT_ARGS
+unset SDCARD_MIXERS_PATH
+unset STARTUP_TUNE
+unset USE_IO
+unset VEHICLE_TYPE
+
+#
+# Boot is complete, inform MAVLink app(s) that the system is now fully up and running.
+#
+mavlink boot_complete

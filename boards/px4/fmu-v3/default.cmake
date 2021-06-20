@@ -20,52 +20,52 @@ px4_add_board(
 	DRIVERS
 		adc
 		barometer # all available barometer drivers
-		batt_smbus
-		camera_capture
-		camera_trigger
+		#batt_smbus
+		#camera_capture
+		#camera_trigger
 		differential_pressure # all available differential pressure drivers
-		distance_sensor # all available distance sensor drivers
-		#distance_sensor/mr72
-		dshot
+		#distance_sensor # all available distance sensor drivers
+		distance_sensor/mr72
+		#dshot
 		gps
 		#heater
 		#imu # all available imu drivers
-		imu/adis16448
-		imu/adis16477
-		imu/adis16497
+		#imu/adis16448
+		#imu/adis16477
+		#imu/adis16497
 		imu/l3gd20
 		imu/lsm303d
-		imu/invensense/icm20608g
-		imu/invensense/icm20948
+		#imu/invensense/icm20608g
+		#imu/invensense/icm20948
 		imu/invensense/mpu6000
-		imu/invensense/mpu9250
-		irlock
-		lights/blinkm
+		#imu/invensense/mpu9250
+		#irlock
+		#lights/blinkm
 		lights/rgbled
-		lights/rgbled_ncp5623c
+		#lights/rgbled_ncp5623c
 		magnetometer # all available magnetometer drivers
 		mkblctrl
 		#optical_flow # all available optical flow drivers
-		optical_flow/px4flow
+		#optical_flow/px4flow
 		#osd
-		pca9685
+		#pca9685
 		#power_monitor/ina226
 		#protocol_splitter
 		pwm_input
 		pwm_out_sim
 		pwm_out
 		px4io
-		roboclaw
-		tap_esc
-		telemetry # all available telemetry drivers
-		test_ppm
+		#roboclaw
+		#tap_esc
+		#telemetry # all available telemetry drivers
+		#test_ppm
 		tone_alarm
-		uavcan
+		#uavcan
 	MODULES
 		airspeed_selector
 		attitude_estimator_q
 		battery_status
-		camera_feedback
+		#camera_feedback
 		commander
 		dataman
 		ekf2
@@ -114,7 +114,7 @@ px4_add_board(
 		reboot
 		reflect
 		sd_bench
-		tests # tests and test runner
+		#tests # tests and test runner
 		top
 		topic_listener
 		tune_control
@@ -122,13 +122,13 @@ px4_add_board(
 		ver
 		work_queue
 	EXAMPLES
-		fixedwing_control # Tutorial code from https://px4.io/dev/example_fixedwing_control
-		hello
-		hwtest # Hardware test
+		#fixedwing_control # Tutorial code from https://px4.io/dev/example_fixedwing_control
+		#hello
+		#hwtest # Hardware test
 		#matlab_csv_serial
-		px4_mavlink_debug # Tutorial code from http://dev.px4.io/en/debug/debug_values.html
-		px4_simple_app # Tutorial code from http://dev.px4.io/en/apps/hello_sky.html
-		rover_steering_control # Rover example app
-		uuv_example_app
+		#px4_mavlink_debug # Tutorial code from http://dev.px4.io/en/debug/debug_values.html
+		#px4_simple_app # Tutorial code from http://dev.px4.io/en/apps/hello_sky.html
+		#rover_steering_control # Rover example app
+		#uuv_example_app
 		work_item
 	)
