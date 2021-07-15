@@ -1,0 +1,22 @@
+#!/bin/sh
+#
+# YUNEEC TAP-v3 specific board sensors init
+#------------------------------------------------------------------------------
+
+mpc2520 -I start
+
+# External I2C bus
+# hmc5883 -C -T -X -R 6 start  # (Not used?)
+ist8310 start
+
+# start hc_sr04 (forward-facing)
+# hc_sr04 -R 0 -m -a start
+
+# internal SPI bus
+mpu6000 -T 20602 -s -R 8 start
+
+# Start GPS
+gps start -d  ${GPS_TTY} ${GPS_ARGS}
+#yunnec_flow start -d /dev/ttyS2
+unset GPS_TTY
+unset GPS_ARGS

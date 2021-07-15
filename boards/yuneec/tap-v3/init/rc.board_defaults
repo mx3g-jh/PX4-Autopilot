@@ -1,0 +1,36 @@
+#!/bin/sh
+#
+# PX4 FMUv5 specific board defaults
+#------------------------------------------------------------------------------
+
+
+if [ $AUTOCNF = yes ]
+then
+
+fi
+
+#
+# Set parameters and env variables for selected AUTOSTART
+#
+
+param set-default SYS_AUTOSTART 6021
+
+set GPS_TTY /dev/ttyS0
+
+if param compare GPS_RTK 1
+then
+	set GPS_TTY /dev/ttyS1
+	set GPS_ARGS "-b 115200"
+fi
+
+
+
+#
+# 3DR-specific:
+# Override RC loss parameter
+# This parameter has been opened up for a use-case with 3DR. However, we want
+# to make sure, that it always defaults to `1`. This means the external
+# application will have to change the parameter after every reboot.
+#
+param set-default COM_RC_LOSS_MAN 1
+

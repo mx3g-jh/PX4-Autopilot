@@ -1,0 +1,45 @@
+#!/bin/sh
+#
+# PX4 FMUv5 specific board MAVLink startup script.
+#------------------------------------------------------------------------------
+set OFDM_TTY /dev/ttyS2
+set GIMBAL_TTY /dev/ttyS3
+
+set MAV_RATE 8000
+set BAUDRATE 500000
+set CUST_TTY /dev/ttyS5
+
+
+if pwm_out is_ofdm
+then
+	# mavlink instance for the OFDM port
+	mavlink start -r ${MAV_RATE} -d ${OFDM_TTY} -m config -b ${BAUDRATE}
+	mavlink stream -d ${OFDM_TTY} -s SYSTEM_TIME -r 0.5
+fi
+
+sleep 1
+
+# mavlink instance for the gimbal port
+vmount start
+mavlink start -r ${MAV_RATE} -d ${GIMBAL_TTY} -m config -b ${BAUDRATE}
+mavlink stream -d ${GIMBAL_TTY} -s SYSTEM_TIME -r 0.5
+
+# Give the stream a little time to come up...
+sleep 1
+
+# mavlink instance for the customer port
+mavlink start -r ${MAV_RATE} -d ${CUST_TTY} -m custom -b 115200
+sleep 1
+# Give the stream a little time to come up...
+# FIXME: This is only a temporary fix for [ch6113]
+
+# mavlink instance for the USB port
+#mavlink start -r 800000 -d /dev/ttyACM0 -m config -x
+mavlink start -d /dev/ttyACM0
+
+
+unset GIMBAL_TTY
+unset OFDM_TTY
+unset CUST_TTY
+unset MAV_RATE
+unset BAUDRATE
