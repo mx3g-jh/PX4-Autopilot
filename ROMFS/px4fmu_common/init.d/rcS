@@ -317,13 +317,14 @@ else
 	# Sensors System (start before Commander so Preflight checks are properly run).
 	# Commander needs to be this early for in-air-restarts.
 	#
+	param set GPS_1_CONFIG 102
 	if param greater SYS_HITL 0
 	then
 		set OUTPUT_MODE hil
 		sensors start -h
 		commander start -h
 		# disable GPS
-		param set GPS_1_CONFIG 0
+		# param set GPS_1_CONFIG 0
 
 		# start the simulator in hardware if needed
 		if param compare SYS_HITL 2
@@ -519,7 +520,7 @@ else
 	then
 		. ${R}etc/init.d/rc.autostart.post
 	fi
-
+	gps start -d /dev/ttyS0 -b 9600
 	#
 	# Bootloader upgrade
 	#

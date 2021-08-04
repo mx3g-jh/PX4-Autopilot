@@ -11,9 +11,9 @@ px4_add_board(
 	IO cubepilot_io-v2_default
 	UAVCAN_INTERFACES 2
 	SERIAL_PORTS
-		TEL1:/dev/ttyS0
+		TEL1:/dev/ttyS2
 		TEL2:/dev/ttyS1
-		GPS1:/dev/ttyS2
+		GPS1:/dev/ttyS0
 		# PX4IO:/dev/ttyS3
 		TEL3:/dev/ttyS4
 		GPS2:/dev/ttyS5

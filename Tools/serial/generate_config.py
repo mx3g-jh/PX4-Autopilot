@@ -111,7 +111,7 @@ serial_ports = {
     "GPS1": {
         "label": "GPS 1",
         "index": 201,
-        "default_baudrate": 0,
+        "default_baudrate": 9600,
         },
     "GPS2": {
         "label": "GPS 2",

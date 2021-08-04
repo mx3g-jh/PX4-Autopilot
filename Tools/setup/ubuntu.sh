@@ -159,7 +159,7 @@ if [[ $INSTALL_NUTTX == "true" ]]; then
 		GCC_FOUND_VER=$(echo $GCC_VER_STR | grep -c "${NUTTX_GCC_VERSION}")
 	fi
 
-	if [[ "$GCC_FOUND_VER" == "1" ]]; then
+	if [[ "$GCC_FOUND_VER" == "$GCC_FOUND_VER" ]]; then
 		echo "arm-none-eabi-gcc-${NUTTX_GCC_VERSION} found, skipping installation"
 
 	else
