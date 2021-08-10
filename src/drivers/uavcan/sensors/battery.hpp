@@ -40,6 +40,7 @@
 #include "sensor_bridge.hpp"
 #include <uORB/topics/battery_status.h>
 #include <uavcan/equipment/power/BatteryInfo.hpp>
+#include <uavcan/equipment/power/CircuitStatus.hpp>
 #include <drivers/drv_hrt.h>
 #include <px4_platform_common/module_params.h>
 
@@ -66,6 +67,8 @@ private:
 		BatteryInfoCbBinder;
 
 	uavcan::Subscriber<uavcan::equipment::power::BatteryInfo, BatteryInfoCbBinder> _sub_battery;
+	uavcan::Publisher<uavcan::equipment::power::CircuitStatus> _pub_battery_status;
+	// uavcan::Publisher<uavcan::equipment::power::BatteryInfo> _pub_batteryy_status;
 
 	DEFINE_PARAMETERS(
 		(ParamFloat<px4::params::BAT_LOW_THR>) _param_bat_low_thr,

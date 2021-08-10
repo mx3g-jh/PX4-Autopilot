@@ -131,7 +131,7 @@ UavcanEscController::update_outputs(bool stop_motors, uint16_t outputs[MAX_ACTUA
 	}
 
 	msg.cmd.resize(_max_number_of_nonzero_outputs);
-
+	
 	/*
 	 * Publish the command message to the bus
 	 * Note that for a quadrotor it takes one CAN frame

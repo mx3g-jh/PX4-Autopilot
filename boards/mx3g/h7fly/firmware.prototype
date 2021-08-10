@@ -1,0 +1,13 @@
+{
+    "board_id": 140,
+    "magic": "PX4FWv1",
+    "description": "Firmware for the mx3g h7fly board",
+    "image": "",
+    "build_time": 0,
+    "summary": "h7fly",
+    "version": "0.1",
+    "image_size": 0,
+    "image_maxsize": 2064384,
+    "git_identity": "",
+    "board_revision": 0
+}

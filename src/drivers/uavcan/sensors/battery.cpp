@@ -42,9 +42,13 @@ UavcanBatteryBridge::UavcanBatteryBridge(uavcan::INode &node) :
 	UavcanSensorBridgeBase("uavcan_battery", ORB_ID(battery_status)),
 	ModuleParams(nullptr),
 	_sub_battery(node),
+	_pub_battery_status(node),
+	// _pub_batteryy_status(node),
 	_warning(battery_status_s::BATTERY_WARNING_NONE),
 	_last_timestamp(0)
 {
+	_pub_battery_status.setPriority(5);
+	// _pub_batteryy_status.setPriority(5);
 }
 
 int UavcanBatteryBridge::init()
@@ -69,39 +73,34 @@ UavcanBatteryBridge::battery_sub_cb(const uavcan::ReceivedDataStructure<uavcan::
 	battery.voltage_filtered_v = msg.voltage;
 	battery.current_a = msg.current;
 	battery.current_filtered_a = msg.current;
-	// battery.current_average_a = msg.;
-
 	sumDischarged(battery.timestamp, battery.current_a);
 	battery.discharged_mah = _discharged_mah;
-
 	battery.remaining = msg.state_of_charge_pct / 100.0f; // between 0 and 1
-	// battery.scale = msg.; // Power scaling factor, >= 1, or -1 if unknown
 	battery.temperature = msg.temperature + CONSTANTS_ABSOLUTE_NULL_CELSIUS; // Kelvin to Celcius
-	// battery.cell_count = msg.;
 	battery.connected = true;
 	battery.source = msg.status_flags & uavcan::equipment::power::BatteryInfo::STATUS_FLAG_IN_USE;
-	// battery.priority = msg.;
 	battery.capacity = msg.full_charge_capacity_wh;
-	// battery.cycle_count = msg.;
-	// battery.run_time_to_empty = msg.;
-	// battery.average_time_to_empty = msg.;
 	battery.serial_number = msg.model_instance_id;
 	battery.id = msg.getSrcNodeID().get();
-
-	// Mavlink 2 needs individual cell voltages or cell[0] if cell voltages are not available.
 	battery.voltage_cell_v[0] = msg.voltage;
-
-	// Set cell count to 1 so the the battery code in mavlink_messages.cpp copies the values correctly (hack?)
 	battery.cell_count = 1;
-
-	// battery.max_cell_voltage_delta = msg.;
-
-	// battery.is_powering_off = msg.;
-
 	determineWarning(battery.remaining);
 	battery.warning = _warning;
-
 	publish(msg.getSrcNodeID().get(), &battery);
+
+	uavcan::equipment::power::CircuitStatus circuit_msg;
+	circuit_msg.circuit_id = 1;
+	(void)_pub_battery_status.broadcast(circuit_msg);
+	// uavcan::equipment::power::BatteryInfo battery_msg;
+	// battery_msg.voltage = msg.voltage;
+	// battery_msg.current = msg.current;
+	// battery_msg.state_of_charge_pct = msg.state_of_charge_pct;
+	// battery_msg.temperature = msg.temperature;
+	// battery_msg.status_flags = msg.status_flags;
+	// battery_msg.full_charge_capacity_wh = msg.full_charge_capacity_wh;
+	// battery_msg.model_instance_id = msg.model_instance_id;
+	// (void)_pub_batteryy_status.broadcast(battery_msg);
+
 }
 
 void

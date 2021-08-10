@@ -82,6 +82,7 @@ UavcanNode::UavcanNode(uavcan::ICanDriver &can_driver, uavcan::ISystemClock &sys
 	ModuleParams(nullptr),
 	_node(can_driver, system_clock, _pool_allocator),
 	_esc_controller(_node),
+	_my_test(_node),
 	_hardpoint_controller(_node),
 	_beep_controller(_node),
 	_safety_state_controller(_node),
@@ -737,6 +738,10 @@ UavcanNode::handle_time_sync(const uavcan::TimerEvent &)
 void
 UavcanNode::Run()
 {
+	// mavlink_log_info(&_mavlink_log_pub,"uavcanloop");
+#ifdef pub_px4
+	_my_test.update_outputs(1234);
+#endif
 	pthread_mutex_lock(&_node_mutex);
 
 	if (_output_count == 0) {
@@ -820,6 +825,7 @@ UavcanNode::Run()
 		teardown();
 		_instance = nullptr;
 	}
+
 }
 
 void

@@ -24,7 +24,7 @@ px4_add_board(
 		#camera_capture
 		#camera_trigger
 		#differential_pressure # all available differential pressure drivers
-		differential_pressure/ms4525
+		# differential_pressure/ms4525
 		#distance_sensor # all available distance sensor drivers
 		#distance_sensor/ll40ls
 		#distance_sensor/lightware_laser_serial
@@ -33,8 +33,8 @@ px4_add_board(
 		#heater
 		#imu # all available imu drivers
 		#imu/analog_devices/adis16448
-		imu/l3gd20
-		imu/lsm303d
+		# imu/l3gd20
+		# imu/lsm303d
 		#imu/invensense/icm20608g
 		#imu/invensense/icm20948
 		imu/invensense/mpu6000
@@ -43,7 +43,7 @@ px4_add_board(
 		#lights # all available light drivers
 		lights/rgbled
 		#magnetometer # all available magnetometer drivers
-		magnetometer/hmc5883
+		# magnetometer/hmc5883
 		#optical_flow # all available optical flow drivers
 		#osd
 		#pca9685
@@ -58,10 +58,10 @@ px4_add_board(
 		#rpm
 		#telemetry # all available telemetry drivers
 		tone_alarm
-		#uavcan
+		uavcan
 	MODULES
 		airspeed_selector
-		#attitude_estimator_q
+		# attitude_estimator_q
 		battery_status
 		#camera_feedback
 		commander
@@ -77,7 +77,7 @@ px4_add_board(
 		land_detector
 		#landing_target_estimator
 		#load_mon
-		#local_position_estimator
+		# local_position_estimator
 		logger
 		mavlink
 		mc_att_control

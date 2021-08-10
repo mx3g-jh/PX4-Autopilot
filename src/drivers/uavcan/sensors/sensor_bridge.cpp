@@ -49,7 +49,8 @@
 #include "accel.hpp"
 #include "gyro.hpp"
 #include "cbat.hpp"
-
+#include "mytest.hpp"
+#include "mytestpub.hpp"
 /*
  * IUavcanSensorBridge
  */
@@ -76,6 +77,11 @@ void IUavcanSensorBridge::make_all(uavcan::INode &node, List<IUavcanSensorBridge
 	list.add(new UavcanRangefinderBridge(node));
 	list.add(new UavcanAccelBridge(node));
 	list.add(new UavcanGyroBridge(node));
+#ifdef px4_pub
+	list.add(new UavcanMyTestPubBridge(node));
+#else
+	list.add(new UavcanMyTestBridge(node));
+#endif
 }
 
 /*

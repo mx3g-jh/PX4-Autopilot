@@ -55,7 +55,7 @@
 #include "actuators/esc.hpp"
 #include "actuators/hardpoint.hpp"
 #include "sensors/sensor_bridge.hpp"
-
+#include "sensors/mytestpub.hpp"
 #include <uavcan/helpers/heap_based_pool_allocator.hpp>
 #include <uavcan/protocol/global_time_sync_master.hpp>
 #include <uavcan/protocol/global_time_sync_slave.hpp>
@@ -71,7 +71,7 @@
 #include <uORB/Subscription.hpp>
 #include <uORB/SubscriptionInterval.hpp>
 #include <uORB/topics/parameter_update.h>
-
+#include <systemlib/mavlink_log.h>
 using namespace time_literals;
 
 class UavcanNode;
@@ -167,7 +167,7 @@ public:
 	int			 reset_node(int remote_node_id);
 
 	static void busevent_signal_trampoline();
-
+	orb_advert_t _mavlink_log_pub = nullptr;
 protected:
 	void Run() override;
 private:
@@ -204,6 +204,7 @@ private:
 	pthread_mutex_t			_node_mutex;
 	px4_sem_t			_server_command_sem;
 	UavcanEscController		_esc_controller;
+	UavcanMyTestPubBridge		_my_test;
 	UavcanMixingInterface 		_mixing_interface{_node_mutex, _esc_controller};
 	UavcanHardpointController	_hardpoint_controller;
 	UavcanBeep			_beep_controller;

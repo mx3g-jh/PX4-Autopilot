@@ -185,6 +185,7 @@ set(msg_files
 	wheel_encoders.msg
 	wind.msg
 	yaw_estimator_status.msg
+	mytest.msg
 )
 
 if(NOT px4_constrained_flash_build)
