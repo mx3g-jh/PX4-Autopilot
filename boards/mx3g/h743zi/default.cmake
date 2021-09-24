@@ -1,94 +1,110 @@
 
 px4_add_board(
 	PLATFORM nuttx
-	VENDOR spracing
-	MODEL h7extreme
+	VENDOR mx3g
+	MODEL h743zi
 	LABEL default
 	TOOLCHAIN arm-none-eabi
 	ARCHITECTURE cortex-m7
 	ROMFSROOT px4fmu_common
+	# BUILD_BOOTLOADER
+	IO cubepilot_io-v2_default
+	UAVCAN_INTERFACES 2
 	SERIAL_PORTS
-#		GPS1:/dev/ttyS0
-#		RC:/dev/ttyS1
-#		TEL2:/dev/ttyS2
-#		TEL4:/dev/ttyS3
+		TEL1:/dev/ttyS0
+		TEL2:/dev/ttyS1
+		GPS1:/dev/ttyS2
+		# PX4IO:/dev/ttyS3
+		TEL3:/dev/ttyS4
+		GPS2:/dev/ttyS5
 	DRIVERS
+		adc/ads1115
 		adc/board_adc
 		barometer # all available barometer drivers
-		#batt_smbus
-		# camera_capture
-		# camera_trigger
-		#differential_pressure # all available differential pressure drivers
+		batt_smbus
+		camera_capture
+		camera_trigger
+		differential_pressure # all available differential pressure drivers
 		distance_sensor # all available distance sensor drivers
 		dshot
 		gps
 		#heater
 		#imu # all available imu drivers
-		#imu/analog_devices/adis16448
-		#imu/adis16477
-		#imu/adis16497
-		#imu/bmi088
-		imu/invensense/mpu6000
+		imu/analog_devices/adis16448
 		imu/invensense/icm20602
-		#imu/mpu9250
-		#irlock
+		imu/invensense/icm20649
+		imu/invensense/icm20948
+		irlock
 		lights # all available light drivers
 		magnetometer # all available magnetometer drivers
-		# optical_flow # all available optical flow drivers
+		optical_flow # all available optical flow drivers
 		osd
-		#pca9685
-		#power_monitor/ina226
+		pca9685
+		pca9685_pwm_out
+		power_monitor/ina226
 		#protocol_splitter
+		pwm_input
 		pwm_out_sim
 		pwm_out
-		#roboclaw
-		rc_input
-		#smart_battery/batmon
+		px4io
+		roboclaw
+		rpm
+		smart_battery/batmon
 		telemetry # all available telemetry drivers
 		tone_alarm
+		uavcan
+		rc_input
 	MODULES
-		#airspeed_selector
+		airspeed_selector
 		attitude_estimator_q
 		battery_status
-		#camera_feedback
+		camera_feedback
 		commander
 		dataman
-		#ekf2
+		ekf2
+		esc_battery
 		events
 		flight_mode_manager
-		#fw_att_control
-		#fw_pos_control_l1
+		fw_att_control
+		fw_pos_control_l1
+		gyro_calibration
+		gyro_fft
 		land_detector
-		#landing_target_estimator
+		landing_target_estimator
 		load_mon
-		#local_position_estimator
+		local_position_estimator
 		logger
 		mavlink
 		mc_att_control
 		mc_hover_thrust_estimator
 		mc_pos_control
 		mc_rate_control
+		#micrortps_bridge
 		navigator
 		rc_update
-		#rover_pos_control
+		rover_pos_control
 		sensors
-		#sih
-		#temperature_compensation
+		sih
+		temperature_compensation
+		#uuv_att_control
+		#uuv_pos_control
 		vmount
-		#vtol_att_control
+		vtol_att_control
+		loop
 	SYSTEMCMDS
-		#bl_update
+		bl_update
 		dmesg
 		dumpfile
 		esc_calib
+		gpio
 		hardfault_log
 		i2cdetect
 		led_control
-		#mft
+		mft
 		mixer
-		#motor_ramp
+		motor_ramp
 		motor_test
-		#mtd
+		mtd
 		nshterm
 		param
 		perf
@@ -96,7 +112,8 @@ px4_add_board(
 		reboot
 		reflect
 		sd_bench
-		#shutdown
+		#serial_test
+		system_time
 		top
 		topic_listener
 		tune_control

@@ -135,6 +135,7 @@ void PCF8583::RunImpl()
 	rpm_s msg{};
 	msg.indicated_frequency_rpm = indicated_rpm;
 	msg.estimated_accurancy_rpm = estimated_accurancy;
+	mavlink_log_info(&_mavlink_log_pub,"rpm %f %f",(double)indicated_rpm,(double)estimated_accurancy);
 	msg.timestamp = hrt_absolute_time();
 	_rpm_pub.publish(msg);
 }

@@ -50,6 +50,7 @@
 #include <uORB/Publication.hpp>
 #include <uORB/topics/rpm.h>
 #include <drivers/drv_hrt.h>
+#include <systemlib/mavlink_log.h>
 
 /* Configuration Constants */
 #define PCF8583_BASEADDR_DEFAULT             0x50
@@ -68,7 +69,7 @@ public:
 
 	int    init() override;
 	void   print_status() override;
-
+	orb_advert_t _mavlink_log_pub = nullptr;
 private:
 
 	int  probe() override;

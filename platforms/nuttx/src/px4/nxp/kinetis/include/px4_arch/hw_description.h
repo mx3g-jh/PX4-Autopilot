@@ -98,6 +98,8 @@ enum Port {
 	PortC,
 	PortD,
 	PortE,
+	PortF,
+	PortG,
 };
 enum Pin {
 	Pin0 = 0,

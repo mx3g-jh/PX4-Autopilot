@@ -7,12 +7,12 @@ px4_add_board(
 	TOOLCHAIN arm-none-eabi
 	ARCHITECTURE cortex-m7
 	ROMFSROOT px4fmu_common
-	BUILD_BOOTLOADER
+	# BUILD_BOOTLOADER
 	IO cubepilot_io-v2_default
 	UAVCAN_INTERFACES 2
 	SERIAL_PORTS
-		TEL1:/dev/ttyS0
-		TEL2:/dev/ttyS1
+		# TEL1:/dev/ttyS0
+		# TEL2:/dev/ttyS1
 		GPS1:/dev/ttyS2
 		# PX4IO:/dev/ttyS3
 		TEL3:/dev/ttyS4
@@ -31,9 +31,8 @@ px4_add_board(
 		#heater
 		#imu # all available imu drivers
 		imu/analog_devices/adis16448
-		imu/invensense/icm20602
-		imu/invensense/icm20649
-		imu/invensense/icm20948
+		imu/invensense
+		imu/bosch/bmi055
 		irlock
 		lights # all available light drivers
 		magnetometer # all available magnetometer drivers
@@ -53,6 +52,7 @@ px4_add_board(
 		telemetry # all available telemetry drivers
 		tone_alarm
 		uavcan
+		rc_input
 	MODULES
 		airspeed_selector
 		attitude_estimator_q

@@ -244,7 +244,8 @@ void RCInput::set_rc_scan_state(RC_SCAN newState)
 {
 	PX4_DEBUG("RCscan: %s failed, trying %s", RCInput::RC_SCAN_STRING[_rc_scan_state], RCInput::RC_SCAN_STRING[newState]);
 	_rc_scan_begin = 0;
-	_rc_scan_state = newState;
+	// _rc_scan_state = newState;
+	_rc_scan_state = RC_SCAN_SBUS;
 	_rc_scan_locked = false;
 }
 
