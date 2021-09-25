@@ -18,8 +18,8 @@ px4_add_board(
 		# TEL3:/dev/ttyS4  # connected to ADS-B receiver
 		GPS2:/dev/ttyS5
 	DRIVERS
-		adc/ads1115
-		adc/board_adc
+		# adc/ads1115
+		# adc/board_adc
 		barometer # all available barometer drivers
 		batt_smbus
 		camera_capture

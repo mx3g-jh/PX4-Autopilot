@@ -263,14 +263,14 @@
 #define GPIO_SPI2_MISO   GPIO_SPI2_MISO_1               /* PB14 */
 #define GPIO_SPI2_MOSI   GPIO_SPI2_MOSI_1               /* PB15 */
 
-#define GPIO_SPI4_SCK    ADJ_SLEW_RATE(GPIO_SPI4_SCK_2) /* PE2  */
+#define GPIO_SPI4_SCK    ADJ_SLEW_RATE(GPIO_SPI4_SCK_1) /* PE12  */
 #define GPIO_SPI4_MISO   GPIO_SPI4_MISO_2               /* PE5  */
 #define GPIO_SPI4_MOSI   GPIO_SPI4_MOSI_2               /* PE6  */
 
 
 /* I2C */
 #define GPIO_I2C1_SCL GPIO_I2C1_SCL_2       /* PB8  */
-#define GPIO_I2C1_SDA GPIO_I2C1_SDA_2       /* PB9  */
+#define GPIO_I2C1_SDA GPIO_I2C1_SDA_1       /* PB7  */
 
 #define GPIO_I2C2_SCL GPIO_I2C2_SCL_1       /* PB10 */
 #define GPIO_I2C2_SDA GPIO_I2C2_SDA_1       /* PB11 */
