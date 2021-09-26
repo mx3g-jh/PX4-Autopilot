@@ -87,6 +87,7 @@
 #include <uORB/topics/vehicle_land_detected.h>
 #include <uORB/topics/vehicle_local_position.h>
 #include <uORB/topics/vtol_vehicle_status.h>
+#include <systemlib/mavlink_log.h>
 
 using math::constrain;
 using systemlib::Hysteresis;

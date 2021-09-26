@@ -6,9 +6,9 @@ px4_add_board(
 	LABEL default
 	TOOLCHAIN arm-none-eabi
 	ARCHITECTURE cortex-m7
-	ROMFSROOT mx3gfmu_common
+	ROMFSROOT px4fmu_common
 	# BUILD_BOOTLOADER
-	# IO cubepilot_io-v2_default
+	IO cubepilot_io-v2_default
 	UAVCAN_INTERFACES 2
 	SERIAL_PORTS
 		# TEL1:/dev/ttyS0
@@ -46,7 +46,7 @@ px4_add_board(
 		pwm_input
 		pwm_out_sim
 		pwm_out
-		# px4io
+		px4io
 		roboclaw
 		rpm
 		smart_battery/batmon

@@ -1664,7 +1664,7 @@ Commander::run()
 				       hrt_elapsed_time(&_boot_timestamp));
 
 	while (!should_exit()) {
-
+		mavlink_log_info(&_mavlink_log_pub,"commander");
 		/* update parameters */
 		const bool params_updated = _parameter_update_sub.updated();
 

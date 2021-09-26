@@ -178,10 +178,12 @@ __EXPORT int board_app_initialize(uintptr_t arg)
 
 	/* initial LED state */
 	drv_led_start();
-	led_off(LED_AMBER);
+	led_off(LED_RED);
+	led_on(LED_GREEN); // Indicate Power.
+	led_off(LED_BLUE);
 
 	if (board_hardfault_init(2, true) != 0) {
-		led_on(LED_AMBER);
+		led_on(LED_RED);
 	}
 
 #ifdef CONFIG_MMCSD
