@@ -6,17 +6,17 @@ px4_add_board(
 	LABEL default
 	TOOLCHAIN arm-none-eabi
 	ARCHITECTURE cortex-m7
-	ROMFSROOT px4fmu_common
-	BUILD_BOOTLOADER
-	IO cubepilot_io-v2_default
+	ROMFSROOT mx3gfmu_common
+	# BUILD_BOOTLOADER
+	# IO cubepilot_io-v2_default
 	UAVCAN_INTERFACES 2
 	SERIAL_PORTS
-		TEL1:/dev/ttyS0
-		TEL2:/dev/ttyS1
-		GPS1:/dev/ttyS2
+		# TEL1:/dev/ttyS0
+		# TEL2:/dev/ttyS1
+		# GPS1:/dev/ttyS2
 		# PX4IO:/dev/ttyS3
 		# TEL3:/dev/ttyS4  # connected to ADS-B receiver
-		GPS2:/dev/ttyS5
+		# GPS2:/dev/ttyS5
 	DRIVERS
 		# adc/ads1115
 		# adc/board_adc
@@ -46,7 +46,7 @@ px4_add_board(
 		pwm_input
 		pwm_out_sim
 		pwm_out
-		px4io
+		# px4io
 		roboclaw
 		rpm
 		smart_battery/batmon
