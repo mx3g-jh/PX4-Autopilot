@@ -1,6 +1,6 @@
 ############################################################################
 #
-#   Copyright (c) 2015 PX4 Development Team. All rights reserved.
+#   Copyright (c) 2020 PX4 Development Team. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -30,17 +30,35 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 ############################################################################
-set(srcs
-	mpc2520_i2c.cpp
-	mpc2520.cpp
-)
-
-px4_add_module(
-	MODULE drivers__mpc2520
-	MAIN mpc2520
-	STACK_MAIN 1200
-	COMPILE_FLAGS
-	SRCS ${srcs}
-	DEPENDS
+if("${PX4_BOARD_LABEL}" STREQUAL  "bootloader")
+	add_library(drivers_board
+		bootloader_main.c
+		usb.c
 	)
-# vim: set noet ft=cmake fenc=utf-8 ff=unix :
+	target_link_libraries(drivers_board
+		PRIVATE
+			nuttx_arch
+			nuttx_drivers
+			bootloader
+	)
+	target_include_directories(drivers_board PRIVATE ${PX4_SOURCE_DIR}/platforms/nuttx/src/bootloader/common)
+
+else()
+	add_library(drivers_board
+		i2c.cpp
+		init.c
+		led.c
+		spi.cpp
+		timer_config.cpp
+		usb.c
+	)
+
+	target_link_libraries(drivers_board
+		PRIVATE
+			arch_spi
+			drivers__led
+			nuttx_arch
+			nuttx_drivers
+			px4_layer
+	)
+endif()
