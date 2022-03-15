@@ -109,6 +109,7 @@
 # include <uORB/topics/debug_key_value.h>
 # include <uORB/topics/debug_value.h>
 # include <uORB/topics/debug_vect.h>
+#include <systemlib/mavlink_log.h>
 #endif // !CONSTRAINED_FLASH
 
 using namespace time_literals;
@@ -126,6 +127,7 @@ public:
 
 	void print_detailed_rx_stats() const;
 
+	void print_usage(const char *reason);
 private:
 	static void *start_trampoline(void *context);
 	void run();

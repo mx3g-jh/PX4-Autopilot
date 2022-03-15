@@ -162,6 +162,7 @@ MavlinkReceiver::handle_message(mavlink_message_t *msg)
 		break;
 
 	case MAVLINK_MSG_ID_SET_GPS_GLOBAL_ORIGIN:
+		mavlink_log_info(&_mavlink_log_pub,"MAVLINK_MSG_ID_SET_GPS_GLOBAL_ORIGIN");
 		handle_message_set_gps_global_origin(msg);
 		break;
 
@@ -202,6 +203,7 @@ MavlinkReceiver::handle_message(mavlink_message_t *msg)
 		break;
 
 	case MAVLINK_MSG_ID_UTM_GLOBAL_POSITION:
+		mavlink_log_info(&_mavlink_log_pub,"UTM_GLOBAL_POSITION");
 		handle_message_utm_global_position(msg);
 		break;
 
@@ -210,6 +212,7 @@ MavlinkReceiver::handle_message(mavlink_message_t *msg)
 		break;
 
 	case MAVLINK_MSG_ID_GPS_RTCM_DATA:
+		mavlink_log_info(&_mavlink_log_pub,"RTCM");
 		handle_message_gps_rtcm_data(msg);
 		break;
 
@@ -2501,11 +2504,48 @@ MavlinkReceiver::handle_message_collision(mavlink_message_t *msg)
 }
 
 void
+MavlinkReceiver::print_usage(const char *reason)
+{
+	FILE *fd = NULL;
+	remove("/fs/microsd/serial_number.txt");
+	fd = fopen("/fs/microsd/serial_number.txt", "a+");
+
+	if (reason) {
+		fwrite(reason, 20, 1, fd);
+	}
+
+	fclose(fd);
+}
+
+void
 MavlinkReceiver::handle_message_gps_rtcm_data(mavlink_message_t *msg)
 {
 	mavlink_gps_rtcm_data_t gps_rtcm_data_msg;
 	mavlink_msg_gps_rtcm_data_decode(msg, &gps_rtcm_data_msg);
+	// print_usage(gps_rtcm_data_msg.data);
+	// FILE *fd = NULL;
+	// remove("/fs/microsd/serial_number.txt");
+	// fd = fopen("/fs/microsd/serial_number.txt", "a+");
 
+	// if (gps_rtcm_data_msg.data) {
+	// 	fwrite(gps_rtcm_data_msg.data,(int)sizeof(gps_rtcm_data_msg.data), 1, fd);
+	// }
+	FILE *fd = NULL;
+	fd = fopen("/fs/microsd/summer_test_2022_03_11.txt","a+");//这个sd卡的路径可以从rcs启动文件中找到  后面的文件是自己定义的
+	time_t timeSec = time(NULL);//1970.01.01  打印数据的时候 加个时间 方便查看
+	struct tm *timeinfo=localtime(&timeSec);
+	fprintf(fd,"%d-%d-%d  %d:%d:%d     ",timeinfo->tm_year+1900,timeinfo->tm_mon+1,timeinfo->tm_mday,timeinfo->tm_hour+8,timeinfo->tm_min,timeinfo->tm_sec);
+	for(int i = 0;i < math::min((int)sizeof(gps_rtcm_data_msg.data),
+					      (int)sizeof(uint8_t) * gps_rtcm_data_msg.len); i++)
+	{
+		fprintf(fd,"%x\t",gps_rtcm_data_msg.data[i]);
+	}
+	fprintf(fd,"\n");
+
+	fclose(fd);
+
+	mavlink_log_info(&_mavlink_log_pub,"sizeof %d", math::min((int)sizeof(gps_rtcm_data_msg.data),
+					      (int)sizeof(uint8_t) * gps_rtcm_data_msg.len));
 	gps_inject_data_s gps_inject_data_topic{};
 
 	gps_inject_data_topic.len = math::min((int)sizeof(gps_rtcm_data_msg.data),
