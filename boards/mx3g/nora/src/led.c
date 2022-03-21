@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (C) 2012 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2020 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,39 +32,82 @@
  ****************************************************************************/
 
 /**
- * @file drv_board_led.h
+ * @file led.c
  *
- * LED driver API to control the onboard LED(s) via ioctl() interface
+ * LED backend.
  */
 
-#pragma once
+#include <px4_platform_common/px4_config.h>
 
-#include <px4_platform_common/defines.h>
-#include <stdint.h>
-#include <sys/ioctl.h>
+#include <stdbool.h>
 
-#define LED_BASE_DEVICE_PATH		"/dev/led"
-#define LED0_DEVICE_PATH		"/dev/led0"
+#include "chip.h"
+#include "stm32_gpio.h"
+#include "board_config.h"
 
-#define _LED_BASE		0x2800
-
-/* PX4 LED colour codes */
-#define LED_AMBER		1
-#define LED_RED			1	/* some boards have red rather than amber */
-#define LED_BLUE		0
-// #define LED_SAFETY		2
-#define LED_GREEN		2
-
-
-#define LED_ON			_PX4_IOC(_LED_BASE, 0)
-#define LED_OFF			_PX4_IOC(_LED_BASE, 1)
-#define LED_TOGGLE		_PX4_IOC(_LED_BASE, 2)
-
-__BEGIN_DECLS
+#include <nuttx/board.h>
+#include <arch/board/board.h>
 
 /*
- * Initialise the LED driver.
+ * Ideally we'd be able to get these from arm_internal.h,
+ * but since we want to be able to disable the NuttX use
+ * of leds for system indication at will and there is no
+ * separate switch, we need to build independent of the
+ * CONFIG_ARCH_LEDS configuration switch.
  */
-__EXPORT void drv_led_start(void);
-
+__BEGIN_DECLS
+extern void led_init(void);
+extern void led_on(int led);
+extern void led_off(int led);
+extern void led_toggle(int led);
 __END_DECLS
+
+#  define xlat(p) (p)
+static uint32_t g_ledmap[] = {
+	GPIO_nLED_BLUE,        // Indexed by LED_SAFETY (defaulted to an output)
+	GPIO_nLED_RED,
+	GPIO_nLED_GREEN,
+};
+
+__EXPORT void led_init(void)
+{
+	/* Configure LED GPIOs for output */
+	for (size_t l = 0; l < (sizeof(g_ledmap) / sizeof(g_ledmap[0])); l++) {
+		if (g_ledmap[l] != 0) {
+			stm32_configgpio(g_ledmap[l]);
+		}
+	}
+}
+
+static void phy_set_led(int led, bool state)
+{
+	/* Drive Low to switch on */
+	if (g_ledmap[led] != 0) {
+		stm32_gpiowrite(g_ledmap[led], !state);
+	}
+}
+
+static bool phy_get_led(int led)
+{
+	/* If Low it is on */
+	if (g_ledmap[led] != 0) {
+		return !stm32_gpioread(g_ledmap[led]);
+	}
+
+	return false;
+}
+
+__EXPORT void led_on(int led)
+{
+	phy_set_led(xlat(led), true);
+}
+
+__EXPORT void led_off(int led)
+{
+	phy_set_led(xlat(led), false);
+}
+
+__EXPORT void led_toggle(int led)
+{
+	phy_set_led(xlat(led), !phy_get_led(xlat(led)));
+}

@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (C) 2012 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2020 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,40 +31,19 @@
  *
  ****************************************************************************/
 
-/**
- * @file drv_board_led.h
- *
- * LED driver API to control the onboard LED(s) via ioctl() interface
- */
-
 #pragma once
 
-#include <px4_platform_common/defines.h>
-#include <stdint.h>
-#include <sys/ioctl.h>
+// DMAMUX1
+#define DMAMAP_SPI1_RX    DMAMAP_DMA12_SPI1RX_0 /* DMA1:37 */
+#define DMAMAP_SPI1_TX    DMAMAP_DMA12_SPI1TX_0 /* DMA1:38 */
 
-#define LED_BASE_DEVICE_PATH		"/dev/led"
-#define LED0_DEVICE_PATH		"/dev/led0"
+#define DMAMAP_UART8_RX   DMAMAP_DMA12_UART8RX_0 /* DMA1:81 */
+#define DMAMAP_UART8_TX   DMAMAP_DMA12_UART8TX_0 /* DMA1:82 */
 
-#define _LED_BASE		0x2800
-
-/* PX4 LED colour codes */
-#define LED_AMBER		1
-#define LED_RED			1	/* some boards have red rather than amber */
-#define LED_BLUE		0
-// #define LED_SAFETY		2
-#define LED_GREEN		2
+#define DMAMAP_SPI4_RX    DMAMAP_DMA12_SPI4RX_0 /* DMA1:83 */
+#define DMAMAP_SPI4_TX    DMAMAP_DMA12_SPI4TX_0 /* DMA1:84 */
 
 
-#define LED_ON			_PX4_IOC(_LED_BASE, 0)
-#define LED_OFF			_PX4_IOC(_LED_BASE, 1)
-#define LED_TOGGLE		_PX4_IOC(_LED_BASE, 2)
-
-__BEGIN_DECLS
-
-/*
- * Initialise the LED driver.
- */
-__EXPORT void drv_led_start(void);
-
-__END_DECLS
+// DMAMUX2 (BDMA)
+#define DMAMAP_SPI6_RX    DMAMAP_BDMA_SPI6_RX /* BDMA:11 */
+#define DMAMAP_SPI6_TX    DMAMAP_BDMA_SPI6_TX /* BDMA:12 */

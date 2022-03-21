@@ -1,6 +1,6 @@
 ############################################################################
 #
-#   Copyright (c) 2017 PX4 Development Team. All rights reserved.
+#   Copyright (c) 2020 PX4 Development Team. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -30,14 +30,37 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 ############################################################################
+if("${PX4_BOARD_LABEL}" STREQUAL  "bootloader")
+	add_library(drivers_board
+		bootloader_main.c
+		usb.c
+	)
+	target_link_libraries(drivers_board
+		PRIVATE
+			nuttx_arch
+			nuttx_drivers
+			bootloader
+	)
+	target_include_directories(drivers_board PRIVATE ${PX4_SOURCE_DIR}/platforms/nuttx/src/bootloader/common)
 
-add_subdirectory(bmp280)
-add_subdirectory(bmp388)
-add_subdirectory(dps310)
-add_subdirectory(lps22hb)
-#add_subdirectory(lps25h) # not ready for general inclusion
-add_subdirectory(lps33hw)
-#add_subdirectory(mpl3115a2) # not ready for general inclusion
-add_subdirectory(ms5611)
-add_subdirectory(mpc2520)
-#add_subdirectory(tcbp001ta) # only for users who really need this
+else()
+	add_library(drivers_board
+		i2c.cpp
+		init.c
+		led.c
+		spi.cpp
+		timer_config.cpp
+		usb.c
+	)
+	add_dependencies(drivers_board arch_board_hw_info)
+
+	target_link_libraries(drivers_board
+		PRIVATE
+			arch_spi
+			arch_board_hw_info
+			drivers__led
+			nuttx_arch
+			nuttx_drivers
+			px4_layer
+	)
+endif()

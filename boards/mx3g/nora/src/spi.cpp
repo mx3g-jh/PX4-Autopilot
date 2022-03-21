@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (C) 2012 PX4 Development Team. All rights reserved.
+ *   Copyright (C) 2020 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,40 +31,25 @@
  *
  ****************************************************************************/
 
-/**
- * @file drv_board_led.h
- *
- * LED driver API to control the onboard LED(s) via ioctl() interface
- */
+#include <px4_arch/spi_hw_description.h>
+#include <drivers/drv_sensor.h>
+#include <nuttx/spi/spi.h>
 
-#pragma once
+constexpr px4_spi_bus_t px4_spi_buses[SPI_BUS_MAX_BUS_ITEMS] = {
+	initSPIBus(SPI::Bus::SPI1, {
+	}),
+	initSPIBus(SPI::Bus::SPI2, {
+		// initSPIDevice(SPIDEV_FLASH(0), SPI::CS{GPIO::PortC, GPIO::Pin13}),
+		// initSPIDevice(DRV_MAG_DEVTYPE_RM3100, SPI::CS{GPIO::PortA, GPIO::Pin8}),
+	}),
+	initSPIBus(SPI::Bus::SPI4, {
+		initSPIDevice(DRV_IMU_DEVTYPE_ICM20602, SPI::CS{GPIO::PortD, GPIO::Pin10}),
+	}),
+	initSPIBus(SPI::Bus::SPI6, {
+		// initSPIDevice(DRV_IMU_DEVTYPE_ICM20649, SPI::CS{GPIO::PortI, GPIO::Pin12}),
+		// initSPIDevice(DRV_IMU_DEVTYPE_ICM20689, SPI::CS{GPIO::PortE, GPIO::Pin15}),
+		// initSPIDevice(DRV_BARO_DEVTYPE_MS5611, SPI::CS{GPIO::PortI, GPIO::Pin8}),
+	}),
+};
 
-#include <px4_platform_common/defines.h>
-#include <stdint.h>
-#include <sys/ioctl.h>
-
-#define LED_BASE_DEVICE_PATH		"/dev/led"
-#define LED0_DEVICE_PATH		"/dev/led0"
-
-#define _LED_BASE		0x2800
-
-/* PX4 LED colour codes */
-#define LED_AMBER		1
-#define LED_RED			1	/* some boards have red rather than amber */
-#define LED_BLUE		0
-// #define LED_SAFETY		2
-#define LED_GREEN		2
-
-
-#define LED_ON			_PX4_IOC(_LED_BASE, 0)
-#define LED_OFF			_PX4_IOC(_LED_BASE, 1)
-#define LED_TOGGLE		_PX4_IOC(_LED_BASE, 2)
-
-__BEGIN_DECLS
-
-/*
- * Initialise the LED driver.
- */
-__EXPORT void drv_led_start(void);
-
-__END_DECLS
+static constexpr bool unused = validateSPIConfig(px4_spi_buses);

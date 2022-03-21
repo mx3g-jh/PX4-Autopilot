@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (C) 2012 PX4 Development Team. All rights reserved.
+ *   Copyright (C) 2020 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,39 +32,28 @@
  ****************************************************************************/
 
 /**
- * @file drv_board_led.h
+ * @file usb.c
  *
- * LED driver API to control the onboard LED(s) via ioctl() interface
+ * Board-specific USB functions.
  */
 
-#pragma once
+#include "board_config.h"
+#include <nuttx/usb/usbdev.h>
+#include <nuttx/usb/usbdev_trace.h>
+#include <stm32_otg.h>
+#include <debug.h>
 
-#include <px4_platform_common/defines.h>
-#include <stdint.h>
-#include <sys/ioctl.h>
-
-#define LED_BASE_DEVICE_PATH		"/dev/led"
-#define LED0_DEVICE_PATH		"/dev/led0"
-
-#define _LED_BASE		0x2800
-
-/* PX4 LED colour codes */
-#define LED_AMBER		1
-#define LED_RED			1	/* some boards have red rather than amber */
-#define LED_BLUE		0
-// #define LED_SAFETY		2
-#define LED_GREEN		2
-
-
-#define LED_ON			_PX4_IOC(_LED_BASE, 0)
-#define LED_OFF			_PX4_IOC(_LED_BASE, 1)
-#define LED_TOGGLE		_PX4_IOC(_LED_BASE, 2)
-
-__BEGIN_DECLS
-
-/*
- * Initialise the LED driver.
- */
-__EXPORT void drv_led_start(void);
-
-__END_DECLS
+/************************************************************************************
+ * Name:  stm32_usbsuspend
+ *
+ * Description:
+ *   Board logic must provide the stm32_usbsuspend logic if the USBDEV driver is
+ *   used.  This function is called whenever the USB enters or leaves suspend mode.
+ *   This is an opportunity for the board logic to shutdown clocks, power, etc.
+ *   while the USB is suspended.
+ *
+ ************************************************************************************/
+__EXPORT void stm32_usbsuspend(FAR struct usbdev_s *dev, bool resume)
+{
+	uinfo("resume: %d\n", resume);
+}
