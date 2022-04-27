@@ -1664,7 +1664,7 @@ Commander::run()
 				       hrt_elapsed_time(&_boot_timestamp));
 
 	while (!should_exit()) {
-
+			stm32_gpiowrite(GPIO_TEST, false);
 		/* update parameters */
 		const bool params_updated = _parameter_update_sub.updated();
 

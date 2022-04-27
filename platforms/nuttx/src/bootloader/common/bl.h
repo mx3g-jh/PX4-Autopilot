@@ -99,6 +99,7 @@ extern int buf_get(void);
 extern void led_on(unsigned led);
 extern void led_off(unsigned led);
 extern void led_toggle(unsigned led);
+extern void test_pin_off(void);
 
 /* flash helpers from main_*.c */
 extern void board_deinit(void);

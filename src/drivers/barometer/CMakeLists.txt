@@ -39,5 +39,5 @@ add_subdirectory(lps22hb)
 add_subdirectory(lps33hw)
 #add_subdirectory(mpl3115a2) # not ready for general inclusion
 add_subdirectory(ms5611)
-add_subdirectory(mpc2520)
+# add_subdirectory(mpc2520)
 #add_subdirectory(tcbp001ta) # only for users who really need this
