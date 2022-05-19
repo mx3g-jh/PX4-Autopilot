@@ -300,10 +300,10 @@ board_init(void)
 	/* Initialize LEDs */
 	px4_arch_configgpio(BOARD_PIN_LED_BOOTLOADER);
 #endif
-#if defined(BOARD_PIN_TEST)
-	/* Initialize TEST */
-	px4_arch_configgpio(BOARD_PIN_TEST);
-#endif
+// #if defined(BOARD_PIN_TEST)
+// 	/* Initialize TEST */
+// 	px4_arch_configgpio(BOARD_PIN_TEST);
+// #endif
 }
 
 void
@@ -345,10 +345,10 @@ board_deinit(void)
 	/* Initialize LEDs */
 	px4_arch_configgpio(MK_GPIO_INPUT(BOARD_PIN_LED_BOOTLOADER));
 #endif
-#if defined(BOARD_PIN_TEST)
-	/* Initialize TEST */
-	px4_arch_configgpio(MK_GPIO_INPUT(BOARD_PIN_TEST));
-#endif
+// #if defined(BOARD_PIN_TEST)
+// 	/* Initialize TEST */
+// 	px4_arch_configgpio(MK_GPIO_INPUT(BOARD_PIN_TEST));
+// #endif
 
 
 	/* Clear any RSTR set above and disable the AHB peripheral clocks */
@@ -582,11 +582,11 @@ led_on(unsigned led)
 	}
 }
 
-void
-test_pin_off()
-{
-	px4_arch_gpiowrite(BOARD_PIN_TEST, BOARD_LED_ON);
-}
+// void
+// test_pin_off()
+// {
+// 	px4_arch_gpiowrite(BOARD_PIN_TEST, BOARD_LED_ON);
+// }
 
 void
 led_off(unsigned led)

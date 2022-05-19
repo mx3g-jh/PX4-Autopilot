@@ -1664,7 +1664,10 @@ Commander::run()
 				       hrt_elapsed_time(&_boot_timestamp));
 
 	while (!should_exit()) {
-			stm32_gpiowrite(GPIO_TEST, false);
+		int tt = stm32_gpioread(GPIO_TEST);
+		int aaa = (GPIO_TEST & GPIO_OUTPUT_SET) != 0;
+		mavlink_log_info(&_mavlink_log_pub, "test %d  %d", tt, aaa);
+		// stm32_gpiowrite(GPIO_TEST,1);
 		/* update parameters */
 		const bool params_updated = _parameter_update_sub.updated();
 
