@@ -229,8 +229,8 @@
 #define GPIO_USART2_RTS  GPIO_USART2_RTS_2     /* PD4 */
 #define GPIO_USART2_CTS  GPIO_USART2_CTS_NSS_1 /* PA0 */
 
-// #define GPIO_UART4_RX    GPIO_UART4_RX_2       /* PA1 */
-// #define GPIO_UART4_TX    GPIO_UART4_TX_5       /* PD1 */
+#define GPIO_UART4_RX    GPIO_UART4_RX_2       /* PA1 */
+#define GPIO_UART4_TX    GPIO_UART4_TX_5       /* PD1 */
 
 #define GPIO_USART6_RX   GPIO_USART6_RX_1      /* PC7  */
 #define GPIO_USART6_TX   GPIO_USART6_TX_1      /* PC6 */

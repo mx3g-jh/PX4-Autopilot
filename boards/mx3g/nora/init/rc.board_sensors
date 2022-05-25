@@ -5,10 +5,10 @@
 board_adc start
 
 # SPI1 icm20602 IMU
-icm20602 start -s -b 1 -R 8
+icm20602 start -s -b 4 -R 2
 
 # I2C2 ist8310 magnetometer
-ist8310 start -I -b 2 -R 14
+ist8310 start -X -b 2 -R 2
 
 # I2C4 mpc2520 barometer
-mpc2520 start -I -b 4
+mpc2520 start -X -b 2

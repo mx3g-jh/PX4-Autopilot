@@ -55,20 +55,18 @@
 
 /* ADC channels */
 #define PX4_ADC_GPIO  \
-	/* PA1  */  GPIO_ADC1_INP17,   \
-	/* PA2  */  GPIO_ADC12_INP14,   \
 	/* PC4  */  GPIO_ADC12_INP4,   \
+	/* PA2  */  GPIO_ADC12_INP14,   \
 	/* PB1  */  GPIO_ADC12_INP5,   \
 	/* PC0  */  GPIO_ADC123_INP10, \
 	/* PC2  */  GPIO_ADC123_INP12, \
 	/* PC3  */  GPIO_ADC12_INP13
 
 /* Define Channel numbers must match above GPIO pins */
-#define ADC_BATTERY_VOLTAGE_CHANNEL        17 /* PA1  */
+#define ADC_BATTERY_VOLTAGE_CHANNEL        4 /* PA1  */
 #define ADC_BATTERY_CURRENT_CHANNEL        14 /* PA2  */
 // #define ADC_BATTERY2_VOLTAGE_CHANNEL        14 /* PA2  */
 // #define ADC_BATTERY2_CURRENT_CHANNEL         2 /* PF11 */
-#define ADC1_6V6_IN_CHANNEL                  4 /* PC4  */   // SPARE1_ADC1: ADC6.6
 #define ADC1_3V3_IN_CHANNEL                 5 /* PA4  */   // SPARE2_ADC1: ADC3.3
 #define ADC_RSSI_IN_CHANNEL                  10 /* PF12 */
 #define ADC_SCALED_V5_CHANNEL                12 /* PC5  */   // VDD_5V_SENS: Motherboard 5V voltage detection
@@ -77,7 +75,6 @@
 #define ADC_CHANNELS \
 	((1 << ADC_BATTERY_VOLTAGE_CHANNEL)       | \
 	 (1 << ADC_BATTERY_CURRENT_CHANNEL)       | \
-	 (1 << ADC1_6V6_IN_CHANNEL)                | \
 	 (1 << ADC1_3V3_IN_CHANNEL)                | \
 	 (1 << ADC_RSSI_IN_CHANNEL)                | \
 	 (1 << ADC_SCALED_V5_CHANNEL)              | \
@@ -107,6 +104,7 @@
 
 #define GPIO_POWER_IN_ADC              /* PE9  */ (GPIO_INPUT|GPIO_PULLUP|GPIO_PORTE|GPIO_PIN9)
 // #define GPIO_nPOWER_IN_CAN              /* PG2  */ (GPIO_INPUT|GPIO_PULLUP|GPIO_PORTG|GPIO_PIN2)
+// #define GPIO_nPOWER_IN_CAN              GPIO_POWER_IN_ADC
 #define GPIO_POWER_IN_C                /* PB5  */ (GPIO_INPUT|GPIO_PULLUP|GPIO_PORTB|GPIO_PIN5)
 
 // #define GPIO_nVDD_BRICK_VALID          GPIO_nPOWER_IN_CAN /* Brick 1 is Chosen */
@@ -150,7 +148,7 @@
 
 // #define HRT_PPM_CHANNEL         /* T3C1 */  1  /* use capture/compare channel 1 */
 // #define GPIO_PPM_IN             /* PB4 T3C1 */ GPIO_TIM3_CH1IN_2
-#define RC_SERIAL_PORT          "/dev/ttyS5"
+#define RC_SERIAL_PORT          "/dev/ttyS2"
 #define RC_SERIAL_SINGLEWIRE
 
 /**

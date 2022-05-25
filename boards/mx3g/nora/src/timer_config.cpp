@@ -51,24 +51,24 @@ constexpr timer_io_channels_t timer_io_channels[MAX_TIMER_IO_CHANNELS] = {
 constexpr io_timers_channel_mapping_t io_timers_channel_mapping =
 	initIOTimerChannelMapping(io_timers, timer_io_channels);
 
-constexpr io_timers_t led_pwm_timers[MAX_LED_TIMERS] = {
-	initIOTimer(Timer::Timer8),
-};
+// constexpr io_timers_t led_pwm_timers[MAX_LED_TIMERS] = {
 
-#define CCER_C1_NUM_BITS   4
-#define POLARITY(c)    (GTIM_CCER_CC1P << (((c)-1) * CCER_C1_NUM_BITS))
-#define DRIVE_TYPE(p)  ((p)|GPIO_OPENDRAIN|GPIO_PULLUP)
+// };
 
-static inline constexpr timer_io_channels_t initIOTimerChannelLED(const io_timers_t io_timers_conf[MAX_LED_TIMERS],
-		Timer::TimerChannel timer, GPIO::GPIOPin pin, int ui_polarity)
-{
-	timer_io_channels_t ret = initIOTimerChannel(io_timers_conf, timer, pin);
-	ret.gpio_out = DRIVE_TYPE(ret.gpio_out);
-	ret.masks = POLARITY(ui_polarity);
-	return ret;
-}
+// #define CCER_C1_NUM_BITS   4
+// #define POLARITY(c)    (GTIM_CCER_CC1P << (((c)-1) * CCER_C1_NUM_BITS))
+// #define DRIVE_TYPE(p)  ((p)|GPIO_OPENDRAIN|GPIO_PULLUP)
 
-constexpr timer_io_channels_t led_pwm_channels[MAX_TIMER_LED_CHANNELS] = {
-	// initIOTimerChannelLED(led_pwm_timers, {Timer::Timer4, Timer::Channel3}, {GPIO::PortD, GPIO::Pin14}, 1),
-	// initIOTimerChannelLED(led_pwm_timers, {Timer::Timer4, Timer::Channel4}, {GPIO::PortD, GPIO::Pin15}, 2),
-};
+// static inline constexpr timer_io_channels_t initIOTimerChannelLED(const io_timers_t io_timers_conf[MAX_LED_TIMERS],
+// 		Timer::TimerChannel timer, GPIO::GPIOPin pin, int ui_polarity)
+// {
+// 	timer_io_channels_t ret = initIOTimerChannel(io_timers_conf, timer, pin);
+// 	ret.gpio_out = DRIVE_TYPE(ret.gpio_out);
+// 	ret.masks = POLARITY(ui_polarity);
+// 	return ret;
+// }
+
+// constexpr timer_io_channels_t led_pwm_channels[MAX_TIMER_LED_CHANNELS] = {
+// 	// initIOTimerChannelLED(led_pwm_timers, {Timer::Timer4, Timer::Channel3}, {GPIO::PortD, GPIO::Pin14}, 1),
+// 	// initIOTimerChannelLED(led_pwm_timers, {Timer::Timer4, Timer::Channel4}, {GPIO::PortD, GPIO::Pin15}, 2),
+// };
