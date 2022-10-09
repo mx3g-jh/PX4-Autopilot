@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+# board specific defaults
+#------------------------------------------------------------------------------
+
+param set-default BAT1_V_DIV 10.1
+param set-default BAT2_V_DIV 10.1
+
+# Disable IMU thermal control
+param set-default SENS_EN_THERMAL 0
+
+param set-default -s SENS_TEMP_ID 2621474
