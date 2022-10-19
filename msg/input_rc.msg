@@ -16,6 +16,7 @@ uint8 RC_INPUT_SOURCE_PX4FMU_DSM = 12
 uint8 RC_INPUT_SOURCE_PX4IO_SUMD = 13
 uint8 RC_INPUT_SOURCE_PX4FMU_CRSF = 14
 uint8 RC_INPUT_SOURCE_PX4FMU_GHST = 15
+uint8 RAW_CHANNEL_MAPPING_VER_ST16 = 10 # Remote type and mapping version
 
 uint8 RC_INPUT_MAX_CHANNELS = 18 	# Maximum number of R/C input channels in the system. S.Bus has up to 18 channels.
 

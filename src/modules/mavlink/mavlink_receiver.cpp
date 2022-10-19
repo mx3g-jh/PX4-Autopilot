@@ -180,6 +180,11 @@ MavlinkReceiver::handle_message(mavlink_message_t *msg)
 		handle_message_manual_control(msg);
 		break;
 
+	case MAVLINK_MSG_ID_RC_CHANNELS:
+		handle_message_rc_channels(msg);
+
+		break;
+
 	case MAVLINK_MSG_ID_RC_CHANNELS_OVERRIDE:
 		handle_message_rc_channels_override(msg);
 		break;
@@ -1980,6 +1985,113 @@ MavlinkReceiver::handle_message_trajectory_representation_waypoints(mavlink_mess
 
 	trajectory_waypoint.timestamp = hrt_absolute_time();
 	_trajectory_waypoint_pub.publish(trajectory_waypoint);
+}
+
+void
+MavlinkReceiver::handle_message_rc_channels(mavlink_message_t *msg)
+{
+	mavlink_rc_channels_t man;
+	mavlink_msg_rc_channels_decode(msg, &man);
+	// check for the M4 raw output channel mapping version embedded in channel 9 to decide which remote it is
+	int _version = man.chan9_raw >> 8 & 0xF;
+	// Check target
+	// if (man.target_system != 0 && man.target_system != _mavlink->get_system_id()) {
+	// 	return;
+	// }
+
+	// fill uORB message
+	input_rc_s rc{};
+
+	// metadata
+	if (_version != input_rc_s::RAW_CHANNEL_MAPPING_VER_ST16) {
+		return;
+	}
+
+	rc.timestamp = rc.timestamp_last_signal = hrt_absolute_time();
+	rc.rssi = input_rc_s::RSSI_MAX;
+	rc.rc_failsafe = false;
+	rc.rc_lost = false;
+	rc.rc_lost_frame_count = 0;
+	rc.rc_total_frame_count = 1;
+	rc.input_source = input_rc_s::RC_INPUT_SOURCE_MAVLINK;
+
+	// channels
+	rc.values[0] = man.chan1_raw;
+	rc.values[1] = man.chan2_raw;
+	rc.values[2] = man.chan3_raw;
+	rc.values[3] = man.chan4_raw;
+	rc.values[4] = man.chan5_raw;
+	rc.values[5] = man.chan6_raw;
+	rc.values[6] = man.chan7_raw;
+	rc.values[7] = man.chan8_raw;
+	rc.values[8] = man.chan9_raw;
+	rc.values[9] = man.chan10_raw;
+	rc.values[10] = man.chan11_raw;
+	rc.values[11] = man.chan12_raw;
+	rc.values[12] = man.chan13_raw;
+	rc.values[13] = man.chan14_raw;
+	rc.values[14] = man.chan15_raw;
+	rc.values[15] = man.chan16_raw;
+	rc.values[16] = man.chan17_raw;
+	rc.values[17] = man.chan18_raw;
+// mavlink_log_info(&_mavlink_log_pub,"%d %d %d %d %d",rc.values[0],rc.values[1],man.chan9_raw ,man.chan9_raw & 0x02,man.chan9_raw & 0x10);
+#if defined(ATL_MANTIS_RC_INPUT_HACKS)
+
+	// Sanity checking if the RC controller is really sending.
+	if (rc.values[5] == 2048 && rc.values[6] == 0 && (rc.values[8] & 0xff00) == 0x0C00) {
+		rc.values[0] = 1000 + (uint16_t)((float)rc.values[0] / 4095.f * 1000.f); // 0..4095 -> 1000..2000
+		rc.values[1] = 1000 + (uint16_t)((float)rc.values[1] / 4095.f * 1000.f); // 0..4095 -> 1000..2000
+		rc.values[2] = 1000 + (uint16_t)((float)rc.values[2] / 4095.f * 1000.f); // 0..4095 -> 1000..2000
+		rc.values[3] = 1000 + (uint16_t)((float)rc.values[3] / 4095.f * 1000.f); // 0..4095 -> 1000..2000
+		rc.values[4] = 1000 + (uint16_t)((float)rc.values[4] / 4095.f * 1000.f); // 0..4095 -> 1000..2000 -> Aux 2
+		rc.values[5] = 1000 + rc.values[7] * 500; // Switch toggles from 0 to 2, we map it from 1000 to 2000
+		rc.values[6] = 1000 + (((rc.values[8] & 0x02) != 0) ? 1000 : 0); // Return button.
+		rc.values[7] = 1000 + (((rc.values[8] & 0x01) != 0) ? 1000 : 0); // Video record button. -> Aux4
+		rc.values[9] = 1000 + (((rc.values[8] & 0x10) != 0) ? 1000 : 0); // Photo record button. -> Aux3
+		rc.values[8] = rc.values[8] & 0x00ff; // Remove magic identifier.
+		// leave rc.values[10] as is 0..4095
+		//
+		// Note we are currently ignoring the stick buttons (sticks pressed down).
+		// They are on rc.values[8] & 0x20 and rc.values[8] & 0x40.
+	}
+
+#endif
+
+#if defined(YUNEEC_X800_RC_INPUT_HACKS)
+
+	// Sanity checking if the RC controller is really sending.
+	rc.values[0] = 1000 + (uint16_t)((float)man.chan1_raw / 4095.f * 1000.f); // 0..4095 -> 1000..2000
+	rc.values[1] = 1000 + (uint16_t)((float)man.chan2_raw / 4095.f * 1000.f); // 0..4095 -> 1000..2000
+	rc.values[2] = 1000 + (uint16_t)((float)man.chan3_raw / 4095.f * 1000.f); // 0..4095 -> 1000..2000
+	rc.values[3] = 1000 + (uint16_t)((float)man.chan4_raw / 4095.f * 1000.f); // 0..4095 -> 1000..2000
+	rc.values[4] = 1000 + (uint16_t)((float)man.chan5_raw / 4095.f * 1000.f); // 0..4095 -> 1000..2000 -> Aux 2
+	rc.values[5] = (((man.chan8_raw & 0x3) == 0) ? 1000 : (((man.chan8_raw & 0x3) == 1) ? 1500 : 2000));
+	rc.values[6] = 1000 + (((man.chan9_raw & 0x02) != 0) ? 1000 : 0); // Return button.
+	rc.values[7] = 1000 + (uint16_t)((float)man.chan7_raw / 4095.f * 1000.f); // 0..4095 -> 1000..2000
+	rc.values[8] = 1000 + (uint16_t)((float)man.chan6_raw / 4095.f * 1000.f); // 0..4095 -> 1000..2000
+	rc.values[9] = 1000 + (((man.chan9_raw & 0x01) != 0) ? 1000 : 0); // Photo record button. -> Aux3
+
+
+#endif
+
+	// check how many channels are valid
+	for (int i = 17; i >= 0; i--) {
+		const bool ignore_max = rc.values[i] == UINT16_MAX; // ignore any channel with value UINT16_MAX
+		const bool ignore_zero = (i > 7) && (rc.values[i] == 0); // ignore channel 8-18 if value is 0
+
+		if (ignore_max || ignore_zero) {
+			// set all ignored values to zero
+			rc.values[i] = 0;
+
+		} else {
+			// first channel to not ignore -> set count considering zero-based index
+			rc.channel_count = i + 1;
+			break;
+		}
+	}
+
+	// publish uORB message
+	_rc_pub.publish(rc);
 }
 
 void

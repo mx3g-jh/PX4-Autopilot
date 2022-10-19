@@ -60,11 +60,106 @@
 #include <uORB/topics/rc_parameter_map.h>
 #include <uORB/topics/parameter_update.h>
 #include <hysteresis/hysteresis.h>
+// #include "./RCMapping/RCMapping.hpp"
 
 using namespace time_literals;
 
+#define BUTTON_HYSTERESIS_TIME_1_S 1000000
+#define BUTTON_HYSTERESIS_TIME_100_MS 100000
+
 namespace rc_update
 {
+
+class Button
+{
+
+public:
+	Button(bool init_state, bool trigger_high = false):
+		_state(init_state),
+		_prev_pushed(init_state),
+		_trigger_high(trigger_high),
+		button_keep_flag(false),
+		button_keep_hysteresis(false)
+	{
+
+	}
+
+	~Button() {}
+
+	void update_state(const bool pushed)
+	{
+		if (_trigger_high) {
+			// button was pushed when going from false (low) to true (high)
+			if (!_prev_pushed && pushed) {
+				_state = !_state;
+			}
+
+		} else {
+			// button was pushed when going from true (high) to false (low)
+			if (_prev_pushed && !pushed) {
+				_state = !_state;
+			}
+		}
+
+		_prev_pushed = pushed;
+	}
+
+	void update_state_add_hysteresis(const bool pushed, uint64_t delay_time)
+	{
+		if (pushed) {
+			if (_state == false) {
+				if (!button_keep_flag) {
+
+					button_keep_flag = true;
+					button_keep_hysteresis.set_hysteresis_time_from(false, (hrt_abstime)delay_time);
+
+				}
+
+				button_keep_hysteresis.set_state_and_update(true, hrt_absolute_time());
+
+				if (button_keep_hysteresis.get_state()) {
+					_state = true;
+
+				}
+
+			} else if (button_keep_flag == false) {
+
+				_state = false;
+				button_keep_flag = true;
+
+			}
+
+		} else {
+
+			button_keep_flag = false;
+
+			button_keep_hysteresis.set_state_and_update(false, hrt_absolute_time());
+
+		}
+	}
+
+	bool get_state()
+	{
+		return _state;
+	}
+
+	void reset_button()
+	{
+		_state = _trigger_high;
+		_prev_pushed = _state;
+		button_keep_flag = _state;
+	}
+
+
+
+private:
+	bool _state;
+	bool _prev_pushed;
+	bool _trigger_high;
+	bool button_keep_flag;
+	systemlib::Hysteresis button_keep_hysteresis;
+
+};
 
 /**
  ** class RCUpdate
@@ -134,6 +229,8 @@ private:
 
 	void		map_flight_modes_buttons();
 
+	// RCMapping _rcmapping;
+
 	static constexpr uint8_t RC_MAX_CHAN_COUNT{input_rc_s::RC_INPUT_MAX_CHANNELS}; /**< maximum number of r/c channels we handle */
 
 	struct Parameters {
@@ -194,6 +291,24 @@ private:
 	systemlib::Hysteresis _button_pressed_hysteresis{false};
 	systemlib::Hysteresis _rc_signal_lost_hysteresis{true};
 
+	// Kill switch shortcut logic states
+	static constexpr int KILL_HOTKEY_TIME_US = 1_s; // 1s time for kill-switch criteria
+	static constexpr int KILL_SWITCH_TRIGGER_COUNT = 3; // arm button pushed three times -> kill
+	static constexpr int CHANNEL_THREE_WAY_SWITCH = (8 - 1);
+	static constexpr int CHANNEL_TWO_WAY_SWITCH = (9 - 1);
+	bool _kill_state = false; // the kill state in which we lockdown the motors until restart
+	hrt_abstime _kill_hotkey_start_time = 0; // the time when the hotkey started to measure timeout
+	int _kill_hotkey_count = 0; //  how many times the button was pressed during the hotkey timeout
+	bool _arm_button_pressed_last = false; //if the button was pressed last time to detect a transition
+	Button _button{false}; //brake stop button pressed / not pressed
+	Button _hysteresis_button{false}; //brake stop button pressed / not pressed
+	int _param_rcmap_aux_prev = 0; //previous state of _param_rc_map_aux
+	uint8_t last_button = 0;
+	uint8_t last_hysteresis_button = 0;
+	int hysteresis_button_channel(uint8_t func, float on_th);
+	int button(uint8_t func, float on_th);
+	void reset_button();
+	void reset_hysteresis_button();
 	uint8_t _channel_count_max{0};
 
 	perf_counter_t _loop_perf{perf_alloc(PC_ELAPSED, MODULE_NAME": cycle")};

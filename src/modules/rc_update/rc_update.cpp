@@ -640,7 +640,8 @@ void RCUpdate::UpdateManualSwitches(const hrt_abstime &timestamp_sample)
 	switches.loiter_switch     = get_rc_sw2pos_position(rc_channels_s::FUNCTION_LOITER,     _param_rc_loiter_th.get());
 	switches.offboard_switch   = get_rc_sw2pos_position(rc_channels_s::FUNCTION_OFFBOARD,   _param_rc_offb_th.get());
 	switches.kill_switch       = get_rc_sw2pos_position(rc_channels_s::FUNCTION_KILLSWITCH, _param_rc_killswitch_th.get());
-	switches.arm_switch        = get_rc_sw2pos_position(rc_channels_s::FUNCTION_ARMSWITCH,  _param_rc_armswitch_th.get());
+	// switches.arm_switch        = get_rc_sw2pos_position(rc_channels_s::FUNCTION_ARMSWITCH,  _param_rc_armswitch_th.get());
+	switches.arm_switch        = button(rc_channels_s::FUNCTION_ARMSWITCH, _param_rc_armswitch_th.get());
 	switches.transition_switch = get_rc_sw2pos_position(rc_channels_s::FUNCTION_TRANSITION, _param_rc_trans_th.get());
 	switches.gear_switch       = get_rc_sw2pos_position(rc_channels_s::FUNCTION_GEAR,       _param_rc_gear_th.get());
 
@@ -649,6 +650,13 @@ void RCUpdate::UpdateManualSwitches(const hrt_abstime &timestamp_sample)
 	switches.video_switch = get_rc_sw2pos_position(rc_channels_s::FUNCTION_AUX_4, 0.5f);
 #endif
 
+	if ((last_button != switches.arm_switch) && switches.arm_switch == manual_control_switches_s::SWITCH_POS_OFF) {
+		reset_button();
+	}
+
+	last_button = switches.arm_switch;
+
+	// last_hysteresis_button = 0;
 	// last 2 switch updates identical within 1 second (simple protection from bad RC data)
 	if ((switches == _manual_switches_previous)
 	    && (switches.timestamp_sample < _manual_switches_previous.timestamp_sample + VALID_DATA_MIN_INTERVAL_US)) {
@@ -743,6 +751,69 @@ void RCUpdate::UpdateManualControlInput(const hrt_abstime &timestamp_sample)
 
 	actuator_group_3.timestamp = hrt_absolute_time();
 	_actuator_group_3_pub.publish(actuator_group_3);
+}
+
+int RCUpdate::hysteresis_button_channel(uint8_t func, float on_th)
+{
+	if (_rc.function[func] >= 0) {
+		const bool on_inv = (on_th < 0.f);
+
+		const float value = 0.5f * _rc.channels[_rc.function[func]] + 0.5f;
+
+		if (on_inv ? value < on_th : value > on_th) {
+			_hysteresis_button.update_state_add_hysteresis(true, BUTTON_HYSTERESIS_TIME_1_S);
+
+		} else {
+			_hysteresis_button.update_state_add_hysteresis(false, BUTTON_HYSTERESIS_TIME_1_S);
+		}
+
+		if (_hysteresis_button.get_state()) {
+			return manual_control_switches_s::SWITCH_POS_ON;
+
+		} else {
+			return manual_control_switches_s::SWITCH_POS_OFF;
+		}
+
+	}
+
+	return manual_control_switches_s::SWITCH_POS_NONE;
+
+}
+
+int RCUpdate::button(uint8_t func, float on_th)
+{
+	if (_rc.function[func] >= 0) {
+		const bool on_inv = (on_th < 0.f);
+
+		const float value = 0.5f * _rc.channels[_rc.function[func]] + 0.5f;
+
+		if (on_inv ? value < on_th : value > on_th) {
+			_button.update_state(true);
+
+		} else {
+			_button.update_state(false);
+		}
+
+		if (_button.get_state()) {
+			return manual_control_switches_s::SWITCH_POS_ON;
+
+		} else {
+			return manual_control_switches_s::SWITCH_POS_OFF;
+		}
+
+	}
+
+	return manual_control_switches_s::SWITCH_POS_NONE;
+}
+
+void RCUpdate::reset_button()
+{
+	_button.reset_button();
+}
+
+void RCUpdate::reset_hysteresis_button()
+{
+	_hysteresis_button.reset_button();
 }
 
 int RCUpdate::task_spawn(int argc, char *argv[])
