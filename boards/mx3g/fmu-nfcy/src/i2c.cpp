@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (C) 2012 PX4 Development Team. All rights reserved.
+ *   Copyright (C) 2020 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,43 +31,50 @@
  *
  ****************************************************************************/
 
-#include <px4_arch/io_timer_hw_description.h>
+#include <px4_arch/i2c_hw_description.h>
 
-/* Timer allocation
- *
- * TIM1_CH1  T FMU_CH1
- * TIM1_CH2  T FMU_CH2
- * TIM1_CH3  T FMU_CH3
- * TIM1_CH4  T FMU_CH4
- *
- * TIM4_CH3  T FMU_CH5
- * TIM4_CH4  T FMU_CH6
- *
- * TIM5_CH1  T FMU_CH7
- * TIM5_CH2  T FMU_CH8
- *
- * TIM17_CH1 T HEATER                 > PWM OUT or GPIO
- *
- * TIM3_CH3  T BUZZER_1              - Driven by other driver
- */
+#include <lib/drivers/device/Device.hpp>
+#include <px4_platform_common/i2c.h>
 
-constexpr io_timers_t io_timers[MAX_IO_TIMERS] = {
-	initIOTimer(Timer::Timer1, DMA{DMA::Index1}),
-	initIOTimer(Timer::Timer4, DMA{DMA::Index1}),
-	initIOTimer(Timer::Timer5),
-	initIOTimer(Timer::Timer17),
+constexpr px4_i2c_bus_t px4_i2c_buses[I2C_BUS_MAX_BUS_ITEMS] = {
+	initI2CBusExternal(1),
+	initI2CBusExternal(2),
+	initI2CBusExternal(3),
+	initI2CBusExternal(4),
 };
 
-constexpr timer_io_channels_t timer_io_channels[MAX_TIMER_IO_CHANNELS] = {
-	initIOTimerChannel(io_timers, {Timer::Timer1, Timer::Channel1}, {GPIO::PortA, GPIO::Pin8}),
-	initIOTimerChannel(io_timers, {Timer::Timer1, Timer::Channel2}, {GPIO::PortE, GPIO::Pin11}),
-	initIOTimerChannel(io_timers, {Timer::Timer1, Timer::Channel3}, {GPIO::PortE, GPIO::Pin13}),
-	initIOTimerChannel(io_timers, {Timer::Timer1, Timer::Channel4}, {GPIO::PortE, GPIO::Pin14}),
-	initIOTimerChannel(io_timers, {Timer::Timer4, Timer::Channel3}, {GPIO::PortD, GPIO::Pin14}),
-	initIOTimerChannel(io_timers, {Timer::Timer4, Timer::Channel4}, {GPIO::PortD, GPIO::Pin15}),
-	initIOTimerChannel(io_timers, {Timer::Timer5, Timer::Channel1}, {GPIO::PortA, GPIO::Pin0}),
-	initIOTimerChannel(io_timers, {Timer::Timer5, Timer::Channel2}, {GPIO::PortA, GPIO::Pin1}),
-};
+bool px4_i2c_device_external(const uint32_t device_id)
+{
+	{
+		// The internal baro and mag on Pixhawk 6C are on an external
+		// bus. On rev 0, the bus is actually exposed externally, on
+		// rev 1+, it is properly internal, however, still marked as
+		// external for compatibility.
 
-constexpr io_timers_channel_mapping_t io_timers_channel_mapping =
-	initIOTimerChannelMapping(io_timers, timer_io_channels);
+		// device_id: 4028193
+		device::Device::DeviceId device_id_baro{};
+		device_id_baro.devid_s.bus_type = device::Device::DeviceBusType_I2C;
+		device_id_baro.devid_s.bus = 4;
+		device_id_baro.devid_s.address = 0x77;
+		device_id_baro.devid_s.devtype = DRV_BARO_DEVTYPE_MS5611;
+
+		if (device_id_baro.devid == device_id) {
+			return false;
+		}
+
+		// device_id: 396321
+		device::Device::DeviceId device_id_mag{};
+		device_id_mag.devid_s.bus_type = device::Device::DeviceBusType_I2C;
+		device_id_mag.devid_s.bus = 4;
+		device_id_mag.devid_s.address = 0xc;
+		device_id_mag.devid_s.devtype = DRV_MAG_DEVTYPE_IST8310;
+
+		if (device_id_mag.devid == device_id) {
+			return false;
+		}
+	}
+
+	device::Device::DeviceId dev_id{};
+	dev_id.devid = device_id;
+	return px4_i2c_bus_external(dev_id.devid_s.bus);
+}

@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (C) 2020, 2022 PX4 Development Team. All rights reserved.
+ *   Copyright (C) 2012 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,31 +31,43 @@
  *
  ****************************************************************************/
 
-#include <px4_arch/spi_hw_description.h>
-#include <drivers/drv_sensor.h>
-#include <nuttx/spi/spi.h>
+#include <px4_arch/io_timer_hw_description.h>
 
-constexpr px4_spi_bus_all_hw_t px4_spi_buses_all_hw[BOARD_NUM_SPI_CFG_HW_VERSIONS] = {
-	initSPIHWVersion(V6C00, {
-		initSPIBus(SPI::Bus::SPI1, {
-			initSPIDevice(DRV_GYR_DEVTYPE_BMI055,  SPI::CS{GPIO::PortC, GPIO::Pin14}, SPI::DRDY{GPIO::PortE, GPIO::Pin5}),
-			initSPIDevice(DRV_ACC_DEVTYPE_BMI055,  SPI::CS{GPIO::PortC, GPIO::Pin15}, SPI::DRDY{GPIO::PortE, GPIO::Pin4}),
-			initSPIDevice(DRV_IMU_DEVTYPE_ICM42688P, SPI::CS{GPIO::PortC, GPIO::Pin13}, SPI::DRDY{GPIO::PortE, GPIO::Pin6}),
-		}, {GPIO::PortB, GPIO::Pin2}),
-		initSPIBus(SPI::Bus::SPI2, {
-			initSPIDevice(SPIDEV_FLASH(0), SPI::CS{GPIO::PortD, GPIO::Pin4})
-		}),
-	}),
-	initSPIHWVersion(V6C10, {
-		initSPIBus(SPI::Bus::SPI1, {
-			initSPIDevice(DRV_GYR_DEVTYPE_BMI055,  SPI::CS{GPIO::PortC, GPIO::Pin14}, SPI::DRDY{GPIO::PortE, GPIO::Pin5}),
-			initSPIDevice(DRV_ACC_DEVTYPE_BMI055,  SPI::CS{GPIO::PortC, GPIO::Pin15}, SPI::DRDY{GPIO::PortE, GPIO::Pin4}),
-			initSPIDevice(DRV_IMU_DEVTYPE_ICM42688P, SPI::CS{GPIO::PortC, GPIO::Pin13}, SPI::DRDY{GPIO::PortE, GPIO::Pin6}),
-		}, {GPIO::PortB, GPIO::Pin2}),
-		initSPIBus(SPI::Bus::SPI2, {
-			initSPIDevice(SPIDEV_FLASH(0), SPI::CS{GPIO::PortD, GPIO::Pin4})
-		}),
-	}),
+/* Timer allocation
+ *
+ * TIM1_CH1  T FMU_CH1
+ * TIM1_CH2  T FMU_CH2
+ * TIM1_CH3  T FMU_CH3
+ * TIM1_CH4  T FMU_CH4
+ *
+ * TIM4_CH3  T FMU_CH5
+ * TIM4_CH4  T FMU_CH6
+ *
+ * TIM5_CH1  T FMU_CH7
+ * TIM5_CH2  T FMU_CH8
+ *
+ * TIM17_CH1 T HEATER                 > PWM OUT or GPIO
+ *
+ * TIM3_CH3  T BUZZER_1              - Driven by other driver
+ */
+
+constexpr io_timers_t io_timers[MAX_IO_TIMERS] = {
+	initIOTimer(Timer::Timer1, DMA{DMA::Index1}),
+	initIOTimer(Timer::Timer2, DMA{DMA::Index1}),
+	initIOTimer(Timer::Timer5),
+	initIOTimer(Timer::Timer17),
 };
 
-static constexpr bool unused = validateSPIConfig(px4_spi_buses_all_hw);
+constexpr timer_io_channels_t timer_io_channels[MAX_TIMER_IO_CHANNELS] = {
+	initIOTimerChannel(io_timers, {Timer::Timer1, Timer::Channel1}, {GPIO::PortA, GPIO::Pin8}),
+	initIOTimerChannel(io_timers, {Timer::Timer1, Timer::Channel2}, {GPIO::PortE, GPIO::Pin11}),
+	initIOTimerChannel(io_timers, {Timer::Timer1, Timer::Channel3}, {GPIO::PortA, GPIO::Pin10}),
+	initIOTimerChannel(io_timers, {Timer::Timer2, Timer::Channel1}, {GPIO::PortA, GPIO::Pin15}),
+	initIOTimerChannel(io_timers, {Timer::Timer2, Timer::Channel2}, {GPIO::PortB, GPIO::Pin3}),
+	initIOTimerChannel(io_timers, {Timer::Timer2, Timer::Channel3}, {GPIO::PortA, GPIO::Pin2}),
+	initIOTimerChannel(io_timers, {Timer::Timer2, Timer::Channel4}, {GPIO::PortB, GPIO::Pin11}),
+	initIOTimerChannel(io_timers, {Timer::Timer5, Timer::Channel2}, {GPIO::PortH, GPIO::Pin11}),
+};
+
+constexpr io_timers_channel_mapping_t io_timers_channel_mapping =
+	initIOTimerChannelMapping(io_timers, timer_io_channels);

@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (C) 2020 PX4 Development Team. All rights reserved.
+ *   Copyright (C) 2020, 2022 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,49 +31,29 @@
  *
  ****************************************************************************/
 
-#include <px4_arch/i2c_hw_description.h>
+#include <px4_arch/spi_hw_description.h>
+#include <drivers/drv_sensor.h>
+#include <nuttx/spi/spi.h>
 
-#include <lib/drivers/device/Device.hpp>
-#include <px4_platform_common/i2c.h>
+constexpr px4_spi_bus_t px4_spi_buses[SPI_BUS_MAX_BUS_ITEMS] = {
+	initSPIBus(SPI::Bus::SPI1, {
+		initSPIDevice(DRV_IMU_DEVTYPE_ADIS16477, SPI::CS{GPIO::PortH, GPIO::Pin5}),
+	}),
 
-constexpr px4_i2c_bus_t px4_i2c_buses[I2C_BUS_MAX_BUS_ITEMS] = {
-	initI2CBusExternal(1),
-	initI2CBusExternal(2),
-	initI2CBusExternal(4),
+	initSPIBus(SPI::Bus::SPI2, {
+		initSPIDevice(DRV_MAG_DEVTYPE_RM3100, SPI::CS{GPIO::PortH, GPIO::Pin4}, SPI::DRDY{GPIO::PortG, GPIO::Pin4}),
+	}),
+
+	initSPIBus(SPI::Bus::SPI4, {
+		initSPIDevice(DRV_IMU_DEVTYPE_ICM42688P, SPI::CS{GPIO::PortG, GPIO::Pin10}),
+		initSPIDevice(DRV_ACC_DEVTYPE_BMI088,  SPI::CS{GPIO::PortG, GPIO::Pin0}), // MPU2_CS
+		initSPIDevice(DRV_GYR_DEVTYPE_BMI088,  SPI::CS{GPIO::PortH, GPIO::Pin2}), // MPU2_CS
+		initSPIDevice(DRV_BARO_DEVTYPE_MS5611, 	SPI::CS{GPIO::PortH, GPIO::Pin3}) // BARO_EXT_CS
+	}),
+
+	initSPIBus(SPI::Bus::SPI6, {
+		initSPIDevice(SPIDEV_FLASH(0), SPI::CS{GPIO::PortG, GPIO::Pin6}) // FRAM_CS
+	}),
 };
 
-bool px4_i2c_device_external(const uint32_t device_id)
-{
-	{
-		// The internal baro and mag on Pixhawk 6C are on an external
-		// bus. On rev 0, the bus is actually exposed externally, on
-		// rev 1+, it is properly internal, however, still marked as
-		// external for compatibility.
-
-		// device_id: 4028193
-		device::Device::DeviceId device_id_baro{};
-		device_id_baro.devid_s.bus_type = device::Device::DeviceBusType_I2C;
-		device_id_baro.devid_s.bus = 4;
-		device_id_baro.devid_s.address = 0x77;
-		device_id_baro.devid_s.devtype = DRV_BARO_DEVTYPE_MS5611;
-
-		if (device_id_baro.devid == device_id) {
-			return false;
-		}
-
-		// device_id: 396321
-		device::Device::DeviceId device_id_mag{};
-		device_id_mag.devid_s.bus_type = device::Device::DeviceBusType_I2C;
-		device_id_mag.devid_s.bus = 4;
-		device_id_mag.devid_s.address = 0xc;
-		device_id_mag.devid_s.devtype = DRV_MAG_DEVTYPE_IST8310;
-
-		if (device_id_mag.devid == device_id) {
-			return false;
-		}
-	}
-
-	device::Device::DeviceId dev_id{};
-	dev_id.devid = device_id;
-	return px4_i2c_bus_external(dev_id.devid_s.bus);
-}
+static constexpr bool unused = validateSPIConfig(px4_spi_buses);
