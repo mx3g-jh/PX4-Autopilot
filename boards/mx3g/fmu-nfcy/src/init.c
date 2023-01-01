@@ -201,6 +201,7 @@ __EXPORT int board_app_initialize(uintptr_t arg)
 
 #if !defined(BOOTLOADER)
 	stm32_gpiowrite(GPIO_VDD_3V3_SD_EN, true);
+	stm32_gpiowrite(GPIO_TEST, false);
 	/* Power on Interfaces */
 	// VDD_5V_PERIPH_EN(true);
 	// VDD_5V_HIPOWER_EN(true);
