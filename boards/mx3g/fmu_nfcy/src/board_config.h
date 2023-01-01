@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2022 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2016, 2020 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,7 +34,7 @@
 /**
  * @file board_config.h
  *
- * Mx3G NFCY internal definitions
+ * PX4FMU-v6u internal definitions
  */
 
 #pragma once
@@ -47,19 +47,17 @@
 #include <nuttx/compiler.h>
 #include <stdint.h>
 
-
 #include <stm32_gpio.h>
 
 /****************************************************************************************************
  * Definitions
  ****************************************************************************************************/
 
+/* Configuration ************************************************************************************/
+
 #undef TRACE_PINS
 
-/* PX4FMU GPIOs ***********************************************************************************/
-
-
-/* LEDs are driven with push pull Anodes to 3.3V */
+/* LEDs are driven with push open drain to support Anode to 5V or 3.3V or used as TRACE0-2 */
 
 #define GPIO_nLED_RED        /* PB1 */  (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_50MHz|GPIO_OUTPUT_SET|GPIO_PORTB|GPIO_PIN1)
 #define GPIO_nLED_BLUE       /* PC7 */  (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_50MHz|GPIO_OUTPUT_SET|GPIO_PORTC|GPIO_PIN7)
@@ -121,7 +119,7 @@
 /* Power supply control and monitoring GPIOs */
 
 #define BOARD_NUMBER_BRICKS             1
-#define GPIO_VDD_3V3_SD_EN              /* PG7  */ (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_2MHz|GPIO_OUTPUT_CLEAR|GPIO_PORTG|GPIO_PIN7) // VDD_3V3_SD_EN
+#define GPIO_VDD_3V3_SD_CARD_EN              /* PG7  */ (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_2MHz|GPIO_OUTPUT_CLEAR|GPIO_PORTG|GPIO_PIN7) // VDD_3V3_SD_EN
 
 /* Tone alarm output */
 
@@ -174,6 +172,9 @@
  * provides the true logic GPIO BOARD_ADC_xxxx macros.
  */
 
+
+#define GPIO_TEST_EN(on_true)        px4_arch_gpiowrite(GPIO_TEST, (on_true))
+#define VDD_3V3_SD_CARD_EN(on_true)        px4_arch_gpiowrite(GPIO_VDD_3V3_SD_CARD_EN, (on_true))
 #define BOARD_ADC_SERVO_VALID     (1)
 
 #define BOARD_ADC_USB_CONNECTED	       (px4_arch_gpioread(GPIO_OTGFS_VBUS))
@@ -186,6 +187,7 @@
 /* This board provides a DMA pool and APIs */
 #define BOARD_DMA_ALLOC_POOL_SIZE 5120
 
+#define BOARD_HAS_PWM  DIRECT_PWM_OUTPUT_CHANNELS
 /* This board provides the board_on_reset interface */
 
 #define BOARD_HAS_ON_RESET 1
@@ -197,7 +199,7 @@
 		GPIO_CAN2_TX,                     \
 		GPIO_CAN2_RX,                     \
 		GPIO_HEATER_OUTPUT,               \
-		GPIO_VDD_3V3_SD_EN,               \
+		GPIO_VDD_3V3_SD_CARD_EN,          \
 		GPIO_TONE_ALARM_IDLE,             \
 		PX4_GPIO_PIN_OFF(GPIO_SDMMC1_D0), \
 		PX4_GPIO_PIN_OFF(GPIO_SDMMC1_D1), \
@@ -209,11 +211,6 @@
 	}
 
 #define BOARD_ENABLE_CONSOLE_BUFFER
-
-#define PX4_I2C_BUS_MTD      4,5
-
-#define BOARD_OVERRIDE_I2C_DEVICE_EXTERNAL
-
 
 #define BOARD_NUM_IO_TIMERS 5
 

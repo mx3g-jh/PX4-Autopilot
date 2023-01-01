@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (C) 2020 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2020 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,50 +31,19 @@
  *
  ****************************************************************************/
 
-#include <nuttx/spi/spi.h>
-#include <px4_platform_common/px4_manifest.h>
-//                                                              KiB BS    nB
-static const px4_mft_device_t spi5 = {             // FM25V02A on FMUM 32K 512 X 64
-	.bus_type = px4_mft_device_t::SPI,
-	.devid    = SPIDEV_FLASH(0)
-};
+#pragma once
 
-static const px4_mtd_entry_t fmum_fram = {
-	.device = &spi5,
-	.npart = 2,
-	.partd = {
-		{
-			.type = MTD_PARAMETERS,
-			.path = "/fs/mtd_params",
-			.nblocks = 32
-		},
-		{
-			.type = MTD_WAYPOINTS,
-			.path = "/fs/mtd_waypoints",
-			.nblocks = 32
+#define DMAMAP_SPI1_RX    DMAMAP_DMA12_SPI1RX_0     /* 1 DMA1:37 BMI055, ICM-42688-P */
+#define DMAMAP_SPI1_TX    DMAMAP_DMA12_SPI1TX_0     /* 2 DMA1:38 BMI055, ICM-42688-P  */
 
-		}
-	},
-};
+#define DMAMAP_SPI2_RX    DMAMAP_DMA12_SPI2RX_0     /* 3 DMA1:39 FRAM */
+#define DMAMAP_SPI2_TX    DMAMAP_DMA12_SPI2TX_0     /* 4 DMA1:40 FRAM */
 
-static const px4_mtd_manifest_t board_mtd_config = {
-	.nconfigs   = 1,
-	.entries = {
-		&fmum_fram
-	}
-};
+#define DMAMAP_SPI4_RX    DMAMAP_DMA12_SPI4RX_0     /* 3 DMA1:83 FRAM */
+#define DMAMAP_SPI4_TX    DMAMAP_DMA12_SPI4TX_0     /* 4 DMA1:84 FRAM */
 
-static const px4_mft_entry_s mtd_mft = {
-	.type = MTD,
-	.pmft = (void *) &board_mtd_config,
-};
+#define DMAMAP_USART6_RX  DMAMAP_DMA12_USART6RX_0   /* 5 DMA1:71 PX4IO */
+#define DMAMAP_USART6_TX  DMAMAP_DMA12_USART6TX_0   /* 6 DMA1:72 PX4IO */
 
-static const px4_mft_s mft = {
-	.nmft = 1,
-	.mfts = &mtd_mft
-};
-
-const px4_mft_s *board_get_manifest(void)
-{
-	return &mft;
-}
+#define DMAMAP_USART3_RX  DMAMAP_DMA12_USART3RX_1   /* 3 DMA2:45 DEBUG */
+#define DMAMAP_USART3_TX  DMAMAP_DMA12_USART3TX_1   /* 4 DMA2:46 DEBUG */

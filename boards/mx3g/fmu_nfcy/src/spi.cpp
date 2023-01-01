@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2020 PX4 Development Team. All rights reserved.
+ *   Copyright (C) 2020 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,18 +31,29 @@
  *
  ****************************************************************************/
 
-#pragma once
+#include <px4_arch/spi_hw_description.h>
+#include <drivers/drv_sensor.h>
+#include <nuttx/spi/spi.h>
 
-// DMAMUX1
-#define DMAMAP_SPI1_RX    DMAMAP_DMA12_SPI1RX_0 /* DMA1:37 */
-#define DMAMAP_SPI1_TX    DMAMAP_DMA12_SPI1TX_0 /* DMA1:38 */
+constexpr px4_spi_bus_t px4_spi_buses[SPI_BUS_MAX_BUS_ITEMS] = {
+	initSPIBus(SPI::Bus::SPI1, {
+		initSPIDevice(DRV_IMU_DEVTYPE_ADIS16477, SPI::CS{GPIO::PortH, GPIO::Pin5}),
+	}),
 
-#define DMAMAP_SPI2_RX    DMAMAP_DMA12_SPI2RX_0 /* DMA1:39 */
-#define DMAMAP_SPI2_TX    DMAMAP_DMA12_SPI2TX_0 /* DMA1:40 */
+	initSPIBus(SPI::Bus::SPI2, {
+		initSPIDevice(DRV_MAG_DEVTYPE_RM3100, SPI::CS{GPIO::PortH, GPIO::Pin4}, SPI::DRDY{GPIO::PortG, GPIO::Pin4}),
+	}),
 
-// DMAMUX2
-#define DMAMAP_SPI3_RX    DMAMAP_DMA12_SPI3RX_1 /* DMA2:61 */
-#define DMAMAP_SPI3_TX    DMAMAP_DMA12_SPI3TX_1 /* DMA2:62 */
+	initSPIBus(SPI::Bus::SPI4, {
+		initSPIDevice(DRV_IMU_DEVTYPE_ICM42688P, SPI::CS{GPIO::PortG, GPIO::Pin10}),
+		initSPIDevice(DRV_ACC_DEVTYPE_BMI088,  SPI::CS{GPIO::PortG, GPIO::Pin0}), // MPU2_CS
+		initSPIDevice(DRV_GYR_DEVTYPE_BMI088,  SPI::CS{GPIO::PortH, GPIO::Pin2}), // MPU2_CS
+		initSPIDevice(DRV_BARO_DEVTYPE_MS5611, 	SPI::CS{GPIO::PortH, GPIO::Pin3}) // BARO_EXT_CS
+	}),
 
-#define DMAMAP_SPI6_RX    DMAMAP_BDMA_SPI6_RX /* BDMA:11 */
-#define DMAMAP_SPI6_TX    DMAMAP_BDMA_SPI6_TX /* BDMA:12 */
+	initSPIBus(SPI::Bus::SPI6, {
+		initSPIDevice(SPIDEV_FLASH(0), SPI::CS{GPIO::PortG, GPIO::Pin6}) // FRAM_CS
+	}),
+};
+
+static constexpr bool unused = validateSPIConfig(px4_spi_buses);

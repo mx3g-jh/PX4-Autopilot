@@ -1,8 +1,8 @@
 
 px4_add_board(
 	PLATFORM nuttx
-	VENDOR px4
-	MODEL fmu-v6u
+	VENDOR mx3g
+	MODEL fmu_nfcy
 	LABEL bootloader
 	TOOLCHAIN arm-none-eabi
 	ARCHITECTURE cortex-m7

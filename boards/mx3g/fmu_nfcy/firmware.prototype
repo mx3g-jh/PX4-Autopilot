@@ -1,10 +1,10 @@
 {
-    "board_id": 54,
+    "board_id": 56,
     "magic": "PX4FWv1",
-    "description": "Firmware for the PX4FMUv6U board",
+    "description": "Firmware for the PX4FMUnfcy board",
     "image": "",
     "build_time": 0,
-    "summary": "PX4FMUv6U",
+    "summary": "PX4FMUnfcy",
     "version": "0.1",
     "image_size": 0,
     "image_maxsize": 1966080,

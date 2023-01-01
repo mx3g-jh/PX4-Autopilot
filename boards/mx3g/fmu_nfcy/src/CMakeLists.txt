@@ -50,7 +50,6 @@ else()
 		init.c
 		led.c
 		mtd.cpp
-		manifest.c
 		sdio.c
 		spi.cpp
 		timer_config.cpp
