@@ -105,15 +105,7 @@ __EXPORT void board_peripheral_reset(int ms)
 {
 	/* set the peripheral rails off */
 
-	VDD_3V3_SD_CARD_EN(false);
-	GPIO_TEST_EN(false);
-	// VDD_5V_PERIPH_EN(false);
 	board_control_spi_sensors_power(false, 0xffff);
-	// VDD_3V3_SENSORS_EN(false);
-
-	// bool last = READ_VDD_3V3_SPEKTRUM_POWER_EN();
-	/* Keep Spektum on to discharge rail*/
-	// VDD_3V3_SPEKTRUM_POWER_EN(false);
 
 	/* wait for the peripheral rail to reach GND */
 	usleep(ms * 1000);
@@ -122,10 +114,11 @@ __EXPORT void board_peripheral_reset(int ms)
 	/* re-enable power */
 
 	/* switch the peripheral rail back on */
-	// VDD_3V3_SPEKTRUM_POWER_EN(last);
 	board_control_spi_sensors_power(true, 0xffff);
-	// VDD_3V3_SENSORS_EN(true);
-	// VDD_5V_PERIPH_EN(true);
+
+	stm32_gpiowrite(GPIO_VOLT_SET, true);
+	stm32_gpiowrite(GPIO_TEST, false);
+	stm32_gpiowrite(GPIO_VDD_3V3_SD_CARD_EN, true);
 
 }
 
@@ -184,7 +177,9 @@ stm32_boardinitialize(void)
 	/* configure USB interfaces */
 
 	stm32_usbinitialize();
-
+	stm32_gpiowrite(GPIO_VOLT_SET, true);
+	stm32_gpiowrite(GPIO_TEST, false);
+	stm32_gpiowrite(GPIO_VDD_3V3_SD_CARD_EN, true);
 }
 
 /****************************************************************************
@@ -215,14 +210,11 @@ stm32_boardinitialize(void)
 
 __EXPORT int board_app_initialize(uintptr_t arg)
 {
-	GPIO_TEST_EN(false);
-	/* Power on Interfaces */
-	VDD_3V3_SD_CARD_EN(true);
-	// VDD_5V_PERIPH_EN(true);
-	// VDD_5V_HIPOWER_EN(true);
+	stm32_gpiowrite(GPIO_VOLT_SET, true);
+	stm32_gpiowrite(GPIO_TEST, true);
+	stm32_gpiowrite(GPIO_VDD_3V3_SD_CARD_EN, true);
+
 	board_spi_reset(10, 0xffff);
-	// VDD_3V3_SENSORS_EN(true);
-	// VDD_3V3_SPEKTRUM_POWER_EN(true);
 
 	/* Need hrt running before using the ADC */
 
@@ -275,7 +267,7 @@ __EXPORT int board_app_initialize(uintptr_t arg)
 
 	// Ensure Power is off for > 10 mS
 	usleep(15 * 1000);
-	VDD_3V3_SD_CARD_EN(true);
+	stm32_gpiowrite(GPIO_VDD_3V3_SD_CARD_EN, true);
 	usleep(500 * 1000);
 
 #ifdef CONFIG_MMCSD

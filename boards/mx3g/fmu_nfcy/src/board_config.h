@@ -63,6 +63,7 @@
 #define GPIO_nLED_BLUE       /* PC7 */  (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_50MHz|GPIO_OUTPUT_SET|GPIO_PORTC|GPIO_PIN7)
 #define GPIO_nLED_GREEN       /* PC6 */  (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_50MHz|GPIO_OUTPUT_SET|GPIO_PORTC|GPIO_PIN6)
 
+#define GPIO_VOLT_SET	/* PH9 */	(GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_50MHz|GPIO_OUTPUT_SET|GPIO_PORTH|GPIO_PIN9)
 #define GPIO_TEST	/* PH10 */	(GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_50MHz|GPIO_OUTPUT_SET|GPIO_PORTH|GPIO_PIN10)
 
 #define BOARD_HAS_CONTROL_STATUS_LEDS      1
@@ -148,7 +149,7 @@
 
 /* RC Serial port */
 
-#define RC_SERIAL_PORT                     "/dev/ttyS5"
+#define RC_SERIAL_PORT                     "/dev/ttyS0"
 #define RC_SERIAL_SINGLEWIRE
 #define RC_SERIAL_SWAP_RXTX
 
@@ -173,8 +174,6 @@
  */
 
 
-#define GPIO_TEST_EN(on_true)        px4_arch_gpiowrite(GPIO_TEST, (on_true))
-#define VDD_3V3_SD_CARD_EN(on_true)        px4_arch_gpiowrite(GPIO_VDD_3V3_SD_CARD_EN, (on_true))
 #define BOARD_ADC_SERVO_VALID     (1)
 
 #define BOARD_ADC_USB_CONNECTED	       (px4_arch_gpioread(GPIO_OTGFS_VBUS))
@@ -208,6 +207,7 @@
 		PX4_GPIO_PIN_OFF(GPIO_SDMMC1_CMD),\
 		PX4_GPIO_PIN_OFF(GPIO_SDMMC1_CK), \
 		GPIO_TEST,			  \
+		GPIO_VOLT_SET,			  \
 	}
 
 #define BOARD_ENABLE_CONSOLE_BUFFER
