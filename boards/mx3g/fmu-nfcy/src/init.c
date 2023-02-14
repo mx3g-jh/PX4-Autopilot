@@ -117,7 +117,9 @@ __EXPORT void board_peripheral_reset(int ms)
 	/* switch the peripheral rail back on */
 	board_control_spi_sensors_power(true, 0xffff);
 	// VDD_5V_PERIPH_EN(true);
-
+	stm32_gpiowrite(GPIO_VOLT_SET, true);
+	stm32_gpiowrite(GPIO_TEST, false);
+	stm32_gpiowrite(GPIO_VDD_3V3_SD_EN, true);
 }
 
 /************************************************************************************
@@ -169,6 +171,10 @@ stm32_boardinitialize(void)
 	/* configure USB interfaces */
 
 	stm32_usbinitialize();
+
+	stm32_gpiowrite(GPIO_VOLT_SET, true);
+	stm32_gpiowrite(GPIO_TEST, false);
+	stm32_gpiowrite(GPIO_VDD_3V3_SD_EN, true);
 }
 
 /****************************************************************************
@@ -198,10 +204,8 @@ stm32_boardinitialize(void)
 
 __EXPORT int board_app_initialize(uintptr_t arg)
 {
+	cv
 
-#if !defined(BOOTLOADER)
-	stm32_gpiowrite(GPIO_VDD_3V3_SD_EN, true);
-	stm32_gpiowrite(GPIO_TEST, false);
 	/* Power on Interfaces */
 	// VDD_5V_PERIPH_EN(true);
 	// VDD_5V_HIPOWER_EN(true);
