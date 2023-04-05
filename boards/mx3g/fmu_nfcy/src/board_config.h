@@ -114,7 +114,7 @@
 
 /* PWM
  */
-#define DIRECT_PWM_OUTPUT_CHANNELS   8
+#define DIRECT_PWM_OUTPUT_CHANNELS   10
 
 
 /* Power supply control and monitoring GPIOs */
@@ -124,13 +124,13 @@
 
 /* Tone alarm output */
 
-#define TONE_ALARM_TIMER        5  /* Timer 5 */
-#define TONE_ALARM_CHANNEL      3  /* PH12 GPIO_TIM5_CH3OUT_2 */
+#define TONE_ALARM_TIMER        1  /* Timer 1 */
+#define TONE_ALARM_CHANNEL      1  /* PA8 GPIO_TIM1_CH1OUT_1 */
 
-#define GPIO_BUZZER_1           /* PH12 */ (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_2MHz|GPIO_OUTPUT_CLEAR|GPIO_PORTH|GPIO_PIN12)
+#define GPIO_BUZZER_1           /* PA8 */ (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_2MHz|GPIO_OUTPUT_CLEAR|GPIO_PORTA|GPIO_PIN8)
 
 #define GPIO_TONE_ALARM_IDLE    GPIO_BUZZER_1
-#define GPIO_TONE_ALARM         GPIO_TIM5_CH3OUT_2
+#define GPIO_TONE_ALARM         GPIO_TIM1_CH1OUT_1
 
 /* USB OTG FS
  *
@@ -139,13 +139,8 @@
 #define GPIO_OTGFS_VBUS         /* PA9 */ (GPIO_INPUT|GPIO_PULLDOWN|GPIO_SPEED_100MHz|GPIO_PORTA|GPIO_PIN9)
 
 /* High-resolution timer */
-#define HRT_TIMER               8  /* use timer8 for the HRT */
+#define HRT_TIMER               5  /* use timer5 for the HRT */
 #define HRT_TIMER_CHANNEL       3  /* use capture/compare channel 3 */
-
-/* PWM input driver. Use FMU AUX5 pins attached to timer4 channel 3 */
-#define PWMIN_TIMER                       5
-#define PWMIN_TIMER_CHANNEL    /* T5C2 */ 2
-#define GPIO_PWM_IN            /* PH11 */ GPIO_TIM5_CH2OUT_2
 
 /* RC Serial port */
 
@@ -212,7 +207,7 @@
 
 #define BOARD_ENABLE_CONSOLE_BUFFER
 
-#define BOARD_NUM_IO_TIMERS 5
+#define BOARD_NUM_IO_TIMERS 3
 
 __BEGIN_DECLS
 
