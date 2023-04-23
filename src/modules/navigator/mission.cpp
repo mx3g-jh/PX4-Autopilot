@@ -73,6 +73,11 @@ Mission::on_inactive()
 	 * is used for missions such as RTL. */
 	_navigator->set_cruising_speed();
 
+	// mavlink_log_info(&_mavlink_log_pub,"inactive");
+	is_break = false;
+	is_set = false;
+	is_set_item = false;
+
 	/* Without home a mission can't be valid yet anyway, let's wait. */
 	if (!_navigator->home_position_valid()) {
 		return;
@@ -148,6 +153,13 @@ Mission::on_inactivation()
 void
 Mission::on_activation()
 {
+	/* check if anything has changed */
+	bool bk_to_bkp_sub_updated = _bk_to_bkp_sub.updated();
+
+	if (bk_to_bkp_sub_updated) {
+		update_bkp();
+	}
+
 	if (_mission_waypoints_changed) {
 		// do not set the closest mission item in the normal mission mode
 		if (_mission_execution_mode != mission_result_s::MISSION_EXECUTION_MODE_NORMAL) {
@@ -195,6 +207,13 @@ Mission::on_active()
 		update_mission();
 	}
 
+	/* check if anything has changed */
+	bool bk_to_bkp_sub_updated = _bk_to_bkp_sub.updated();
+
+	if (bk_to_bkp_sub_updated) {
+		update_bkp();
+	}
+
 	/* reset the current mission if needed */
 	if (need_to_reset_mission(true)) {
 		reset_mission(_mission);
@@ -227,6 +246,17 @@ Mission::on_active()
 		   there is no need to report that we reached it because we didn't. */
 		if (_work_item_type != WORK_ITEM_TYPE_TAKEOFF) {
 			set_mission_item_reached();
+
+			if (is_set && is_set_item && is_break) {
+				is_back_to_break_point = true;
+				is_break = false;
+				is_set = false;
+				is_set_item = false;
+				_bk_to_bkp_back.timestamp = hrt_absolute_time();
+				_bk_to_bkp_back.back_to_break_point = true;
+				_bk_to_bkp_back.break_from_mission_point = true;
+				_bk_to_bkp_pub.publish(_bk_to_bkp_back);
+			}
 		}
 
 		if (_mission_item.autocontinue) {
@@ -581,6 +611,10 @@ Mission::set_mission_items()
 	bool has_next_position_item = false;
 
 	work_item_type new_work_item_type = WORK_ITEM_TYPE_DEFAULT;
+
+	if (is_break && !is_set) {
+		_current_mission_index = _break_current_mission_index - 1;
+	}
 
 	if (prepare_mission_items(&_mission_item, &mission_item_next_position, &has_next_position_item)) {
 		/* if mission type changed, notify */
@@ -1429,7 +1463,12 @@ Mission::prepare_mission_items(mission_item_s *mission_item,
 		offset = -1;
 	}
 
-	if (read_mission_item(0, mission_item)) {
+	if (!is_set && is_break) {
+		offset = 0;
+		is_set = true;
+	}
+
+	if (read_mission_item(((is_break && (!is_set_item) && is_set) ? -1 : 0), mission_item)) {
 
 		first_res = true;
 
@@ -1449,6 +1488,14 @@ Mission::prepare_mission_items(mission_item_s *mission_item,
 
 			}
 		}
+	}
+
+	if (is_set && !is_set_item) {
+		mission_item->lat = _bk_to_bkp.lat;
+		mission_item->lon = _bk_to_bkp.lon;
+		mission_item->altitude = _bk_to_bkp.z;
+		mavlink_log_info(&_mavlink_log_pub, "alt %3.2f bkp %3.2f", (double)mission_item->altitude, (double)_bk_to_bkp.z);
+		is_set_item = true;
 	}
 
 	return first_res;
@@ -1821,5 +1868,18 @@ bool Mission::position_setpoint_equal(const position_setpoint_s *p1, const posit
 		(fabsf(p1->acceptance_radius - p2->acceptance_radius) < FLT_EPSILON) &&
 		(fabsf(p1->cruising_speed - p2->cruising_speed) < FLT_EPSILON) &&
 		(fabsf(p1->cruising_throttle - p2->cruising_throttle) < FLT_EPSILON));
+
+}
+
+void Mission::update_bkp()
+{
+	_bk_to_bkp_sub.copy(&_bk_to_bkp);
+	mavlink_log_info(&_mavlink_log_pub, "update_bkp %d", _bk_to_bkp.break_from_mission_point);
+	is_break = _bk_to_bkp.break_from_mission_point;
+
+	if (is_back_to_break_point) {
+		_break_current_mission_index = _current_mission_index;
+		is_back_to_break_point = false;
+	}
 
 }

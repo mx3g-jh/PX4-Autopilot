@@ -154,6 +154,8 @@ static bool last_overload = false;
 
 static struct vehicle_status_flags_s status_flags = {};
 
+static struct bk_to_bkp_s bk_to_bkp = {};
+
 static uint64_t rc_signal_lost_timestamp;		// Time at which the RC reception was lost
 
 static uint8_t arm_requirements = ARM_REQ_NONE;
@@ -642,6 +644,19 @@ Commander::handle_command(vehicle_status_s *status_local, const vehicle_command_
 							       status_flags, &internal_state);
 
 				if ((main_ret != TRANSITION_DENIED)) {
+					bk_to_bkp.timestamp = hrt_absolute_time();
+					if(bk_to_bkp_can_pub){
+						// bk_to_bkp.timestamp = hrt_absolute_time();
+						bk_to_bkp.lat =  _global_position_sub.get().lat;
+						bk_to_bkp.lon = _global_position_sub.get().lon;
+						bk_to_bkp.alt =  _global_position_sub.get().alt;
+						bk_to_bkp.x =  _local_position_sub.get().x;
+						bk_to_bkp.y =  _local_position_sub.get().y;
+						bk_to_bkp.z =  -_local_position_sub.get().z;
+						bk_to_bkp_can_pub = false;
+					}
+					bk_to_bkp.break_from_mission_point = true;
+					_bk_to_bkp_pub.publish(bk_to_bkp);
 					cmd_result = vehicle_command_s::VEHICLE_CMD_RESULT_ACCEPTED;
 
 				} else {
@@ -656,6 +671,7 @@ Commander::handle_command(vehicle_status_s *status_local, const vehicle_command_
 		break;
 
 	case vehicle_command_s::VEHICLE_CMD_DO_SET_MODE: {
+			uint8_t last_mode = internal_state.main_state;
 			uint8_t base_mode = (uint8_t)cmd.param1;
 			uint8_t custom_main_mode = (uint8_t)cmd.param2;
 			uint8_t custom_sub_mode = (uint8_t)cmd.param3;
@@ -782,7 +798,21 @@ Commander::handle_command(vehicle_status_s *status_local, const vehicle_command_
 
 			if ((arming_ret != TRANSITION_DENIED) && (main_ret != TRANSITION_DENIED)) {
 				cmd_result = vehicle_command_s::VEHICLE_CMD_RESULT_ACCEPTED;
-
+				if(last_mode == commander_state_s::MAIN_STATE_AUTO_MISSION || internal_state.main_state == commander_state_s::MAIN_STATE_AUTO_LOITER){
+					bk_to_bkp.timestamp = hrt_absolute_time();
+					if(bk_to_bkp_can_pub){
+						// bk_to_bkp.timestamp = hrt_absolute_time();
+						bk_to_bkp.lat =  _global_position_sub.get().lat;
+						bk_to_bkp.lon = _global_position_sub.get().lon;
+						bk_to_bkp.alt =  _global_position_sub.get().alt;
+						bk_to_bkp.x =  _local_position_sub.get().x;
+						bk_to_bkp.y =  _local_position_sub.get().y;
+						bk_to_bkp.z =  -_local_position_sub.get().z;
+						bk_to_bkp_can_pub = false;
+					}
+					bk_to_bkp.break_from_mission_point = true;
+					_bk_to_bkp_pub.publish(bk_to_bkp);
+				}
 			} else {
 				cmd_result = vehicle_command_s::VEHICLE_CMD_RESULT_TEMPORARILY_REJECTED;
 
@@ -1411,7 +1441,7 @@ Commander::run()
 	preflight_check(false);
 
 	while (!should_exit()) {
-
+		bk_to_bkp_back_check();
 		transition_result_t arming_ret = TRANSITION_NOT_CHANGED;
 
 		/* update parameters */
@@ -1904,6 +1934,23 @@ Commander::run()
 			     (fabsf(sp_man.y - _last_sp_man.y) > min_stick_change) ||
 			     (fabsf(sp_man.z - _last_sp_man.z) > min_stick_change) ||
 			     (fabsf(sp_man.r - _last_sp_man.r) > min_stick_change))) {
+
+			/* publish vehicle_status_flags */
+				if (internal_state.main_state == commander_state_s::MAIN_STATE_AUTO_MISSION || internal_state.main_state == commander_state_s::MAIN_STATE_AUTO_LOITER) {
+					if(bk_to_bkp_can_pub){
+						// bk_to_bkp.timestamp = hrt_absolute_time();
+						bk_to_bkp.lat =  _global_position_sub.get().lat;
+						bk_to_bkp.lon = _global_position_sub.get().lon;
+						bk_to_bkp.alt =  _global_position_sub.get().alt;
+						bk_to_bkp.x =  _local_position_sub.get().x;
+						bk_to_bkp.y =  _local_position_sub.get().y;
+						bk_to_bkp.z =  -_local_position_sub.get().z;
+						bk_to_bkp_can_pub = false;
+					}
+					bk_to_bkp.timestamp = hrt_absolute_time();
+					bk_to_bkp.break_from_mission_point = true;
+					_bk_to_bkp_pub.publish(bk_to_bkp);
+				}
 
 				// revert to position control in any case
 				main_state_transition(status, commander_state_s::MAIN_STATE_POSCTL, status_flags, &internal_state);
@@ -4436,4 +4483,14 @@ void Commander::esc_status_check(const esc_status_s &esc_status)
 		_last_esc_online_flags = esc_status.esc_online_flags;
 		status_flags.condition_escs_error = true;
 	}
+}
+
+void Commander::bk_to_bkp_back_check()
+{
+	if(_bk_to_bkp_back_sub.update()){
+		const bk_to_bkp_back_s &bk_to_bkp_back = _bk_to_bkp_back_sub.get();
+		bk_to_bkp_can_pub = bk_to_bkp_back.back_to_break_point && bk_to_bkp_back.break_from_mission_point;
+		mavlink_log_info(&mavlink_log_pub,"bk_to_bkp_can_pub %d",bk_to_bkp_can_pub);
+	}
+
 }
