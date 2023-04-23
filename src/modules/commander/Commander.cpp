@@ -154,6 +154,8 @@ static bool last_overload = false;
 
 static struct vehicle_status_flags_s status_flags = {};
 
+static struct bk_to_bkp_s bk_to_bkp = {};
+
 static uint64_t rc_signal_lost_timestamp;		// Time at which the RC reception was lost
 
 static uint8_t arm_requirements = ARM_REQ_NONE;
@@ -248,14 +250,14 @@ static int power_button_state_notification_cb(board_power_button_state_notificat
 	return ret;
 }
 
-static bool send_vehicle_command(uint16_t cmd, float param1 = NAN, float param2 = NAN)
+static bool send_vehicle_command(uint16_t cmd, float param1 = NAN, float param2 = NAN, float param3 = NAN)
 {
 	vehicle_command_s vcmd{};
 
 	vcmd.timestamp = hrt_absolute_time();
 	vcmd.param1 = param1;
 	vcmd.param2 = param2;
-	vcmd.param3 = NAN;
+	vcmd.param3 = param3;
 	vcmd.param4 = NAN;
 	vcmd.param5 = (double)NAN;
 	vcmd.param6 = (double)NAN;
@@ -642,6 +644,8 @@ Commander::handle_command(vehicle_status_s *status_local, const vehicle_command_
 							       status_flags, &internal_state);
 
 				if ((main_ret != TRANSITION_DENIED)) {
+					break_misson_event_pub(break_gps_point_change);
+
 					cmd_result = vehicle_command_s::VEHICLE_CMD_RESULT_ACCEPTED;
 
 				} else {
@@ -656,6 +660,7 @@ Commander::handle_command(vehicle_status_s *status_local, const vehicle_command_
 		break;
 
 	case vehicle_command_s::VEHICLE_CMD_DO_SET_MODE: {
+			uint8_t last_mode = internal_state.main_state;
 			uint8_t base_mode = (uint8_t)cmd.param1;
 			uint8_t custom_main_mode = (uint8_t)cmd.param2;
 			uint8_t custom_sub_mode = (uint8_t)cmd.param3;
@@ -782,6 +787,9 @@ Commander::handle_command(vehicle_status_s *status_local, const vehicle_command_
 
 			if ((arming_ret != TRANSITION_DENIED) && (main_ret != TRANSITION_DENIED)) {
 				cmd_result = vehicle_command_s::VEHICLE_CMD_RESULT_ACCEPTED;
+				if(last_mode == commander_state_s::MAIN_STATE_AUTO_MISSION){
+					break_misson_event_pub(break_gps_point_change);
+				}
 
 			} else {
 				cmd_result = vehicle_command_s::VEHICLE_CMD_RESULT_TEMPORARILY_REJECTED;
@@ -1412,6 +1420,9 @@ Commander::run()
 
 	while (!should_exit()) {
 
+		bk_to_bkp_feedback_check();
+		jump_event_check_and_pub();
+
 		transition_result_t arming_ret = TRANSITION_NOT_CHANGED;
 
 		/* update parameters */
@@ -1904,6 +1915,11 @@ Commander::run()
 			     (fabsf(sp_man.y - _last_sp_man.y) > min_stick_change) ||
 			     (fabsf(sp_man.z - _last_sp_man.z) > min_stick_change) ||
 			     (fabsf(sp_man.r - _last_sp_man.r) > min_stick_change))) {
+
+			/* publish vehicle_status_flags */
+				if (internal_state.main_state == commander_state_s::MAIN_STATE_AUTO_MISSION || internal_state.main_state == commander_state_s::MAIN_STATE_AUTO_LOITER) {
+					break_misson_event_pub(break_gps_point_change);
+				}
 
 				// revert to position control in any case
 				main_state_transition(status, commander_state_s::MAIN_STATE_POSCTL, status_flags, &internal_state);
@@ -4436,4 +4452,64 @@ void Commander::esc_status_check(const esc_status_s &esc_status)
 		_last_esc_online_flags = esc_status.esc_online_flags;
 		status_flags.condition_escs_error = true;
 	}
+}
+
+void Commander::bk_to_bkp_feedback_check()
+{
+	if(_bk_to_bkp_feedback_sub.update()){
+		const bk_to_bkp_s &bk_to_bkp_feedback = _bk_to_bkp_feedback_sub.get();
+		if(bk_to_bkp_feedback.feedback_msg_type == bk_to_bkp_s::MSG_TYPE_FEEDBACK_BACK_BREAK_POINT_STATE){
+			break_gps_point_change = bk_to_bkp_feedback.back_to_break_point;
+			mavlink_log_info(&mavlink_log_pub,"point_change ,back_to_break_point %d",break_gps_point_change);
+			if(need_pub_trigger_state && trigger_distance > 0.0f){
+				// param3 = 1 , when back to break point , shot immediately.
+				send_vehicle_command(vehicle_command_s::VEHICLE_CMD_DO_SET_CAM_TRIGG_DIST,trigger_distance,0,1);
+			}
+		}else if(bk_to_bkp_feedback.feedback_msg_type == bk_to_bkp_s::MSG_TYPE_FEEDBACK_BACK_JUMP_POINT_STATE){
+			break_gps_point_change = bk_to_bkp_feedback.jump_mission_index_reach;
+			mavlink_log_info(&mavlink_log_pub,"point_change ,jump_mission_index_reach %d",break_gps_point_change);
+		}else if(bk_to_bkp_feedback.feedback_msg_type == bk_to_bkp_s::MSG_TYPE_FEEDBACK_TAKE_PICTURE_STATE){
+			need_pub_trigger_state = bk_to_bkp_feedback.trigger_enabled;
+			trigger_distance = need_pub_trigger_state ? bk_to_bkp_feedback.trigger_distance : 0.0f;
+			mavlink_log_info(&mavlink_log_pub,"distance trigger state change : %d",need_pub_trigger_state);
+		}
+
+	}
+
+}
+
+void Commander::jump_event_check_and_pub()
+{
+	if(_mission_sub.update()){
+		const mission_s &mission = _mission_sub.get();
+		if(status.arming_state == vehicle_status_s::ARMING_STATE_ARMED){
+
+			mavlink_log_info(&mavlink_log_pub,"jump_event index %d",mission.current_seq);
+			bk_to_bkp.timestamp = hrt_absolute_time();
+			bk_to_bkp.jump_mission_index = mission.current_seq;
+			bk_to_bkp.msg_type = bk_to_bkp_s::MSG_TYPE_JUMP_MODE;
+			_bk_to_bkp_pub.publish(bk_to_bkp);
+
+			break_gps_point_change = true;
+		}
+	}
+}
+
+void Commander::break_misson_event_pub(bool bk_gps_point_change)
+{
+	mavlink_log_info(&mavlink_log_pub,"break index %d , gps_point_change %d",_mission_result_sub.get().seq_current,bk_gps_point_change);
+	bk_to_bkp.timestamp = hrt_absolute_time();
+	if(bk_gps_point_change){
+		bk_to_bkp.lat =  _global_position_sub.get().lat;
+		bk_to_bkp.lon = _global_position_sub.get().lon;
+		bk_to_bkp.alt =  _global_position_sub.get().alt;
+		bk_to_bkp.x =  _local_position_sub.get().x;
+		bk_to_bkp.y =  _local_position_sub.get().y;
+		bk_to_bkp.z =  -_local_position_sub.get().z;
+		bk_to_bkp.break_current_mission_index = _mission_result_sub.get().seq_current;
+		break_gps_point_change = false;
+	}
+	bk_to_bkp.msg_type = bk_to_bkp_s::MSG_TYPE_BREAK_MODE;
+
+	_bk_to_bkp_pub.publish(bk_to_bkp);
 }

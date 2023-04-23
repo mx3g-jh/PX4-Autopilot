@@ -73,6 +73,8 @@ Mission::on_inactive()
 	 * is used for missions such as RTL. */
 	_navigator->set_cruising_speed();
 
+	// mavlink_log_info(&_mavlink_log_pub,"inactive");
+
 	/* Without home a mission can't be valid yet anyway, let's wait. */
 	if (!_navigator->home_position_valid()) {
 		return;
@@ -148,6 +150,13 @@ Mission::on_inactivation()
 void
 Mission::on_activation()
 {
+	/* check if anything has changed */
+	bool bk_to_bkp_sub_updated = _bk_to_bkp_sub.updated();
+
+	if (bk_to_bkp_sub_updated) {
+		update_bkp();
+	}
+
 	if (_mission_waypoints_changed) {
 		// do not set the closest mission item in the normal mission mode
 		if (_mission_execution_mode != mission_result_s::MISSION_EXECUTION_MODE_NORMAL) {
@@ -195,6 +204,13 @@ Mission::on_active()
 		update_mission();
 	}
 
+	/* check if anything has changed */
+	bool bk_to_bkp_sub_updated = _bk_to_bkp_sub.updated();
+
+	if (bk_to_bkp_sub_updated) {
+		update_bkp();
+	}
+
 	/* reset the current mission if needed */
 	if (need_to_reset_mission(true)) {
 		reset_mission(_mission);
@@ -227,6 +243,33 @@ Mission::on_active()
 		   there is no need to report that we reached it because we didn't. */
 		if (_work_item_type != WORK_ITEM_TYPE_TAKEOFF) {
 			set_mission_item_reached();
+
+			if (_bk_to_bkp.msg_type == bk_to_bkp_s::MSG_TYPE_JUMP_MODE && _current_mission_index == _bk_to_bkp.jump_mission_index) {
+				_bk_to_bkp_feedback.timestamp = hrt_absolute_time();
+				_bk_to_bkp_feedback.feedback_msg_type = bk_to_bkp_s::MSG_TYPE_FEEDBACK_BACK_JUMP_POINT_STATE;
+				_bk_to_bkp_feedback.jump_mission_index_reach = true;
+				jump_event_lock = false;
+				_bk_to_bkp_feedback_pub.publish(_bk_to_bkp_feedback);
+
+			} else if (_bk_to_bkp.msg_type == bk_to_bkp_s::MSG_TYPE_BREAK_MODE) {
+				_bk_to_bkp.msg_type = bk_to_bkp_s::MSG_TYPE_NONE;
+				_bk_to_bkp_feedback.timestamp = hrt_absolute_time();
+				_bk_to_bkp_feedback.feedback_msg_type = bk_to_bkp_s::MSG_TYPE_FEEDBACK_BACK_BREAK_POINT_STATE;
+				_bk_to_bkp_feedback.back_to_break_point = true;
+				_bk_to_bkp_feedback_pub.publish(_bk_to_bkp_feedback);
+				is_back_to_break_point = true;
+			}
+
+			if (_mission_item.nav_cmd == NAV_CMD_DO_SET_CAM_TRIGG_DIST) {
+				_bk_to_bkp_feedback.timestamp = hrt_absolute_time();
+				_bk_to_bkp_feedback.feedback_msg_type = bk_to_bkp_s::MSG_TYPE_FEEDBACK_TAKE_PICTURE_STATE;
+				_bk_to_bkp_feedback.trigger_enabled = _mission_item.params[0] > 0.0f ? true : false;
+				_bk_to_bkp_feedback.trigger_distance = _mission_item.params[0];
+				_bk_to_bkp_feedback_pub.publish(_bk_to_bkp_feedback);
+			}
+
+			// mavlink_log_info(&_mavlink_log_pub, "reach index %d bk idx %d", _current_mission_index,
+			// 		 _bk_to_bkp.break_current_mission_index);
 		}
 
 		if (_mission_item.autocontinue) {
@@ -1424,10 +1467,34 @@ Mission::prepare_mission_items(mission_item_s *mission_item,
 	*has_next_position_item = false;
 	bool first_res = false;
 	int offset = 1;
+	int test_offset = 0;
 
 	if (_mission_execution_mode == mission_result_s::MISSION_EXECUTION_MODE_REVERSE) {
 		offset = -1;
 	}
+
+	mission_item_s test_item;
+
+	if (_bk_to_bkp.msg_type == bk_to_bkp_s::MSG_TYPE_BREAK_MODE && !jump_event_lock && !is_back_to_break_point) {
+		_current_mission_index = _bk_to_bkp.break_current_mission_index - 1;
+
+		while (read_mission_item(test_offset, &test_item) && _current_mission_index + test_offset >= 0) {
+
+			if (item_contains_position(test_item)) {
+				break;
+			}
+
+			test_offset--;
+
+		}
+
+		_current_mission_index = _bk_to_bkp.break_current_mission_index - 1 + test_offset;
+		// _bk_to_bkp.break_current_mission_index - 1;
+	}
+
+	//  else if (_bk_to_bkp.msg_type == bk_to_bkp_s::MSG_TYPE_JUMP_MODE) {
+	// 	_current_mission_index = _bk_to_bkp.jump_mission_index;
+	// }
 
 	if (read_mission_item(0, mission_item)) {
 
@@ -1449,6 +1516,12 @@ Mission::prepare_mission_items(mission_item_s *mission_item,
 
 			}
 		}
+	}
+
+	if (_bk_to_bkp.msg_type == bk_to_bkp_s::MSG_TYPE_BREAK_MODE && !jump_event_lock && !is_back_to_break_point) {
+		mission_item->lat = _bk_to_bkp.lat;
+		mission_item->lon = _bk_to_bkp.lon;
+		mission_item->altitude = _bk_to_bkp.z;
 	}
 
 	return first_res;
@@ -1822,4 +1895,19 @@ bool Mission::position_setpoint_equal(const position_setpoint_s *p1, const posit
 		(fabsf(p1->cruising_speed - p2->cruising_speed) < FLT_EPSILON) &&
 		(fabsf(p1->cruising_throttle - p2->cruising_throttle) < FLT_EPSILON));
 
+}
+
+void Mission::update_bkp()
+{
+	_bk_to_bkp_sub.copy(&_bk_to_bkp);
+
+	if (jump_event_lock) {
+		_bk_to_bkp.msg_type = bk_to_bkp_s::MSG_TYPE_JUMP_MODE;
+
+	} else 	if (_bk_to_bkp.msg_type == bk_to_bkp_s::MSG_TYPE_JUMP_MODE) {
+		jump_event_lock = true;
+
+	} else 	if (_bk_to_bkp.msg_type == bk_to_bkp_s::MSG_TYPE_BREAK_MODE) {
+		is_back_to_break_point = false;
+	}
 }

@@ -67,6 +67,8 @@
 #include <uORB/topics/vehicle_global_position.h>
 #include <uORB/topics/vehicle_local_position.h>
 #include <uORB/topics/esc_status.h>
+#include <uORB/topics/bk_to_bkp.h>
+#include <uORB/topics/mission.h>
 
 using math::constrain;
 
@@ -240,6 +242,11 @@ private:
 
 	void esc_status_check(const esc_status_s &esc_status);
 
+	void bk_to_bkp_feedback_check();
+
+	void jump_event_check_and_pub();
+
+	void break_misson_event_pub(bool bk_gps_point_change);
 	/**
 	 * Checks the status of all available data links and handles switching between different system telemetry states.
 	 */
@@ -284,6 +291,12 @@ private:
 	uORB::SubscriptionData<offboard_control_mode_s>		_offboard_control_mode_sub{ORB_ID(offboard_control_mode)};
 	uORB::SubscriptionData<vehicle_global_position_s>	_global_position_sub{ORB_ID(vehicle_global_position)};
 	uORB::SubscriptionData<vehicle_local_position_s>	_local_position_sub{ORB_ID(vehicle_local_position)};
+	uORB::SubscriptionData<bk_to_bkp_s>			_bk_to_bkp_feedback_sub{ORB_ID(bk_to_bkp_feedback)};
+	uORB::SubscriptionData<mission_s>			_mission_sub{ORB_ID(mission)};
+
+	bool break_gps_point_change{true};
+	bool need_pub_trigger_state{false};
+	float trigger_distance{0.0f};
 
 	// Publications
 	uORB::Publication<vehicle_control_mode_s>		_control_mode_pub{ORB_ID(vehicle_control_mode)};
@@ -291,6 +304,7 @@ private:
 	uORB::Publication<actuator_armed_s>			_armed_pub{ORB_ID(actuator_armed)};
 	uORB::Publication<commander_state_s>			_commander_state_pub{ORB_ID(commander_state)};
 	uORB::Publication<vehicle_status_flags_s>		_vehicle_status_flags_pub{ORB_ID(vehicle_status_flags)};
+	uORB::Publication<bk_to_bkp_s>				_bk_to_bkp_pub{ORB_ID(bk_to_bkp)};
 
 	uORB::PublicationData<home_position_s>			_home_pub{ORB_ID(home_position)};
 

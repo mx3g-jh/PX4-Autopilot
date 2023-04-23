@@ -54,6 +54,7 @@
 #include <drivers/drv_hrt.h>
 #include <px4_module_params.h>
 #include <uORB/Subscription.hpp>
+#include <uORB/Publication.hpp>
 #include <uORB/topics/home_position.h>
 #include <uORB/topics/mission.h>
 #include <uORB/topics/mission_result.h>
@@ -61,7 +62,9 @@
 #include <uORB/topics/vehicle_global_position.h>
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/topics/vehicle_roi.h>
+#include <uORB/topics/bk_to_bkp.h>
 #include <uORB/uORB.h>
+#include <systemlib/mavlink_log.h>
 
 class Navigator;
 
@@ -100,12 +103,19 @@ public:
 	 * For a list of the different modes refer to mission_result.msg
 	 */
 	void set_execution_mode(const uint8_t mode);
+	orb_advert_t	_mavlink_log_pub{nullptr};
+
 private:
 
 	/**
 	 * Update mission topic
 	 */
 	void update_mission();
+
+	/**
+	 * Update mission topic
+	 */
+	void update_bkp();
 
 	/**
 	 * Move on to next mission item or switch to loiter
@@ -245,6 +255,18 @@ private:
 
 	uORB::Subscription	_mission_sub{ORB_ID(mission)};		/**< mission subscription */
 	mission_s		_mission {};
+
+	uORB::Subscription	_bk_to_bkp_sub{ORB_ID(bk_to_bkp)};		/**< bk_to_bkp subscription */
+	bk_to_bkp_s		_bk_to_bkp {};
+
+	uORB::Publication<bk_to_bkp_s> _bk_to_bkp_feedback_pub{ORB_ID(bk_to_bkp_feedback)};
+	bk_to_bkp_s _bk_to_bkp_feedback = {};
+
+	uint8_t	current_mode = bk_to_bkp_s::MSG_TYPE_NONE;
+
+	bool is_back_to_break_point{false};
+
+	bool jump_event_lock{false};
 
 	int32_t _current_mission_index{-1};
 
