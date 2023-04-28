@@ -1858,7 +1858,7 @@ void Mission::update_bkp()
 	_bk_to_bkp_sub.copy(&_bk_to_bkp);
 	mavlink_log_info(&_mavlink_log_pub, "update_bkp %d", _bk_to_bkp.break_from_mission_point);
 
-	if (_bk_to_bkp.msg_type == bk_to_bkp_s::MSG_TYPE_BREAK_MODE) {
+	if (_bk_to_bkp.msg_type == bk_to_bkp_s::MSG_TYPE_BREAK_MODE && jump_point_reach) {
 		mission_mode = bk_to_bkp_s::MSG_TYPE_BREAK_MODE;
 
 	} else if (_bk_to_bkp.msg_type == bk_to_bkp_s::MSG_TYPE_JUMP_MODE) {

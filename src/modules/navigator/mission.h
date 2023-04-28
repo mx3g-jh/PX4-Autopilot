@@ -263,11 +263,12 @@ private:
 	bk_to_bkp_s _bk_to_bkp_feedback = {};
 
 	uint8_t	mission_mode = bk_to_bkp_s::MSG_TYPE_NONE;
-	bool is_break = false;
-	bool is_back_to_break_point = true;
-	bool is_set = false;
-	bool is_set_item = false;
-	bool jump_event = false;
+	bool is_break{false};
+	bool is_back_to_break_point{true};
+	bool is_set{false};
+	bool is_set_item{false};
+	bool jump_event{false};
+	bool jump_point_reach{true};
 
 	int32_t _current_mission_index{-1};
 

@@ -4477,6 +4477,8 @@ void Commander::jump_event_check_and_pub()
 			bk_to_bkp.jump_mission_index = mission.current_seq;
 			bk_to_bkp.msg_type = bk_to_bkp_s::MSG_TYPE_JUMP_MODE;
 			_bk_to_bkp_pub.publish(bk_to_bkp);
+
+			break_gps_point_change = true;
 		}
 	}
 }
