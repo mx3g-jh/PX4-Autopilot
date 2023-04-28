@@ -10,27 +10,30 @@ uint64 timestamp		# time since system start (microseconds)
 float64 lat			# Latitude, (degrees)
 float64 lon			# Longitude, (degrees)
 float32 alt			# Altitude AMSL, (meters)
-float32 alt_ellipsoid		# Altitude above ellipsoid, (meters)
 
 # Position in local NED frame
 float32 x				# North position in NED earth-fixed frame, (metres)
 float32 y				# East position in NED earth-fixed frame, (metres)
 float32 z				# Down position (negative altitude) in NED earth-fixed frame, (metres)
 
-float32 delta_alt 	# Reset delta for altitude
-uint8 lat_lon_reset_counter	# Counter for reset events on horizontal position coordinates
-uint8 alt_reset_counter 	# Counter for reset events on altitude
+uint16 jump_mission_index
 
-float32 vel_n			# North velocity in NED earth-fixed frame, (metres/sec)
-float32 vel_e			# East velocity in NED earth-fixed frame, (metres/sec)
-float32 vel_d			# Down velocity in NED earth-fixed frame, (metres/sec)
+uint16 break_current_mission_index
 
-float32 yaw 			# Euler yaw angle relative to NED earth-fixed frame, -PI..+PI, (radians)
-
-float32 eph			# Standard deviation of horizontal position error, (metres)
-float32 epv			# Standard deviation of vertical position error, (metres)
-
-float32 terrain_alt		# Terrain altitude WGS84, (metres)
 bool back_to_break_point		# Terrain altitude estimate is valid
-
+bool jump_mission_index_reach
 bool break_from_mission_point		# True if this position is estimated through dead-reckoning
+
+uint8 msg_type
+uint8 feedback_msg_type
+
+uint8 MSG_TYPE_NONE = 0
+uint8 MSG_TYPE_JUMP_MODE = 1
+uint8 MSG_TYPE_BREAK_MODE = 2
+uint8 MSG_TYPE_FEEDBACK_CURRENT_STATE = 3
+uint8 MSG_TYPE_FEEDBACK_BK_BPB_STATE = 4
+
+uint16 current_mission_index
+bool current_mission_index_reach
+
+# TOPICS bk_to_bkp bk_to_bkp_feedback

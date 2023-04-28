@@ -149,7 +149,6 @@ set(msg_files
 	wheel_encoders.msg
 	wind_estimate.msg
 	bk_to_bkp.msg
-	bk_to_bkp_back.msg
 	)
 
 if(NOT EXTERNAL_MODULES_LOCATION STREQUAL "")

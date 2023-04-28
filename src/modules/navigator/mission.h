@@ -63,7 +63,6 @@
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/topics/vehicle_roi.h>
 #include <uORB/topics/bk_to_bkp.h>
-#include <uORB/topics/bk_to_bkp_back.h>
 #include <uORB/uORB.h>
 #include <systemlib/mavlink_log.h>
 
@@ -260,14 +259,15 @@ private:
 	uORB::Subscription	_bk_to_bkp_sub{ORB_ID(bk_to_bkp)};		/**< bk_to_bkp subscription */
 	bk_to_bkp_s		_bk_to_bkp {};
 
-	uORB::Publication<bk_to_bkp_back_s> _bk_to_bkp_pub{ORB_ID(bk_to_bkp_back)};
-	bk_to_bkp_back_s _bk_to_bkp_back = {};
+	uORB::Publication<bk_to_bkp_s> _bk_to_bkp_pub{ORB_ID(bk_to_bkp_feedback)};
+	bk_to_bkp_s _bk_to_bkp_feedback = {};
 
+	uint8_t	mission_mode = bk_to_bkp_s::MSG_TYPE_NONE;
 	bool is_break = false;
 	bool is_back_to_break_point = true;
 	bool is_set = false;
 	bool is_set_item = false;
-	int32_t _break_current_mission_index{-1};
+	bool jump_event = false;
 
 	int32_t _current_mission_index{-1};
 

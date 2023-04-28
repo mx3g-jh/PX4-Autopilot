@@ -644,19 +644,8 @@ Commander::handle_command(vehicle_status_s *status_local, const vehicle_command_
 							       status_flags, &internal_state);
 
 				if ((main_ret != TRANSITION_DENIED)) {
-					bk_to_bkp.timestamp = hrt_absolute_time();
-					if(bk_to_bkp_can_pub){
-						// bk_to_bkp.timestamp = hrt_absolute_time();
-						bk_to_bkp.lat =  _global_position_sub.get().lat;
-						bk_to_bkp.lon = _global_position_sub.get().lon;
-						bk_to_bkp.alt =  _global_position_sub.get().alt;
-						bk_to_bkp.x =  _local_position_sub.get().x;
-						bk_to_bkp.y =  _local_position_sub.get().y;
-						bk_to_bkp.z =  -_local_position_sub.get().z;
-						bk_to_bkp_can_pub = false;
-					}
-					bk_to_bkp.break_from_mission_point = true;
-					_bk_to_bkp_pub.publish(bk_to_bkp);
+					break_misson_event_pub(break_gps_point_change);
+
 					cmd_result = vehicle_command_s::VEHICLE_CMD_RESULT_ACCEPTED;
 
 				} else {
@@ -798,21 +787,10 @@ Commander::handle_command(vehicle_status_s *status_local, const vehicle_command_
 
 			if ((arming_ret != TRANSITION_DENIED) && (main_ret != TRANSITION_DENIED)) {
 				cmd_result = vehicle_command_s::VEHICLE_CMD_RESULT_ACCEPTED;
-				if(last_mode == commander_state_s::MAIN_STATE_AUTO_MISSION || internal_state.main_state == commander_state_s::MAIN_STATE_AUTO_LOITER){
-					bk_to_bkp.timestamp = hrt_absolute_time();
-					if(bk_to_bkp_can_pub){
-						// bk_to_bkp.timestamp = hrt_absolute_time();
-						bk_to_bkp.lat =  _global_position_sub.get().lat;
-						bk_to_bkp.lon = _global_position_sub.get().lon;
-						bk_to_bkp.alt =  _global_position_sub.get().alt;
-						bk_to_bkp.x =  _local_position_sub.get().x;
-						bk_to_bkp.y =  _local_position_sub.get().y;
-						bk_to_bkp.z =  -_local_position_sub.get().z;
-						bk_to_bkp_can_pub = false;
-					}
-					bk_to_bkp.break_from_mission_point = true;
-					_bk_to_bkp_pub.publish(bk_to_bkp);
+				if(last_mode == commander_state_s::MAIN_STATE_AUTO_MISSION){
+					break_misson_event_pub(break_gps_point_change);
 				}
+
 			} else {
 				cmd_result = vehicle_command_s::VEHICLE_CMD_RESULT_TEMPORARILY_REJECTED;
 
@@ -1441,7 +1419,10 @@ Commander::run()
 	preflight_check(false);
 
 	while (!should_exit()) {
-		bk_to_bkp_back_check();
+
+		bk_to_bkp_feedback_check();
+		jump_event_check_and_pub();
+
 		transition_result_t arming_ret = TRANSITION_NOT_CHANGED;
 
 		/* update parameters */
@@ -1937,19 +1918,7 @@ Commander::run()
 
 			/* publish vehicle_status_flags */
 				if (internal_state.main_state == commander_state_s::MAIN_STATE_AUTO_MISSION || internal_state.main_state == commander_state_s::MAIN_STATE_AUTO_LOITER) {
-					if(bk_to_bkp_can_pub){
-						// bk_to_bkp.timestamp = hrt_absolute_time();
-						bk_to_bkp.lat =  _global_position_sub.get().lat;
-						bk_to_bkp.lon = _global_position_sub.get().lon;
-						bk_to_bkp.alt =  _global_position_sub.get().alt;
-						bk_to_bkp.x =  _local_position_sub.get().x;
-						bk_to_bkp.y =  _local_position_sub.get().y;
-						bk_to_bkp.z =  -_local_position_sub.get().z;
-						bk_to_bkp_can_pub = false;
-					}
-					bk_to_bkp.timestamp = hrt_absolute_time();
-					bk_to_bkp.break_from_mission_point = true;
-					_bk_to_bkp_pub.publish(bk_to_bkp);
+					break_misson_event_pub(break_gps_point_change);
 				}
 
 				// revert to position control in any case
@@ -4485,12 +4454,47 @@ void Commander::esc_status_check(const esc_status_s &esc_status)
 	}
 }
 
-void Commander::bk_to_bkp_back_check()
+void Commander::bk_to_bkp_feedback_check()
 {
-	if(_bk_to_bkp_back_sub.update()){
-		const bk_to_bkp_back_s &bk_to_bkp_back = _bk_to_bkp_back_sub.get();
-		bk_to_bkp_can_pub = bk_to_bkp_back.back_to_break_point && bk_to_bkp_back.break_from_mission_point;
-		mavlink_log_info(&mavlink_log_pub,"bk_to_bkp_can_pub %d",bk_to_bkp_can_pub);
+	if(_bk_to_bkp_feedback_sub.update()){
+		const bk_to_bkp_s &bk_to_bkp_feedback = _bk_to_bkp_feedback_sub.get();
+		if(bk_to_bkp_feedback.feedback_msg_type == bk_to_bkp_s::MSG_TYPE_FEEDBACK_BK_BPB_STATE){
+			break_gps_point_change = bk_to_bkp_feedback.back_to_break_point;
+			mavlink_log_info(&mavlink_log_pub,"break_gps_point_change %d",break_gps_point_change);
+		}
 	}
 
+}
+
+void Commander::jump_event_check_and_pub()
+{
+	if(_mission_sub.update()){
+		const mission_s &mission = _mission_sub.get();
+		if(status.arming_state == vehicle_status_s::ARMING_STATE_ARMED){
+
+			mavlink_log_info(&mavlink_log_pub,"set_mission_index %d",mission.current_seq);
+			bk_to_bkp.timestamp = hrt_absolute_time();
+			bk_to_bkp.jump_mission_index = mission.current_seq;
+			bk_to_bkp.msg_type = bk_to_bkp_s::MSG_TYPE_JUMP_MODE;
+			_bk_to_bkp_pub.publish(bk_to_bkp);
+		}
+	}
+}
+
+void Commander::break_misson_event_pub(bool bk_gps_point_change)
+{
+	mavlink_log_info(&mavlink_log_pub,"break misson current index %d",_mission_result_sub.get().seq_current);
+	bk_to_bkp.timestamp = hrt_absolute_time();
+	if(bk_gps_point_change){
+		bk_to_bkp.lat =  _global_position_sub.get().lat;
+		bk_to_bkp.lon = _global_position_sub.get().lon;
+		bk_to_bkp.alt =  _global_position_sub.get().alt;
+		bk_to_bkp.x =  _local_position_sub.get().x;
+		bk_to_bkp.y =  _local_position_sub.get().y;
+		bk_to_bkp.z =  -_local_position_sub.get().z;
+		break_gps_point_change = false;
+	}
+	bk_to_bkp.msg_type = bk_to_bkp_s::MSG_TYPE_BREAK_MODE;
+	bk_to_bkp.break_current_mission_index = _mission_result_sub.get().seq_current;
+	_bk_to_bkp_pub.publish(bk_to_bkp);
 }

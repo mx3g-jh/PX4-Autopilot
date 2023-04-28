@@ -247,16 +247,15 @@ Mission::on_active()
 		if (_work_item_type != WORK_ITEM_TYPE_TAKEOFF) {
 			set_mission_item_reached();
 
-			if (is_set && is_set_item && is_break) {
-				is_back_to_break_point = true;
-				is_break = false;
-				is_set = false;
-				is_set_item = false;
-				_bk_to_bkp_back.timestamp = hrt_absolute_time();
-				_bk_to_bkp_back.back_to_break_point = true;
-				_bk_to_bkp_back.break_from_mission_point = true;
-				_bk_to_bkp_pub.publish(_bk_to_bkp_back);
-			}
+			// if (is_set && is_set_item && is_break) {
+			// 	is_break = false;
+			// 	is_set = false;
+			// 	is_set_item = false;
+			// 	_bk_to_bkp_feedback.timestamp = hrt_absolute_time();
+			// 	_bk_to_bkp_feedback.back_to_break_point = true;
+			// 	_bk_to_bkp_feedback.break_from_mission_point = true;
+			// 	_bk_to_bkp_pub.publish(_bk_to_bkp_feedback);
+			// }
 		}
 
 		if (_mission_item.autocontinue) {
@@ -611,10 +610,6 @@ Mission::set_mission_items()
 	bool has_next_position_item = false;
 
 	work_item_type new_work_item_type = WORK_ITEM_TYPE_DEFAULT;
-
-	if (is_break && !is_set) {
-		_current_mission_index = _break_current_mission_index - 1;
-	}
 
 	if (prepare_mission_items(&_mission_item, &mission_item_next_position, &has_next_position_item)) {
 		/* if mission type changed, notify */
@@ -1463,12 +1458,7 @@ Mission::prepare_mission_items(mission_item_s *mission_item,
 		offset = -1;
 	}
 
-	if (!is_set && is_break) {
-		offset = 0;
-		is_set = true;
-	}
-
-	if (read_mission_item(((is_break && (!is_set_item) && is_set) ? -1 : 0), mission_item)) {
+	if (read_mission_item(0, mission_item)) {
 
 		first_res = true;
 
@@ -1488,14 +1478,6 @@ Mission::prepare_mission_items(mission_item_s *mission_item,
 
 			}
 		}
-	}
-
-	if (is_set && !is_set_item) {
-		mission_item->lat = _bk_to_bkp.lat;
-		mission_item->lon = _bk_to_bkp.lon;
-		mission_item->altitude = _bk_to_bkp.z;
-		mavlink_log_info(&_mavlink_log_pub, "alt %3.2f bkp %3.2f", (double)mission_item->altitude, (double)_bk_to_bkp.z);
-		is_set_item = true;
 	}
 
 	return first_res;
@@ -1875,11 +1857,15 @@ void Mission::update_bkp()
 {
 	_bk_to_bkp_sub.copy(&_bk_to_bkp);
 	mavlink_log_info(&_mavlink_log_pub, "update_bkp %d", _bk_to_bkp.break_from_mission_point);
-	is_break = _bk_to_bkp.break_from_mission_point;
 
-	if (is_back_to_break_point) {
-		_break_current_mission_index = _current_mission_index;
-		is_back_to_break_point = false;
+	if (_bk_to_bkp.msg_type == bk_to_bkp_s::MSG_TYPE_BREAK_MODE) {
+		mission_mode = bk_to_bkp_s::MSG_TYPE_BREAK_MODE;
+
+	} else if (_bk_to_bkp.msg_type == bk_to_bkp_s::MSG_TYPE_JUMP_MODE) {
+		mission_mode = bk_to_bkp_s::MSG_TYPE_JUMP_MODE;
 	}
+
+	is_break = _bk_to_bkp.break_from_mission_point;
+	mission_mode = _bk_to_bkp.msg_type;
 
 }
