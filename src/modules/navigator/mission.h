@@ -259,16 +259,14 @@ private:
 	uORB::Subscription	_bk_to_bkp_sub{ORB_ID(bk_to_bkp)};		/**< bk_to_bkp subscription */
 	bk_to_bkp_s		_bk_to_bkp {};
 
-	uORB::Publication<bk_to_bkp_s> _bk_to_bkp_pub{ORB_ID(bk_to_bkp_feedback)};
+	uORB::Publication<bk_to_bkp_s> _bk_to_bkp_feedback_pub{ORB_ID(bk_to_bkp_feedback)};
 	bk_to_bkp_s _bk_to_bkp_feedback = {};
 
-	uint8_t	mission_mode = bk_to_bkp_s::MSG_TYPE_NONE;
-	bool is_break{false};
-	bool is_back_to_break_point{true};
-	bool is_set{false};
-	bool is_set_item{false};
-	bool jump_event{false};
-	bool jump_point_reach{true};
+	uint8_t	current_mode = bk_to_bkp_s::MSG_TYPE_NONE;
+
+	bool is_back_to_break_point{false};
+
+	bool jump_event_lock{false};
 
 	int32_t _current_mission_index{-1};
 

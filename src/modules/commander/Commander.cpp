@@ -4458,9 +4458,12 @@ void Commander::bk_to_bkp_feedback_check()
 {
 	if(_bk_to_bkp_feedback_sub.update()){
 		const bk_to_bkp_s &bk_to_bkp_feedback = _bk_to_bkp_feedback_sub.get();
-		if(bk_to_bkp_feedback.feedback_msg_type == bk_to_bkp_s::MSG_TYPE_FEEDBACK_BK_BPB_STATE){
+		if(bk_to_bkp_feedback.feedback_msg_type == bk_to_bkp_s::MSG_TYPE_FEEDBACK_BACK_BREAK_POINT_STATE){
 			break_gps_point_change = bk_to_bkp_feedback.back_to_break_point;
-			mavlink_log_info(&mavlink_log_pub,"break_gps_point_change %d",break_gps_point_change);
+			mavlink_log_info(&mavlink_log_pub,"point_change ,back_to_break_point %d",break_gps_point_change);
+		}else if(bk_to_bkp_feedback.feedback_msg_type == bk_to_bkp_s::MSG_TYPE_FEEDBACK_BACK_JUMP_POINT_STATE){
+			break_gps_point_change = bk_to_bkp_feedback.jump_mission_index_reach;
+			mavlink_log_info(&mavlink_log_pub,"point_change ,jump_mission_index_reach %d",break_gps_point_change);
 		}
 	}
 
@@ -4472,7 +4475,7 @@ void Commander::jump_event_check_and_pub()
 		const mission_s &mission = _mission_sub.get();
 		if(status.arming_state == vehicle_status_s::ARMING_STATE_ARMED){
 
-			mavlink_log_info(&mavlink_log_pub,"set_mission_index %d",mission.current_seq);
+			mavlink_log_info(&mavlink_log_pub,"jump_event index %d",mission.current_seq);
 			bk_to_bkp.timestamp = hrt_absolute_time();
 			bk_to_bkp.jump_mission_index = mission.current_seq;
 			bk_to_bkp.msg_type = bk_to_bkp_s::MSG_TYPE_JUMP_MODE;
@@ -4485,7 +4488,7 @@ void Commander::jump_event_check_and_pub()
 
 void Commander::break_misson_event_pub(bool bk_gps_point_change)
 {
-	mavlink_log_info(&mavlink_log_pub,"break misson current index %d",_mission_result_sub.get().seq_current);
+	mavlink_log_info(&mavlink_log_pub,"break index %d , gps_point_change %d",_mission_result_sub.get().seq_current,bk_gps_point_change);
 	bk_to_bkp.timestamp = hrt_absolute_time();
 	if(bk_gps_point_change){
 		bk_to_bkp.lat =  _global_position_sub.get().lat;
@@ -4494,9 +4497,10 @@ void Commander::break_misson_event_pub(bool bk_gps_point_change)
 		bk_to_bkp.x =  _local_position_sub.get().x;
 		bk_to_bkp.y =  _local_position_sub.get().y;
 		bk_to_bkp.z =  -_local_position_sub.get().z;
+		bk_to_bkp.break_current_mission_index = _mission_result_sub.get().seq_current;
 		break_gps_point_change = false;
 	}
 	bk_to_bkp.msg_type = bk_to_bkp_s::MSG_TYPE_BREAK_MODE;
-	bk_to_bkp.break_current_mission_index = _mission_result_sub.get().seq_current;
+
 	_bk_to_bkp_pub.publish(bk_to_bkp);
 }
