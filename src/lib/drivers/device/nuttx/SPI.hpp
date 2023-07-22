@@ -44,7 +44,7 @@
 
 #include <nuttx/spi/spi.h>
 #include <px4_platform_common/spi.h>
-
+#include <systemlib/mavlink_log.h>
 namespace device __EXPORT
 {
 
@@ -59,7 +59,7 @@ public:
 	SPI &operator=(const SPI &) = delete;
 	SPI(SPI &&) = delete;
 	SPI &operator=(SPI &&) = delete;
-
+	orb_advert_t	_mavlink_log_pub{nullptr};
 protected:
 	/**
 	 * Constructor

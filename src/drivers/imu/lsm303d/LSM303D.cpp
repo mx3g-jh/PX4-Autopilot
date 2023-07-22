@@ -143,6 +143,7 @@ LSM303D::probe()
 {
 	// read dummy value to void to clear SPI statemachine on sensor
 	read_reg(ADDR_WHO_AM_I);
+	PX4_INFO("ADDR_WHO_AM_I %x", read_reg(ADDR_WHO_AM_I));
 
 	// verify that the device is attached and functioning
 	if (read_reg(ADDR_WHO_AM_I) == WHO_I_AM) {

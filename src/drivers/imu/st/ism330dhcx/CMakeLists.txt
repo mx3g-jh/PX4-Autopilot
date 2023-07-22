@@ -1,6 +1,6 @@
 ############################################################################
 #
-#   Copyright (c) 2020 PX4 Development Team. All rights reserved.
+#   Copyright (c) 2019 PX4 Development Team. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -31,6 +31,16 @@
 #
 ############################################################################
 
-add_subdirectory(ism330dlc)
-add_subdirectory(ism330dhcx)
-add_subdirectory(lsm9ds1)
+px4_add_module(
+	MODULE drivers__imu__st__ism330dhcx
+	MAIN ism330dhcx
+	SRCS
+		ism330dhcx_main.cpp
+		ISM330DHCX.cpp
+		ISM330DHCX.hpp
+		ST_ISM330DHCX_Registers.hpp
+	DEPENDS
+		drivers_accelerometer
+		drivers_gyroscope
+		px4_work_queue
+	)

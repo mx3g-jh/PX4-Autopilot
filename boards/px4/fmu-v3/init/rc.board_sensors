@@ -91,7 +91,7 @@ then
 else
 	# $BOARD_FMUV3 = 0 -> FMUv2
 
-	mpu6000 -s -b 1 -R 14 start
+	# mpu6000 -s -b 1 -R 14 start
 
 	# As we will use the external mag and the ICM-20608-G
 	# V2 build hwtypecmp is always false
@@ -102,8 +102,8 @@ else
 	# else: On the PixhawkMini the mpu9250 has been disabled due to HW errata
 	fi
 
-	l3gd20 -s -b 1 start
-	lsm303d -s -b 1 start
+	# l3gd20 -s -b 1 start
+	# lsm303d -s -b 1 start
 fi
 
 unset BOARD_FMUV3

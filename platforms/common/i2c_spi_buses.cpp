@@ -95,7 +95,7 @@ int BusCLIArguments::getopt(int argc, char *argv[], const char *options)
 				// check for duplicates
 				for (const char *c = _options; c != p; ++c) {
 					if (*c == *option) {
-						PX4_ERR("conflicting option: %c", *c);
+						PX4_INFO("conflicting option: %c", *c);
 						_options[0] = 0;
 						return EOF;
 					}
@@ -106,7 +106,7 @@ int BusCLIArguments::getopt(int argc, char *argv[], const char *options)
 		}
 
 		if (p == _options + sizeof(_options)) {
-			PX4_ERR("too many options");
+			PX4_INFO("too many options");
 			_options[0] = 0;
 			return EOF;
 		}
@@ -191,12 +191,12 @@ bool BusCLIArguments::validateConfiguration()
 	bool success = true;
 
 	if (_i2c_support && default_i2c_frequency == -1) {
-		PX4_ERR("Bug: driver %s does not set default_i2c_frequency", px4_get_taskname());
+		PX4_INFO("Bug: driver %s does not set default_i2c_frequency", px4_get_taskname());
 		success = false;
 	}
 
 	if (_spi_support && default_spi_frequency == -1) {
-		PX4_ERR("Bug: driver %s does not set default_spi_frequency", px4_get_taskname());
+		PX4_INFO("Bug: driver %s does not set default_spi_frequency", px4_get_taskname());
 		success = false;
 	}
 
@@ -451,7 +451,7 @@ int I2CSPIDriverBase::module_start(const BusCLIArguments &cli, BusInstanceIterat
 				   void(*print_usage)(), instantiate_method instantiate)
 {
 	if (iterator.configuredBusOption() == I2CSPIBusOption::All) {
-		PX4_ERR("need to specify a bus type");
+		PX4_INFO("need to specify a bus type");
 		print_usage();
 		return -1;
 	}
@@ -460,13 +460,14 @@ int I2CSPIDriverBase::module_start(const BusCLIArguments &cli, BusInstanceIterat
 
 	while (iterator.next()) {
 		if (iterator.instance()) {
-			PX4_WARN("Already running on bus %i", iterator.bus());
+			PX4_INFO("Already running on bus %i", iterator.bus());
 			continue;
 		}
 
 
 		device::Device::DeviceId device_id{};
 		device_id.devid_s.bus = iterator.bus();
+		PX4_INFO("iterator.busType() %d", iterator.busType());
 
 		switch (iterator.busType()) {
 		case BOARD_I2C_BUS: device_id.devid_s.bus_type = device::Device::DeviceBusType_I2C; break;
@@ -476,25 +477,34 @@ int I2CSPIDriverBase::module_start(const BusCLIArguments &cli, BusInstanceIterat
 		case BOARD_INVALID_BUS: device_id.devid_s.bus_type = device::Device::DeviceBusType_UNKNOWN; break;
 		}
 
+		PX4_INFO("1");
 		const int runtime_instance = iterator.runningInstancesCount();
 		I2CSPIDriverInitializing initializer_data{cli, iterator, instantiate, runtime_instance};
+		PX4_INFO("2");
 		// initialize the object and bus on the work queue thread - this will also probe for the device
 		px4::WorkItemSingleShot initializer(px4::device_bus_to_wq(device_id.devid), initializer_trampoline, &initializer_data);
+		PX4_INFO("3");
 		initializer.ScheduleNow();
+		PX4_INFO("4");
 		initializer.wait();
+		PX4_INFO("5");
 		I2CSPIDriverBase *instance = initializer_data.instance;
+		PX4_INFO("6");
 
 		if (!instance) {
-			PX4_DEBUG("instantiate failed (no device on bus %i (devid 0x%x)?)", iterator.bus(), iterator.devid());
+			PX4_INFO("7");
+			PX4_INFO("instantiate failed (no device on bus %i (devid 0x%x)?)", iterator.bus(), iterator.devid());
 			continue;
 		}
 
 		if (cli.i2c_address != 0 && instance->_i2c_address == 0) {
-			PX4_ERR("Bug: driver %s does not pass the I2C address to I2CSPIDriverBase", instance->ItemName());
+			PX4_INFO("8");
+			PX4_INFO("Bug: driver %s does not pass the I2C address to I2CSPIDriverBase", instance->ItemName());
 		}
 
 		iterator.addInstance(instance);
 		started = true;
+		PX4_INFO("print some info that we are running %d | %d", iterator.busType(), iterator.external());
 
 		// print some info that we are running
 		switch (iterator.busType()) {
@@ -547,7 +557,7 @@ int I2CSPIDriverBase::module_stop(BusInstanceIterator &iterator)
 	}
 
 	if (!is_running) {
-		PX4_ERR("Not running");
+		PX4_INFO("Not running");
 		return -1;
 	}
 
@@ -625,7 +635,7 @@ void I2CSPIDriverBase::request_stop_and_wait()
 	} while (++i < 100 && !_task_exited.load());
 
 	if (i >= 100) {
-		PX4_ERR("Module did not respond to stop request");
+		PX4_INFO("Module did not respond to stop request");
 	}
 }
 

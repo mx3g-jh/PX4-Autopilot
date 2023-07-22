@@ -84,11 +84,14 @@ SPI::~SPI()
 int
 SPI::init()
 {
+	mavlink_log_info(&_mavlink_log_pub, "SPI init");
+
 	/* attach to the spi bus */
 	if (_dev == nullptr) {
 		int bus = get_device_bus();
 
 		if (!board_has_bus(BOARD_SPI_BUS, bus)) {
+			mavlink_log_info(&_mavlink_log_pub, "SPI board_has_bus(BOARD_SPI_BUS, bus");
 			return -ENOENT;
 		}
 
@@ -96,6 +99,7 @@ SPI::init()
 	}
 
 	if (_dev == nullptr) {
+		mavlink_log_info(&_mavlink_log_pub, "SPI failed to init SPI");
 		DEVICE_DEBUG("failed to init SPI");
 		return -ENOENT;
 	}
@@ -107,6 +111,7 @@ SPI::init()
 	int ret = probe();
 
 	if (ret != OK) {
+		mavlink_log_info(&_mavlink_log_pub, "SPI probe failed");
 		DEVICE_DEBUG("probe failed");
 		return ret;
 	}
