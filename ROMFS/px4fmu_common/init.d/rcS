@@ -454,6 +454,11 @@ else
 		mavlink start -d /dev/ttyACM0
 	fi
 
+	ifconfig eth0 169.254.166.188
+	ifup eth0
+
+	mavlink start -o 14540 -t 169.254.166.187
+
 	#
 	# Play the startup tune (if not disabled or there is an error)
 	#
