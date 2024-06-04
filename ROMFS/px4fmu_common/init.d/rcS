@@ -457,7 +457,7 @@ else
 	ifconfig eth0 169.254.166.188
 	ifup eth0
 
-	mavlink start -o 14540 -t 169.254.166.187
+	# mavlink start -o 14540 -t 169.254.166.187
 
 	#
 	# Play the startup tune (if not disabled or there is an error)
@@ -614,3 +614,7 @@ unset VEHICLE_TYPE
 # Boot is complete, inform MAVLink app(s) that the system is now fully up and running.
 #
 mavlink boot_complete
+
+# start uxrce_dds
+# uxrce_dds_client start -t udp -p 6666 -h 169.254.166.187 -n drone
+uxrce_dds_client start -t serial -d /dev/ttyS5 -b 921600
