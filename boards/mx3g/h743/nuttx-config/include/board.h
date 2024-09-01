@@ -225,8 +225,18 @@
 #define STM32_SDMMC_CLKCR_EDGE      STM32_SDMMC_CLKCR_NEGEDGE
 
 /* LED definitions ******************************************************************/
-/* The board has two, LED_GREEN a Green LED and LED_BLUE a Blue LED,
- * that can be controlled by software.
+/* The PX4 FMUV6X board has three, LED_GREEN a Green LED, LED_BLUE a Blue LED and
+ * LED_RED a Red LED, that can be controlled by software.
+ *
+ * If CONFIG_ARCH_LEDS is not defined, then the user can control the LEDs in any way.
+ * The following definitions are used to access individual LEDs.
+ */
+
+/* LED index values for use with board_userled() */
+
+/* LED definitions ******************************************************************/
+/* The px4_fmu-v6x board has three, LED_GREEN a Green LED, LED_BLUE a Blue LED and
+ * LED_RED a Red LED, that can be controlled by software.
  *
  * If CONFIG_ARCH_LEDS is not defined, then the user can control the LEDs in any way.
  * The following definitions are used to access individual LEDs.
@@ -236,15 +246,18 @@
 
 #define BOARD_LED1        0
 #define BOARD_LED2        1
-#define BOARD_NLEDS       2
+#define BOARD_LED3        2
+#define BOARD_NLEDS       3
 
-#define BOARD_LED_BLUE    BOARD_LED1
+#define BOARD_LED_RED     BOARD_LED1
 #define BOARD_LED_GREEN   BOARD_LED2
+#define BOARD_LED_BLUE    BOARD_LED3
 
 /* LED bits for use with board_userled_all() */
 
 #define BOARD_LED1_BIT    (1 << BOARD_LED1)
 #define BOARD_LED2_BIT    (1 << BOARD_LED2)
+#define BOARD_LED3_BIT    (1 << BOARD_LED3)
 
 /* If CONFIG_ARCH_LEDS is defined, the usage by the board port is defined in
  * include/board.h and src/stm32_leds.c. The LEDs are used to encode OS-related
@@ -273,63 +286,61 @@
 
 /* Alternate function pin selections ************************************************/
 
-#define GPIO_USART1_RX   GPIO_USART1_RX_2   /* PA10 */
-#define GPIO_USART1_TX   GPIO_USART1_TX_2   /* PA9  */
+#define GPIO_USART1_RX   GPIO_USART1_RX_1      /* PB15 */
+#define GPIO_USART1_TX   GPIO_USART1_TX_1      /* PB14 */
 
-#define GPIO_USART2_RX   GPIO_USART2_RX_2   /* PD6  */
-#define GPIO_USART2_TX   GPIO_USART2_TX_2   /* PD5  */
+#define GPIO_USART2_RX   GPIO_USART2_RX_2       /* PD6   */
+#define GPIO_USART2_TX   GPIO_USART2_TX_2       /* PD5   */
 
-#define GPIO_USART3_RX   GPIO_USART3_RX_3   /* PD9  */
-#define GPIO_USART3_TX   GPIO_USART3_TX_3   /* PD8  */
+#define GPIO_USART3_RX   GPIO_USART3_RX_1   /* PB11   */
+#define GPIO_USART3_TX   GPIO_USART3_TX_1   /* PB10   */
 
-#define GPIO_UART4_RX    GPIO_UART4_RX_3    /* PB8  */
-#define GPIO_UART4_TX    GPIO_UART4_TX_3    /* PB9  */
+#define GPIO_UART4_RX    GPIO_UART4_RX_6    /* PH14 */
+#define GPIO_UART4_TX    GPIO_UART4_TX_6    /* PH13 */
 
-#define GPIO_USART6_RX   GPIO_USART6_RX_1   /* PC7  */
+#define GPIO_USART6_RX   GPIO_USART6_RX_1   /* PC7 */
 #define GPIO_USART6_TX   GPIO_USART6_TX_1   /* PC6  */
 
-#define GPIO_UART7_RX    GPIO_UART7_RX_3    /* PE7  */
-#define GPIO_UART7_TX    GPIO_UART7_TX_3    /* PE8  */
-#define GPIO_UART7_RTS   GPIO_UART7_RTS_1   /* PE9  */
-#define GPIO_UART7_CTS   GPIO_UART7_CTS_1   /* PE10 */
-
-#define GPIO_UART8_RX    GPIO_UART8_RX_1    /* PE0  */
-#define GPIO_UART8_TX    GPIO_UART8_TX_1    /* PE1  */
-
+#define GPIO_UART7_RX    GPIO_UART7_RX_1    /* PA8  */
+#define GPIO_UART7_TX    GPIO_UART7_TX_1    /* PA15  */
 
 /* CAN
  *
  * CAN1 is routed to transceiver.
+ * CAN2 is routed to transceiver.
  */
-
-#define GPIO_CAN1_RX     GPIO_CAN1_RX_3     /* PD0  */
-#define GPIO_CAN1_TX     GPIO_CAN1_TX_3     /* PD1  */
+#define GPIO_CAN1_RX     GPIO_CAN1_RX_5     /* PI9  */
+#define GPIO_CAN1_TX     GPIO_CAN1_TX_2     /* PB9  */
+#define GPIO_CAN2_RX     GPIO_CAN2_RX_1     /* PB12 */
+#define GPIO_CAN2_TX     GPIO_CAN2_TX_1     /* PB13  */
 
 /* SPI
+ * SPI1 is sensors1
+ * SPI2 is sensors2
+ * SPI3 is sensors3
+ * SPI4 is Not Used
+ * SPI5 is FRAM
+ * SPI6 is EXTERNAL1
  *
- * SPI1 is MPU6000
- * SPI2 is MAX7456
- * SPI3 is extern with PD4 and PE2 as CS
- * SPI4 is ICM20602
  */
 
 #define ADJ_SLEW_RATE(p) (((p) & ~GPIO_SPEED_MASK) | (GPIO_SPEED_2MHz))
 
-#define GPIO_SPI1_MISO   GPIO_SPI1_MISO_1               /* PA6  */
-#define GPIO_SPI1_MOSI   GPIO_SPI1_MOSI_3               /* PD7  */
-#define GPIO_SPI1_SCK    ADJ_SLEW_RATE(GPIO_SPI1_SCK_1) /* PA5  */
+#define GPIO_SPI1_MISO   GPIO_SPI1_MISO_2               /* PB4  */
+#define GPIO_SPI1_MOSI   GPIO_SPI1_MOSI_2               /* PB5  */
+#define GPIO_SPI1_SCK    ADJ_SLEW_RATE(GPIO_SPI1_SCK_2) /* PB3  */
 
-#define GPIO_SPI2_MISO   GPIO_SPI2_MISO_1               /* PB14 */
-#define GPIO_SPI2_MOSI   GPIO_SPI2_MOSI_1               /* PB15 */
-#define GPIO_SPI2_SCK    ADJ_SLEW_RATE(GPIO_SPI2_SCK_4) /* PB13 */
+#define GPIO_SPI2_MISO   GPIO_SPI2_MISO_2               /* PC2  */
+#define GPIO_SPI2_MOSI   GPIO_SPI2_MOSI_4               /* PI3  */
+#define GPIO_SPI2_SCK    ADJ_SLEW_RATE(GPIO_SPI2_SCK_5) /* PD3  */
 
-#define GPIO_SPI3_MISO   GPIO_SPI3_MISO_1               /* PB4  */
-#define GPIO_SPI3_MOSI   GPIO_SPI3_MOSI_4               /* PB5  */
-#define GPIO_SPI3_SCK    ADJ_SLEW_RATE(GPIO_SPI3_SCK_1) /* PB3  */
+#define GPIO_SPI4_MISO   GPIO_SPI4_MISO_2               /* PE5  */
+#define GPIO_SPI4_MOSI   GPIO_SPI4_MOSI_2               /* PE6 */
+#define GPIO_SPI4_SCK    ADJ_SLEW_RATE(GPIO_SPI4_SCK_2) /* PE2  */
 
-#define GPIO_SPI4_MISO   GPIO_SPI4_MISO_1               /* PE13 */
-#define GPIO_SPI4_MOSI   GPIO_SPI4_MOSI_1               /* PE14 */
-#define GPIO_SPI4_SCK    ADJ_SLEW_RATE(GPIO_SPI4_SCK_1) /* PE12 */
+#define GPIO_SPI6_MISO   GPIO_SPI6_MISO_2               /* PA6  */
+#define GPIO_SPI6_MOSI   GPIO_SPI6_MOSI_1               /* PG14 */
+#define GPIO_SPI6_SCK    ADJ_SLEW_RATE(GPIO_SPI6_SCK_2) /* PA5  */
 
 /* I2C
  *
@@ -339,17 +350,17 @@
  *
  */
 
-#define GPIO_I2C1_SCL GPIO_I2C1_SCL_1       /* PB6  */
-#define GPIO_I2C1_SDA GPIO_I2C1_SDA_1       /* PB7  */
+#define GPIO_I2C3_SCL GPIO_I2C3_SCL_2       /* PH7 */
+#define GPIO_I2C3_SDA GPIO_I2C3_SDA_2       /* PH8 */
 
-#define GPIO_I2C1_SCL_GPIO                  (GPIO_OUTPUT | GPIO_OPENDRAIN | GPIO_SPEED_50MHz | GPIO_OUTPUT_SET | GPIO_PORTB | GPIO_PIN6)
-#define GPIO_I2C1_SDA_GPIO                  (GPIO_OUTPUT | GPIO_OPENDRAIN | GPIO_SPEED_50MHz | GPIO_OUTPUT_SET | GPIO_PORTB | GPIO_PIN7)
+#define GPIO_I2C3_SCL_GPIO                  (GPIO_OUTPUT | GPIO_OPENDRAIN |GPIO_SPEED_50MHz | GPIO_OUTPUT_SET | GPIO_PORTH | GPIO_PIN7)
+#define GPIO_I2C3_SDA_GPIO                  (GPIO_OUTPUT | GPIO_OPENDRAIN |GPIO_SPEED_50MHz | GPIO_OUTPUT_SET | GPIO_PORTH | GPIO_PIN8)
 
-#define GPIO_I2C2_SCL GPIO_I2C2_SCL_1       /* PB10 */
-#define GPIO_I2C2_SDA GPIO_I2C2_SDA_1       /* PB11 */
+#define GPIO_I2C4_SCL GPIO_I2C4_SCL_5       /* PB8 */
+#define GPIO_I2C4_SDA GPIO_I2C4_SDA_4       /* PB7 */
 
-#define GPIO_I2C2_SCL_GPIO                  (GPIO_OUTPUT | GPIO_OPENDRAIN | GPIO_SPEED_50MHz | GPIO_OUTPUT_SET | GPIO_PORTB | GPIO_PIN10)
-#define GPIO_I2C2_SDA_GPIO                  (GPIO_OUTPUT | GPIO_OPENDRAIN | GPIO_SPEED_50MHz | GPIO_OUTPUT_SET | GPIO_PORTB | GPIO_PIN11)
+#define GPIO_I2C4_SCL_GPIO                  (GPIO_OUTPUT | GPIO_OPENDRAIN | GPIO_SPEED_50MHz | GPIO_OUTPUT_SET | GPIO_PORTB | GPIO_PIN8)
+#define GPIO_I2C4_SDA_GPIO                  (GPIO_OUTPUT | GPIO_OPENDRAIN | GPIO_SPEED_50MHz | GPIO_OUTPUT_SET | GPIO_PORTB | GPIO_PIN7)
 
 /* SDMMC1
  *
