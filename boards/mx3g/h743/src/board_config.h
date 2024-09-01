@@ -53,17 +53,31 @@
  * Definitions
  ****************************************************************************************************/
 
-// #define FLASH_BASED_PARAMS
+/* PX4IO connection configuration */
+
+#define BOARD_USES_PX4IO_VERSION       2
+#define PX4IO_SERIAL_DEVICE            "/dev/ttyS4"
+#define PX4IO_SERIAL_TX_GPIO           GPIO_USART6_TX
+#define PX4IO_SERIAL_RX_GPIO           GPIO_USART6_RX
+#define PX4IO_SERIAL_BASE              STM32_USART6_BASE
+#define PX4IO_SERIAL_VECTOR            STM32_IRQ_USART6
+#define PX4IO_SERIAL_TX_DMAMAP         DMAMAP_USART6_TX
+#define PX4IO_SERIAL_RX_DMAMAP         DMAMAP_USART6_RX
+#define PX4IO_SERIAL_RCC_REG           STM32_RCC_APB2ENR
+#define PX4IO_SERIAL_RCC_EN            RCC_APB2ENR_USART6EN
+#define PX4IO_SERIAL_CLOCK             STM32_PCLK2_FREQUENCY
+#define PX4IO_SERIAL_BITRATE           1500000               /* 1.5Mbps -> max rate for IO */
 
 
-/* LEDs are driven with push open drain to support Anode to 5V or 3.3V */
+/* LEDs are driven with push open drain to support Anode to 5V or 3.3V or used as TRACE0-2 */
 
 #  define GPIO_nLED_BLUE        /* PI5 */  (GPIO_OUTPUT|GPIO_OPENDRAIN|GPIO_SPEED_50MHz|GPIO_OUTPUT_SET|GPIO_PORTI|GPIO_PIN5)
 #  define GPIO_nLED_GREEN      /* PI7 */  (GPIO_OUTPUT|GPIO_OPENDRAIN|GPIO_SPEED_50MHz|GPIO_OUTPUT_SET|GPIO_PORTI|GPIO_PIN7)
+#  define GPIO_nLED_RED       /* PI6 */  (GPIO_OUTPUT|GPIO_OPENDRAIN|GPIO_SPEED_50MHz|GPIO_OUTPUT_SET|GPIO_PORTI|GPIO_PIN6)
 
-#define BOARD_HAS_CONTROL_STATUS_LEDS   1
-#define BOARD_ARMED_STATE_LED           1 // Green LED
-#define BOARD_OVERLOAD_LED              0 // Blue LED
+#  define BOARD_HAS_CONTROL_STATUS_LEDS      1
+#  define BOARD_OVERLOAD_LED     LED_RED
+#  define BOARD_ARMED_STATE_LED  LED_BLUE
 
 
 /*
@@ -76,67 +90,43 @@
 /* ADC defines to be used in sensors.cpp to read from a particular channel */
 #define ADC1_CH(n)                  (n)
 
+#define ADC3_CH(n)                  (n)
 /* Define GPIO pins used as ADC N.B. Channel numbers must match below  */
 #define PX4_ADC_GPIO  \
-	/* PC0  */  GPIO_ADC123_INP10, \
-	/* PC1  */  GPIO_ADC123_INP11, \
+	/* PH5  */  GPIO_ADC3_INP16, \
 	/* PA4  */  GPIO_ADC12_INP18, \
-	/* PA7  */  GPIO_ADC12_INP7, \
-	/* PC4  */  GPIO_ADC12_INP4, \
-	/* PC5  */  GPIO_ADC12_INP8
+	/* PC3  */  GPIO_ADC12_INP13
 
 /* Define Channel numbers must match above GPIO pin IN(n)*/
-#define ADC_BATTERY_VOLTAGE_CHANNEL     /* PC0  */  ADC1_CH(10)
-#define ADC_BATTERY_CURRENT_CHANNEL     /* PC1  */  ADC1_CH(11)
-#define ADC_BATTERY2_VOLTAGE_CHANNEL    /* PA4  */  ADC1_CH(18)
-#define ADC_BATTERY2_CURRENT_CHANNEL    /* PA7  */  ADC1_CH(7)
-#define ADC_AIRSPEED_IN_CHANNEL         /* PC4  */  ADC1_CH(4)
-#define ADC_RSSI_IN_CHANNEL             /* PC5  */  ADC1_CH(8)
+#define ADC_BATTERY_VOLTAGE_CHANNEL     /* PH5  */  ADC3_CH(16)
+#define ADC_BATTERY_CURRENT_CHANNEL    /* PA4  */  ADC1_CH(18)
+#define ADC_AIRSPEED_IN_CHANNEL         /* PC3  */  ADC1_CH(13)
 
 #define ADC_CHANNELS \
 	((1 << ADC_BATTERY_VOLTAGE_CHANNEL) | \
 	 (1 << ADC_BATTERY_CURRENT_CHANNEL) | \
-	 (1 << ADC_BATTERY2_VOLTAGE_CHANNEL) | \
-	 (1 << ADC_BATTERY2_CURRENT_CHANNEL) | \
-	 (1 << ADC_AIRSPEED_IN_CHANNEL) | \
-	 (1 << ADC_RSSI_IN_CHANNEL))
+	 (1 << ADC_AIRSPEED_IN_CHANNEL))
 
 
-/* Define Battery 1 Voltage Divider and A per V
- */
-
+/* Define Battery Voltage Divider and A per V */
 #define BOARD_BATTERY1_V_DIV         (11.0f)     /* measured with the provided PM board */
 #define BOARD_BATTERY1_A_PER_V       (40.0f)
 #define BOARD_BATTERY2_V_DIV         (11.0f)     /* measured with the provided PM board */
 
-
-/* CAN Silence
- *
- * Silent mode control \ ESC Mux select
- */
-
-#define GPIO_CAN1_SILENT_S0  /* PD3  */ (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_2MHz|GPIO_OUTPUT_CLEAR|GPIO_PORTD|GPIO_PIN3)
-
-
 /* PWM
  */
-#define DIRECT_PWM_OUTPUT_CHANNELS   12
-#define DIRECT_INPUT_TIMER_CHANNELS  12
+#define DIRECT_PWM_OUTPUT_CHANNELS   11
+#define DIRECT_INPUT_TIMER_CHANNELS  11
 
 #define BOARD_HAS_PWM  DIRECT_PWM_OUTPUT_CHANNELS
 
 
 /* Spare GPIO */
 
-// #define GPIO_PG6                        /* PG6  */  (GPIO_INPUT|GPIO_PULLUP|GPIO_PORTG|GPIO_PIN6)
-// #define GPIO_PD15                       /* PD15 */  (GPIO_INPUT|GPIO_FLOAT|GPIO_PORTD|GPIO_PIN15)
-// #define GPIO_PG15                       /* PG15 */  (GPIO_INPUT|GPIO_PULLUP|GPIO_PORTG|GPIO_PIN15)
-
-
 /* Tone alarm output */
 
-#define GPIO_TONE_ALARM_IDLE    /* PA15 */ (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_2MHz|GPIO_OUTPUT_CLEAR|GPIO_PORTA|GPIO_PIN15)
-#define GPIO_TONE_ALARM_GPIO    /* PA15 */ (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_2MHz|GPIO_OUTPUT_CLEAR|GPIO_PORTA|GPIO_PIN15)
+#define GPIO_TONE_ALARM_IDLE    /* PB2 */ (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_2MHz|GPIO_OUTPUT_CLEAR|GPIO_PORTB|GPIO_PIN2)
+#define GPIO_TONE_ALARM_GPIO    /* PB2 */ (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_2MHz|GPIO_OUTPUT_CLEAR|GPIO_PORTB|GPIO_PIN2)
 
 // #define TONE_ALARM_TIMER        2  /* Timer 2 */
 // #define TONE_ALARM_CHANNEL      1  /* PA15 GPIO_TIM2_CH1OUT_2 */
@@ -155,12 +145,12 @@
 
 
 /* High-resolution timer */
-#define HRT_TIMER               2  /* use timer8 for the HRT */
-#define HRT_TIMER_CHANNEL       1  /* use capture/compare channel 3 */
+#define HRT_TIMER               2  /* use timer2 for the HRT */
+#define HRT_TIMER_CHANNEL       1  /* use capture/compare channel 1 */
 
 
 /* RC Serial port */
-#define RC_SERIAL_PORT          "/dev/ttyS4"
+#define RC_SERIAL_PORT          "/dev/ttyS5"
 #define BOARD_SUPPORTS_RC_SERIAL_PORT_OUTPUT
 
 // #define GPIO_RSSI_IN            /* PC5  */ (GPIO_INPUT|GPIO_PULLUP|GPIO_PORTC|GPIO_PIN5)
@@ -186,16 +176,15 @@
 		PX4_ADC_GPIO, \
 		GPIO_CAN1_TX, \
 		GPIO_CAN1_RX, \
-		GPIO_CAN1_SILENT_S0, \
-		GPIO_nLED_BLUE, \
-		GPIO_nLED_GREEN, \
+		GPIO_CAN2_TX, \
+		GPIO_CAN2_RX, \
 		GPIO_TONE_ALARM_IDLE, \
 		GPIO_VDD_3V3_SD_CARD_EN, \
 	}
 
 #define BOARD_ENABLE_CONSOLE_BUFFER
 
-#define BOARD_NUM_IO_TIMERS 4
+#define BOARD_NUM_IO_TIMERS 5
 
 
 __BEGIN_DECLS
