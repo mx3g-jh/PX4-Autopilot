@@ -1,10 +1,10 @@
 {
     "board_id": 1013,
     "magic": "PX4FWv1",
-    "description": "Firmware for the MatekH743 boards",
+    "description": "Firmware for the Mx3GV6XPRO boards",
     "image": "",
     "build_time": 0,
-    "summary": "MatekH743",
+    "summary": "Mx3GV6XPRO",
     "version": "0.1",
     "image_size": 0,
     "image_maxsize": 1966080,
