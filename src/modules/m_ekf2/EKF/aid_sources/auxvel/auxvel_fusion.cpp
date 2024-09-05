@@ -33,7 +33,7 @@
 
 #include "ekf.h"
 
-void Ekf::controlAuxVelFusion(const imuSample &imu_sample)
+void M_EKF::controlAuxVelFusion(const imuSample &imu_sample)
 {
 	if (_auxvel_buffer) {
 		auxVelSample sample;
@@ -55,7 +55,7 @@ void Ekf::controlAuxVelFusion(const imuSample &imu_sample)
 	}
 }
 
-void Ekf::stopAuxVelFusion()
+void M_EKF::stopAuxVelFusion()
 {
 	ECL_INFO("stopping aux vel fusion");
 	//_control_status.flags.aux_vel = false;

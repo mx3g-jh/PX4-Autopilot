@@ -43,9 +43,9 @@
 #include <mathlib/mathlib.h>
 #include <cstdlib>
 
-#include <ekf_derivation/generated/compute_gnss_yaw_pred_innov_var_and_h.h>
+#include <ekf_derivation/compute_gnss_yaw_pred_innov_var_and_h.h>
 
-void Ekf::controlGnssYawFusion(const gnssSample &gnss_sample)
+void M_EKF::controlGnssYawFusion(const gnssSample &gnss_sample)
 {
 	if (!(_params.gnss_ctrl & static_cast<int32_t>(GnssCtrl::YAW))
 	    || _control_status.flags.gnss_yaw_fault) {
@@ -131,7 +131,7 @@ void Ekf::controlGnssYawFusion(const gnssSample &gnss_sample)
 	}
 }
 
-void Ekf::updateGnssYaw(const gnssSample &gnss_sample)
+void M_EKF::updateGnssYaw(const gnssSample &gnss_sample)
 {
 	// calculate the observed yaw angle of antenna array, converting a from body to antenna yaw measurement
 	const float measured_hdg = wrap_pi(gnss_sample.yaw + gnss_sample.yaw_offset);
@@ -143,8 +143,8 @@ void Ekf::updateGnssYaw(const gnssSample &gnss_sample)
 	float heading_innov_var;
 
 	VectorState H;
-	sym::ComputeGnssYawPredInnovVarAndH(_state.vector(), P, gnss_sample.yaw_offset, R_YAW, FLT_EPSILON,
-					    &heading_pred, &heading_innov_var, &H);
+	m_sym::ComputeGnssYawPredInnovVarAndH(_state.vector(), P, gnss_sample.yaw_offset, R_YAW, FLT_EPSILON,
+					      &heading_pred, &heading_innov_var, &H);
 
 	updateAidSourceStatus(_aid_src_gnss_yaw,
 			      gnss_sample.time_us,                          // sample timestamp
@@ -155,7 +155,7 @@ void Ekf::updateGnssYaw(const gnssSample &gnss_sample)
 			      math::max(_params.heading_innov_gate, 1.f)); // innovation gate
 }
 
-void Ekf::fuseGnssYaw(float antenna_yaw_offset)
+void M_EKF::fuseGnssYaw(float antenna_yaw_offset)
 {
 	auto &aid_src = _aid_src_gnss_yaw;
 
@@ -174,8 +174,8 @@ void Ekf::fuseGnssYaw(float antenna_yaw_offset)
 
 	// Note: we recompute innov and innov_var because it doesn't cost much more than just computing H
 	// making a separate function just for H uses more flash space without reducing CPU load significantly
-	sym::ComputeGnssYawPredInnovVarAndH(_state.vector(), P, antenna_yaw_offset, aid_src.observation_variance, FLT_EPSILON,
-					    &heading_pred, &heading_innov_var, &H);
+	m_sym::ComputeGnssYawPredInnovVarAndH(_state.vector(), P, antenna_yaw_offset, aid_src.observation_variance, FLT_EPSILON,
+					      &heading_pred, &heading_innov_var, &H);
 
 	// check if the innovation variance calculation is badly conditioned
 	if (aid_src.innovation_variance < aid_src.observation_variance) {
@@ -215,7 +215,7 @@ void Ekf::fuseGnssYaw(float antenna_yaw_offset)
 	}
 }
 
-bool Ekf::resetYawToGnss(const float gnss_yaw, const float gnss_yaw_offset)
+bool M_EKF::resetYawToGnss(const float gnss_yaw, const float gnss_yaw_offset)
 {
 	// define the predicted antenna array vector and rotate into earth frame
 	const Vector3f ant_vec_bf = {cosf(gnss_yaw_offset), sinf(gnss_yaw_offset), 0.0f};
@@ -235,7 +235,7 @@ bool Ekf::resetYawToGnss(const float gnss_yaw, const float gnss_yaw_offset)
 	return true;
 }
 
-void Ekf::stopGnssYawFusion()
+void M_EKF::stopGnssYawFusion()
 {
 	if (_control_status.flags.gnss_yaw) {
 

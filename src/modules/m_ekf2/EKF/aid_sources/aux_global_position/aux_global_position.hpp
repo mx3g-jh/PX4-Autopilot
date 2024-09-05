@@ -31,12 +31,12 @@
  *
  ****************************************************************************/
 
-#ifndef EKF_AUX_GLOBAL_POSITION_HPP
-#define EKF_AUX_GLOBAL_POSITION_HPP
+#ifndef M_EKF_AUX_GLOBAL_POSITION_HPP
+#define M_EKF_AUX_GLOBAL_POSITION_HPP
 
 // interface?
 //  - ModuleParams
-//  - Base class EKF
+//  - Base class M_EKF
 //  -  bool update(imu)
 //   how to get delay?
 //  WelfordMean for init?
@@ -55,19 +55,19 @@
 # include <uORB/topics/vehicle_global_position.h>
 #endif // MODULE_NAME
 
-class Ekf;
+class M_EKF;
 
-class AuxGlobalPosition : public ModuleParams
+class M_AuxGlobalPosition : public ModuleParams
 {
 public:
-	AuxGlobalPosition() : ModuleParams(nullptr)
+	M_AuxGlobalPosition() : ModuleParams(nullptr)
 	{
 		_estimator_aid_src_aux_global_position_pub.advertise();
 	}
 
-	~AuxGlobalPosition() = default;
+	~M_AuxGlobalPosition() = default;
 
-	void update(Ekf &ekf, const estimator::imuSample &imu_delayed);
+	void update(M_EKF &ekf, const m_estimator::imuSample &imu_delayed);
 
 	void updateParameters()
 	{
@@ -92,7 +92,7 @@ private:
 		uint8_t lat_lon_reset_counter{};
 	};
 
-	RingBuffer<AuxGlobalPositionSample> _aux_global_position_buffer{20}; // TODO: size with _obs_buffer_length and actual publication rate
+	M_RingBuffer<AuxGlobalPositionSample> _aux_global_position_buffer{20}; // TODO: size with _obs_buffer_length and actual publication rate
 	uint64_t _time_last_buffer_push{0};
 
 	enum class Ctrl : uint8_t {
@@ -131,4 +131,4 @@ private:
 
 #endif // CONFIG_EKF2_AUX_GLOBAL_POSITION
 
-#endif // !EKF_AUX_GLOBAL_POSITION_HPP
+#endif // !M_EKF_AUX_GLOBAL_POSITION_HPP

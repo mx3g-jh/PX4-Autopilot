@@ -55,7 +55,7 @@
 #define MASK_GPS_VSPD    (1<<8)
 #define MASK_GPS_SPOOFED (1<<9)
 
-void Ekf::collect_gps(const gnssSample &gps)
+void M_EKF::collect_gps(const gnssSample &gps)
 {
 	if (_filter_initialised && !_NED_origin_initialised && _gps_checks_passed) {
 		// If we have good GPS data set the origin's WGS-84 position to the last gps fix
@@ -83,7 +83,7 @@ void Ekf::collect_gps(const gnssSample &gps)
 	}
 }
 
-bool Ekf::runGnssChecks(const gnssSample &gps)
+bool M_EKF::runGnssChecks(const gnssSample &gps)
 {
 	_gps_check_fail_status.flags.spoofed = gps.spoofed;
 
@@ -206,7 +206,7 @@ bool Ekf::runGnssChecks(const gnssSample &gps)
 	}
 }
 
-void Ekf::resetGpsDriftCheckFilters()
+void M_EKF::resetGpsDriftCheckFilters()
 {
 	_gps_velNE_filt.setZero();
 	_gps_vel_d_filt = 0.f;

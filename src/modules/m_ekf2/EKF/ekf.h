@@ -40,8 +40,8 @@
  *
  */
 
-#ifndef EKF_EKF_H
-#define EKF_EKF_H
+#ifndef M_EKF_EKF_H
+#define M_EKF_EKF_H
 
 #include "estimator_interface.h"
 
@@ -53,7 +53,7 @@
 #include "bias_estimator/height_bias_estimator.hpp"
 #include "bias_estimator/position_bias_estimator.hpp"
 
-#include <ekf_derivation/generated/state.h>
+#include "ekf_derivation/state.h"
 
 #include <uORB/topics/estimator_aid_source1d.h>
 #include <uORB/topics/estimator_aid_source2d.h>
@@ -68,18 +68,18 @@
 
 enum class Likelihood { LOW, MEDIUM, HIGH };
 
-class Ekf final : public EstimatorInterface
+class M_EKF final : public M_EstimatorInterface
 {
 public:
 	typedef matrix::Vector<float, State::size> VectorState;
 	typedef matrix::SquareMatrix<float, State::size> SquareMatrixState;
 
-	Ekf()
+	M_EKF()
 	{
 		reset();
 	};
 
-	virtual ~Ekf() = default;
+	virtual ~M_EKF() = default;
 
 	// initialise variables to sane values (also interface class)
 	bool init(uint64_t timestamp) override;
@@ -93,7 +93,7 @@ public:
 
 #if defined(CONFIG_EKF2_BAROMETER)
 	const auto &aid_src_baro_hgt() const { return _aid_src_baro_hgt; }
-	const BiasEstimator::status &getBaroBiasEstimatorStatus() const { return _baro_b_est.getStatus(); }
+	const M_BiasEstimator::status &getBaroBiasEstimatorStatus() const { return _baro_b_est.getStatus(); }
 #endif // CONFIG_EKF2_BAROMETER
 
 #if defined(CONFIG_EKF2_TERRAIN)
@@ -436,8 +436,8 @@ public:
 	const auto &aid_src_ev_vel() const { return _aid_src_ev_vel; }
 	const auto &aid_src_ev_yaw() const { return _aid_src_ev_yaw; }
 
-	const BiasEstimator::status &getEvHgtBiasEstimatorStatus() const { return _ev_hgt_b_est.getStatus(); }
-	const BiasEstimator::status &getEvPosBiasEstimatorStatus(int i) const { return _ev_pos_b_est.getStatus(i); }
+	const M_BiasEstimator::status &getEvHgtBiasEstimatorStatus() const { return _ev_hgt_b_est.getStatus(); }
+	const M_BiasEstimator::status &getEvPosBiasEstimatorStatus(int i) const { return _ev_pos_b_est.getStatus(i); }
 #endif // CONFIG_EKF2_EXTERNAL_VISION
 
 #if defined(CONFIG_EKF2_GNSS)
@@ -451,7 +451,7 @@ public:
 
 	bool gps_checks_passed() const { return _gps_checks_passed; };
 
-	const BiasEstimator::status &getGpsHgtBiasEstimatorStatus() const { return _gps_hgt_b_est.getStatus(); }
+	const M_BiasEstimator::status &getGpsHgtBiasEstimatorStatus() const { return _gps_hgt_b_est.getStatus(); }
 
 	const auto &aid_src_gnss_hgt() const { return _aid_src_gnss_hgt; }
 	const auto &aid_src_gnss_pos() const { return _aid_src_gnss_pos; }
@@ -550,7 +550,7 @@ public:
 
 	void updateParameters();
 
-	friend class AuxGlobalPosition;
+	friend class M_AuxGlobalPosition;
 
 private:
 
@@ -686,7 +686,7 @@ private:
 	// height sensor status
 	bool _gps_intermittent{true};           ///< true if data into the buffer is intermittent
 
-	HeightBiasEstimator _gps_hgt_b_est{HeightSensor::GNSS, _height_sensor_ref};
+	M_HeightBiasEstimator _gps_hgt_b_est{HeightSensor::GNSS, _height_sensor_ref};
 
 	estimator_aid_source1d_s _aid_src_gnss_hgt{};
 	estimator_aid_source2d_s _aid_src_gnss_pos{};
@@ -717,7 +717,7 @@ private:
 	AlphaFilter<float> _baro_lpf{0.1f};	///< filtered barometric height measurement (m)
 	uint32_t _baro_counter{0};		///< number of baro samples read during initialisation
 
-	HeightBiasEstimator _baro_b_est{HeightSensor::BARO, _height_sensor_ref};
+	M_HeightBiasEstimator _baro_b_est{HeightSensor::BARO, _height_sensor_ref};
 
 	bool _baro_hgt_faulty{false};		///< true if baro data have been declared faulty TODO: move to fault flags
 #endif // CONFIG_EKF2_BAROMETER
@@ -1049,7 +1049,7 @@ private:
 	bool resetYawToEKFGSF();
 
 	// yaw estimator instance
-	EKFGSF_yaw _yawEstimator{};
+	M_EKFGSF_yaw _yawEstimator{};
 
 #endif // CONFIG_EKF2_GNSS
 
@@ -1158,8 +1158,8 @@ private:
 	PositionSensor _position_sensor_ref{PositionSensor::GNSS};
 
 #if defined(CONFIG_EKF2_EXTERNAL_VISION)
-	HeightBiasEstimator _ev_hgt_b_est {HeightSensor::EV, _height_sensor_ref};
-	PositionBiasEstimator _ev_pos_b_est{PositionSensor::EV, _position_sensor_ref};
+	M_HeightBiasEstimator _ev_hgt_b_est {HeightSensor::EV, _height_sensor_ref};
+	M_PositionBiasEstimator _ev_pos_b_est{PositionSensor::EV, _position_sensor_ref};
 	AlphaFilter<Quatf> _ev_q_error_filt{0.001f};
 	bool _ev_q_error_initialized{false};
 #endif // CONFIG_EKF2_EXTERNAL_VISION
@@ -1360,12 +1360,12 @@ private:
 		status.fused = false;
 	}
 
-	ZeroGyroUpdate _zero_gyro_update{};
-	ZeroVelocityUpdate _zero_velocity_update{};
+	M_ZeroGyroUpdate _zero_gyro_update{};
+	M_ZeroVelocityUpdate _zero_velocity_update{};
 
 #if defined(CONFIG_EKF2_AUX_GLOBAL_POSITION) && defined(MODULE_NAME)
-	AuxGlobalPosition _aux_global_position {};
+	M_AuxGlobalPosition _aux_global_position {};
 #endif // CONFIG_EKF2_AUX_GLOBAL_POSITION
 };
 
-#endif // !EKF_EKF_H
+#endif // !M_EKF_EKF_H

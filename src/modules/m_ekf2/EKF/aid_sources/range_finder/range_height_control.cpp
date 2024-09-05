@@ -37,9 +37,9 @@
  */
 
 #include "ekf.h"
-#include "ekf_derivation/generated/compute_hagl_innov_var.h"
+#include "ekf_derivation/compute_hagl_innov_var.h"
 
-void Ekf::controlRangeHaglFusion(const imuSample &imu_sample)
+void M_EKF::controlRangeHaglFusion(const imuSample &imu_sample)
 {
 	static constexpr const char *HGT_SRC_NAME = "RNG";
 
@@ -109,7 +109,7 @@ void Ekf::controlRangeHaglFusion(const imuSample &imu_sample)
 				&& _rng_consistency_check.isKinematicallyConsistent();
 
 		const bool starting_conditions_passing = continuing_conditions_passing
-				&& isNewestSampleRecent(_time_last_range_buffer_push, 2 * estimator::sensor::RNG_MAX_INTERVAL)
+				&& isNewestSampleRecent(_time_last_range_buffer_push, 2 * m_estimator::m_sensor::RNG_MAX_INTERVAL)
 				&& _range_sensor.isRegularlySendingData();
 
 
@@ -225,7 +225,7 @@ void Ekf::controlRangeHaglFusion(const imuSample &imu_sample)
 		}
 
 	} else if ((_control_status.flags.rng_hgt || _control_status.flags.rng_terrain)
-		   && !isNewestSampleRecent(_time_last_range_buffer_push, 2 * estimator::sensor::RNG_MAX_INTERVAL)) {
+		   && !isNewestSampleRecent(_time_last_range_buffer_push, 2 * m_estimator::m_sensor::RNG_MAX_INTERVAL)) {
 		// No data anymore. Stop until it comes back.
 		ECL_WARN("stopping %s fusion, no data", HGT_SRC_NAME);
 		stopRngHgtFusion();
@@ -233,13 +233,13 @@ void Ekf::controlRangeHaglFusion(const imuSample &imu_sample)
 	}
 }
 
-void Ekf::updateRangeHagl(estimator_aid_source1d_s &aid_src)
+void M_EKF::updateRangeHagl(estimator_aid_source1d_s &aid_src)
 {
 	const float measurement = math::max(_range_sensor.getDistBottom(), _params.rng_gnd_clearance);
 	const float measurement_variance = getRngVar();
 
 	float innovation_variance;
-	sym::ComputeHaglInnovVar(P, measurement_variance, &innovation_variance);
+	m_sym::ComputeHaglInnovVar(P, measurement_variance, &innovation_variance);
 
 	const float innov_gate = math::max(_params.range_innov_gate, 1.f);
 	updateAidSourceStatus(aid_src,
@@ -259,7 +259,7 @@ void Ekf::updateRangeHagl(estimator_aid_source1d_s &aid_src)
 	}
 }
 
-float Ekf::getRngVar() const
+float M_EKF::getRngVar() const
 {
 	return fmaxf(
 		       P(State::pos.idx + 2, State::pos.idx + 2)
@@ -268,7 +268,7 @@ float Ekf::getRngVar() const
 		       0.f);
 }
 
-void Ekf::resetTerrainToRng(estimator_aid_source1d_s &aid_src)
+void M_EKF::resetTerrainToRng(estimator_aid_source1d_s &aid_src)
 {
 	const float new_terrain = _state.pos(2) + aid_src.observation;
 	const float delta_terrain = new_terrain - _state.terrain;
@@ -291,7 +291,7 @@ void Ekf::resetTerrainToRng(estimator_aid_source1d_s &aid_src)
 	aid_src.time_last_fuse = _time_delayed_us;
 }
 
-bool Ekf::isConditionalRangeAidSuitable()
+bool M_EKF::isConditionalRangeAidSuitable()
 {
 	// check if we can use range finder measurements to estimate height, use hysteresis to avoid rapid switching
 	// Note that the 0.7 coefficients and the innovation check are arbitrary values but work well in practice
@@ -319,7 +319,7 @@ bool Ekf::isConditionalRangeAidSuitable()
 	return is_in_range && is_hagl_stable && is_below_max_speed;
 }
 
-void Ekf::stopRngHgtFusion()
+void M_EKF::stopRngHgtFusion()
 {
 	if (_control_status.flags.rng_hgt) {
 
@@ -331,7 +331,7 @@ void Ekf::stopRngHgtFusion()
 	}
 }
 
-void Ekf::stopRngTerrFusion()
+void M_EKF::stopRngTerrFusion()
 {
 	_control_status.flags.rng_terrain = false;
 }

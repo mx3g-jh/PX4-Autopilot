@@ -39,7 +39,7 @@
 #include "ekf.h"
 #include <mathlib/mathlib.h>
 
-void Ekf::controlGpsFusion(const imuSample &imu_delayed)
+void M_EKF::controlGpsFusion(const imuSample &imu_delayed)
 {
 	if (!_gps_buffer || (_params.gnss_ctrl == 0)) {
 		stopGpsFusion();
@@ -179,7 +179,7 @@ void Ekf::controlGpsFusion(const imuSample &imu_delayed)
 	}
 }
 
-void Ekf::updateGnssVel(const imuSample &imu_sample, const gnssSample &gnss_sample, estimator_aid_source3d_s &aid_src)
+void M_EKF::updateGnssVel(const imuSample &imu_sample, const gnssSample &gnss_sample, estimator_aid_source3d_s &aid_src)
 {
 	// correct velocity for offset relative to IMU
 	const Vector3f pos_offset_body = _params.gps_pos_body - _params.imu_pos_body;
@@ -211,7 +211,7 @@ void Ekf::updateGnssVel(const imuSample &imu_sample, const gnssSample &gnss_samp
 	}
 }
 
-void Ekf::updateGnssPos(const gnssSample &gnss_sample, estimator_aid_source2d_s &aid_src)
+void M_EKF::updateGnssPos(const gnssSample &gnss_sample, estimator_aid_source2d_s &aid_src)
 {
 	// correct position and height for offset relative to IMU
 	const Vector3f pos_offset_body = _params.gps_pos_body - _params.imu_pos_body;
@@ -241,7 +241,7 @@ void Ekf::updateGnssPos(const gnssSample &gnss_sample, estimator_aid_source2d_s 
 			      math::max(_params.gps_pos_innov_gate, 1.f));            // innovation gate
 }
 
-void Ekf::controlGnssYawEstimator(estimator_aid_source3d_s &aid_src_vel)
+void M_EKF::controlGnssYawEstimator(estimator_aid_source3d_s &aid_src_vel)
 {
 	// update yaw estimator velocity (basic sanity check on GNSS velocity data)
 	const float vel_var = aid_src_vel.observation_variance[0];
@@ -265,7 +265,7 @@ void Ekf::controlGnssYawEstimator(estimator_aid_source3d_s &aid_src_vel)
 	}
 }
 
-bool Ekf::tryYawEmergencyReset()
+bool M_EKF::tryYawEmergencyReset()
 {
 	bool success = false;
 
@@ -305,7 +305,7 @@ bool Ekf::tryYawEmergencyReset()
 	return success;
 }
 
-void Ekf::resetVelocityToGnss(estimator_aid_source3d_s &aid_src)
+void M_EKF::resetVelocityToGnss(estimator_aid_source3d_s &aid_src)
 {
 	_information_events.flags.reset_vel_to_gps = true;
 	resetVelocityTo(Vector3f(aid_src.observation), Vector3f(aid_src.observation_variance));
@@ -313,7 +313,7 @@ void Ekf::resetVelocityToGnss(estimator_aid_source3d_s &aid_src)
 	resetAidSourceStatusZeroInnovation(aid_src);
 }
 
-void Ekf::resetHorizontalPositionToGnss(estimator_aid_source2d_s &aid_src)
+void M_EKF::resetHorizontalPositionToGnss(estimator_aid_source2d_s &aid_src)
 {
 	_information_events.flags.reset_pos_to_gps = true;
 	resetHorizontalPositionTo(Vector2f(aid_src.observation), Vector2f(aid_src.observation_variance));
@@ -322,7 +322,7 @@ void Ekf::resetHorizontalPositionToGnss(estimator_aid_source2d_s &aid_src)
 	resetAidSourceStatusZeroInnovation(aid_src);
 }
 
-bool Ekf::shouldResetGpsFusion() const
+bool M_EKF::shouldResetGpsFusion() const
 {
 	/* We are relying on aiding to constrain drift so after a specified time
 	 * with no aiding we need to do something
@@ -354,7 +354,7 @@ bool Ekf::shouldResetGpsFusion() const
 	return (is_reset_required || is_inflight_nav_failure);
 }
 
-void Ekf::stopGpsFusion()
+void M_EKF::stopGpsFusion()
 {
 	if (_control_status.flags.gps) {
 		ECL_INFO("stopping GPS position and velocity fusion");
@@ -373,7 +373,7 @@ void Ekf::stopGpsFusion()
 	_yawEstimator.reset();
 }
 
-bool Ekf::isYawEmergencyEstimateAvailable() const
+bool M_EKF::isYawEmergencyEstimateAvailable() const
 {
 	// don't allow reet using the EKF-GSF estimate until the filter has started fusing velocity
 	// data and the yaw estimate has converged
@@ -384,7 +384,7 @@ bool Ekf::isYawEmergencyEstimateAvailable() const
 	return _yawEstimator.getYawVar() < sq(_params.EKFGSF_yaw_err_max);
 }
 
-bool Ekf::isYawFailure() const
+bool M_EKF::isYawFailure() const
 {
 	if (!isYawEmergencyEstimateAvailable()) {
 		return false;
@@ -396,7 +396,7 @@ bool Ekf::isYawFailure() const
 	return fabsf(yaw_error) > math::radians(25.f);
 }
 
-bool Ekf::resetYawToEKFGSF()
+bool M_EKF::resetYawToEKFGSF()
 {
 	if (!isYawEmergencyEstimateAvailable()) {
 		return false;
@@ -421,8 +421,8 @@ bool Ekf::resetYawToEKFGSF()
 	return true;
 }
 
-bool Ekf::getDataEKFGSF(float *yaw_composite, float *yaw_variance, float yaw[N_MODELS_EKFGSF],
-			float innov_VN[N_MODELS_EKFGSF], float innov_VE[N_MODELS_EKFGSF], float weight[N_MODELS_EKFGSF])
+bool M_EKF::getDataEKFGSF(float *yaw_composite, float *yaw_variance, float yaw[N_MODELS_EKFGSF],
+			  float innov_VN[N_MODELS_EKFGSF], float innov_VE[N_MODELS_EKFGSF], float weight[N_MODELS_EKFGSF])
 {
 	return _yawEstimator.getLogData(yaw_composite, yaw_variance, yaw, innov_VN, innov_VE, weight);
 }

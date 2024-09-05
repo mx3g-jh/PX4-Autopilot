@@ -33,7 +33,7 @@
 
 #include "ekf.h"
 
-void Ekf::updateVerticalPositionAidStatus(estimator_aid_source1d_s &aid_src, const uint64_t &time_us,
+void M_EKF::updateVerticalPositionAidStatus(estimator_aid_source1d_s &aid_src, const uint64_t &time_us,
 		const float observation, const float observation_variance, const float innovation_gate) const
 {
 	float innovation = _state.pos(2) - observation;
@@ -53,7 +53,7 @@ void Ekf::updateVerticalPositionAidStatus(estimator_aid_source1d_s &aid_src, con
 	}
 }
 
-bool Ekf::fuseHorizontalPosition(estimator_aid_source2d_s &aid_src)
+bool M_EKF::fuseHorizontalPosition(estimator_aid_source2d_s &aid_src)
 {
 	// x & y
 	if (!aid_src.innovation_rejected
@@ -74,7 +74,7 @@ bool Ekf::fuseHorizontalPosition(estimator_aid_source2d_s &aid_src)
 	return aid_src.fused;
 }
 
-bool Ekf::fuseVerticalPosition(estimator_aid_source1d_s &aid_src)
+bool M_EKF::fuseVerticalPosition(estimator_aid_source1d_s &aid_src)
 {
 	// z
 	if (!aid_src.innovation_rejected
@@ -93,7 +93,7 @@ bool Ekf::fuseVerticalPosition(estimator_aid_source1d_s &aid_src)
 	return aid_src.fused;
 }
 
-void Ekf::resetHorizontalPositionTo(const Vector2f &new_horz_pos, const Vector2f &new_horz_pos_var)
+void M_EKF::resetHorizontalPositionTo(const Vector2f &new_horz_pos, const Vector2f &new_horz_pos_var)
 {
 	const Vector2f delta_horz_pos{new_horz_pos - Vector2f{_state.pos}};
 	_state.pos.xy() = new_horz_pos;
@@ -128,7 +128,7 @@ void Ekf::resetHorizontalPositionTo(const Vector2f &new_horz_pos, const Vector2f
 	_time_last_hor_pos_fuse = _time_delayed_us;
 }
 
-void Ekf::resetVerticalPositionTo(const float new_vert_pos, float new_vert_pos_var)
+void M_EKF::resetVerticalPositionTo(const float new_vert_pos, float new_vert_pos_var)
 {
 	const float old_vert_pos = _state.pos(2);
 	_state.pos(2) = new_vert_pos;
@@ -184,7 +184,7 @@ void Ekf::resetVerticalPositionTo(const float new_vert_pos, float new_vert_pos_v
 	_time_last_hgt_fuse = _time_delayed_us;
 }
 
-void Ekf::resetHorizontalPositionToLastKnown()
+void M_EKF::resetHorizontalPositionToLastKnown()
 {
 	ECL_INFO("reset position to last known (%.3f, %.3f)", (double)_last_known_pos(0), (double)_last_known_pos(1));
 	_information_events.flags.reset_pos_to_last_known = true;

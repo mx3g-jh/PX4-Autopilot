@@ -37,9 +37,9 @@
  */
 
 #include "ekf.h"
-#include <ekf_derivation/generated/compute_wind_init_and_cov_from_wind_speed_and_direction.h>
+#include <ekf_derivation/compute_wind_init_and_cov_from_wind_speed_and_direction.h>
 
-void Ekf::resetWindToExternalObservation(float wind_speed, float wind_direction, float wind_speed_accuracy,
+void M_EKF::resetWindToExternalObservation(float wind_speed, float wind_direction, float wind_speed_accuracy,
 		float wind_direction_accuracy)
 {
 	if (!_control_status.flags.in_air) {
@@ -51,7 +51,7 @@ void Ekf::resetWindToExternalObservation(float wind_speed, float wind_direction,
 		Vector2f wind;
 		Vector2f wind_var;
 
-		sym::ComputeWindInitAndCovFromWindSpeedAndDirection(wind_speed_constrained, wind_direction, wind_speed_var,
+		m_sym::ComputeWindInitAndCovFromWindSpeedAndDirection(wind_speed_constrained, wind_direction, wind_speed_var,
 				wind_direction_var, &wind, &wind_var);
 
 		ECL_INFO("reset wind states to external observation");
@@ -63,7 +63,7 @@ void Ekf::resetWindToExternalObservation(float wind_speed, float wind_direction,
 	}
 }
 
-void Ekf::resetWindTo(const Vector2f &wind, const Vector2f &wind_var)
+void M_EKF::resetWindTo(const Vector2f &wind, const Vector2f &wind_var)
 {
 	_state.wind_vel = wind;
 
@@ -78,13 +78,13 @@ void Ekf::resetWindTo(const Vector2f &wind, const Vector2f &wind_var)
 	}
 }
 
-void Ekf::resetWindCov()
+void M_EKF::resetWindCov()
 {
 	// start with a small initial uncertainty to improve the initial estimate
 	P.uncorrelateCovarianceSetVariance<State::wind_vel.dof>(State::wind_vel.idx, sq(_params.initial_wind_uncertainty));
 }
 
-void Ekf::resetWindToZero()
+void M_EKF::resetWindToZero()
 {
 	ECL_INFO("reset wind to zero");
 	_state.wind_vel.setZero();

@@ -39,15 +39,15 @@
  * @author Siddharth Bharat Purohit <siddharthbharatpurohit@gmail.com>
  *
  */
-#ifndef EKF_COMMON_H
-#define EKF_COMMON_H
+#ifndef M_EKF_COMMON_H
+#define M_EKF_COMMON_H
 
 #include <cstdint>
 
 #include <matrix/math.hpp>
 #include <mathlib/math/Utilities.hpp>
 
-namespace estimator
+namespace m_estimator
 {
 
 using matrix::AxisAnglef;
@@ -656,4 +656,4 @@ bool reset_pos_to_ext_obs       :
 };
 
 }
-#endif // !EKF_COMMON_H
+#endif // !M_EKF_COMMON_H

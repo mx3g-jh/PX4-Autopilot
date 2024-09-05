@@ -32,9 +32,9 @@
  ****************************************************************************/
 
 #include "ekf.h"
-#include "ekf_derivation/generated/compute_hagl_h.h"
+#include "ekf_derivation/compute_hagl_h.h"
 
-bool Ekf::fuseHaglRng(estimator_aid_source1d_s &aid_src, bool update_height, bool update_terrain)
+bool M_EKF::fuseHaglRng(estimator_aid_source1d_s &aid_src, bool update_height, bool update_terrain)
 {
 	if (aid_src.innovation_rejected) {
 		_innov_check_fail_status.flags.reject_hagl = true;
@@ -43,7 +43,7 @@ bool Ekf::fuseHaglRng(estimator_aid_source1d_s &aid_src, bool update_height, boo
 
 	VectorState H;
 
-	sym::ComputeHaglH(&H);
+	m_sym::ComputeHaglH(&H);
 
 	// calculate the Kalman gain
 	VectorState K = P * H / aid_src.innovation_variance;

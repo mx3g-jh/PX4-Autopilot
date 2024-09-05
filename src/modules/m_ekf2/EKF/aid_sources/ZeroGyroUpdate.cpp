@@ -35,18 +35,18 @@
 
 #include "../ekf.h"
 
-ZeroGyroUpdate::ZeroGyroUpdate()
+M_ZeroGyroUpdate::M_ZeroGyroUpdate()
 {
 	reset();
 }
 
-void ZeroGyroUpdate::reset()
+void M_ZeroGyroUpdate::reset()
 {
 	_zgup_delta_ang.setZero();
 	_zgup_delta_ang_dt = 0.f;
 }
 
-bool ZeroGyroUpdate::update(Ekf &ekf, const estimator::imuSample &imu_delayed)
+bool M_ZeroGyroUpdate::update(M_EKF &ekf, const m_estimator::imuSample &imu_delayed)
 {
 	// When at rest, fuse the gyro data as a direct observation of the gyro bias
 	if (ekf.control_status_flags().vehicle_at_rest) {

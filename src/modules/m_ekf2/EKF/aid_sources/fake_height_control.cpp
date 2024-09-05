@@ -38,7 +38,7 @@
 
 #include "ekf.h"
 
-void Ekf::controlFakeHgtFusion()
+void M_EKF::controlFakeHgtFusion()
 {
 	auto &aid_src = _aid_src_fake_hgt;
 
@@ -95,7 +95,7 @@ void Ekf::controlFakeHgtFusion()
 	}
 }
 
-void Ekf::resetFakeHgtFusion()
+void M_EKF::resetFakeHgtFusion()
 {
 	ECL_INFO("reset fake height fusion");
 	_last_known_pos(2) = _state.pos(2);
@@ -106,14 +106,14 @@ void Ekf::resetFakeHgtFusion()
 	_aid_src_fake_hgt.time_last_fuse = _time_delayed_us;
 }
 
-void Ekf::resetHeightToLastKnown()
+void M_EKF::resetHeightToLastKnown()
 {
 	_information_events.flags.reset_pos_to_last_known = true;
 	ECL_INFO("reset height to last known (%.3f)", (double)_last_known_pos(2));
 	resetVerticalPositionTo(_last_known_pos(2), sq(_params.pos_noaid_noise));
 }
 
-void Ekf::stopFakeHgtFusion()
+void M_EKF::stopFakeHgtFusion()
 {
 	if (_control_status.flags.fake_hgt) {
 		ECL_INFO("stop fake height fusion");

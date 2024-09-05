@@ -38,12 +38,12 @@
 
 #include "ekf.h"
 
-void Ekf::controlBaroHeightFusion(const imuSample &imu_sample)
+void M_EKF::controlBaroHeightFusion(const imuSample &imu_sample)
 {
 	static constexpr const char *HGT_SRC_NAME = "baro";
 
 	auto &aid_src = _aid_src_baro_hgt;
-	HeightBiasEstimator &bias_est = _baro_b_est;
+	M_HeightBiasEstimator &bias_est = _baro_b_est;
 
 	bias_est.predict(_dt_ekf_avg);
 
@@ -185,7 +185,7 @@ void Ekf::controlBaroHeightFusion(const imuSample &imu_sample)
 	}
 }
 
-void Ekf::stopBaroHgtFusion()
+void M_EKF::stopBaroHgtFusion()
 {
 	if (_control_status.flags.baro_hgt) {
 
@@ -200,7 +200,7 @@ void Ekf::stopBaroHgtFusion()
 }
 
 #if defined(CONFIG_EKF2_BARO_COMPENSATION)
-float Ekf::compensateBaroForDynamicPressure(const imuSample &imu_sample, const float baro_alt_uncompensated) const
+float M_EKF::compensateBaroForDynamicPressure(const imuSample &imu_sample, const float baro_alt_uncompensated) const
 {
 	if (_control_status.flags.wind && local_position_is_valid()) {
 		// calculate static pressure error = Pmeas - Ptruth

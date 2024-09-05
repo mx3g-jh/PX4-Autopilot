@@ -38,9 +38,9 @@
 
 #include "ekf.h"
 
-#include <ekf_derivation/generated/compute_flow_xy_innov_var_and_hx.h>
+#include <ekf_derivation/compute_flow_xy_innov_var_and_hx.h>
 
-void Ekf::controlOpticalFlowFusion(const imuSample &imu_delayed)
+void M_EKF::controlOpticalFlowFusion(const imuSample &imu_delayed)
 {
 	if (!_flow_buffer || (_params.flow_ctrl != 1)) {
 		stopFlowFusion();
@@ -104,7 +104,7 @@ void Ekf::controlOpticalFlowFusion(const imuSample &imu_delayed)
 
 		const float epsilon = 1e-3f;
 		Vector2f innov_var;
-		sym::ComputeFlowXyInnovVarAndHx(_state.vector(), P, R_LOS, epsilon, &innov_var, &H);
+		m_sym::ComputeFlowXyInnovVarAndHx(_state.vector(), P, R_LOS, epsilon, &innov_var, &H);
 
 		// run the innovation consistency check and record result
 		updateAidSourceStatus(_aid_src_optical_flow,
@@ -222,7 +222,7 @@ void Ekf::controlOpticalFlowFusion(const imuSample &imu_delayed)
 	}
 }
 
-void Ekf::resetFlowFusion(const flowSample &flow_sample)
+void M_EKF::resetFlowFusion(const flowSample &flow_sample)
 {
 	ECL_INFO("reset velocity to flow");
 	_information_events.flags.reset_vel_to_flow = true;
@@ -242,7 +242,7 @@ void Ekf::resetFlowFusion(const flowSample &flow_sample)
 	_innov_check_fail_status.flags.reject_optflow_Y = false;
 }
 
-void Ekf::resetTerrainToFlow()
+void M_EKF::resetTerrainToFlow()
 {
 	ECL_INFO("reset hagl to flow");
 
@@ -270,7 +270,7 @@ void Ekf::resetTerrainToFlow()
 	_state_reset_status.reset_count.hagl++;
 }
 
-void Ekf::stopFlowFusion()
+void M_EKF::stopFlowFusion()
 {
 	if (_control_status.flags.opt_flow) {
 		ECL_INFO("stopping optical flow fusion");
@@ -287,7 +287,7 @@ void Ekf::stopFlowFusion()
 	}
 }
 
-void Ekf::calcOptFlowBodyRateComp(const flowSample &flow_sample)
+void M_EKF::calcOptFlowBodyRateComp(const flowSample &flow_sample)
 {
 	// calculate the bias estimate using a combined LPF and spike filter
 	_flow_gyro_bias = 0.99f * _flow_gyro_bias

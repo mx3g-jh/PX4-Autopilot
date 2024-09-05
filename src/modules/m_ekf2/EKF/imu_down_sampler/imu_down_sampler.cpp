@@ -2,7 +2,7 @@
 
 #include <lib/mathlib/mathlib.h>
 
-ImuDownSampler::ImuDownSampler(int32_t &target_dt_us) : _target_dt_us(target_dt_us)
+M_ImuDownSampler::M_ImuDownSampler(int32_t &target_dt_us) : _target_dt_us(target_dt_us)
 {
 	reset();
 }
@@ -10,7 +10,7 @@ ImuDownSampler::ImuDownSampler(int32_t &target_dt_us) : _target_dt_us(target_dt_
 // integrate imu samples until target dt reached
 // assumes that dt of the gyroscope is close to the dt of the accelerometer
 // returns true if target dt is reached
-bool ImuDownSampler::update(const imuSample &imu_sample_new)
+bool M_ImuDownSampler::update(const imuSample &imu_sample_new)
 {
 	_delta_ang_dt_avg = 0.9f * _delta_ang_dt_avg + 0.1f * imu_sample_new.delta_ang_dt;
 
@@ -51,7 +51,7 @@ bool ImuDownSampler::update(const imuSample &imu_sample_new)
 	return false;
 }
 
-void ImuDownSampler::reset()
+void M_ImuDownSampler::reset()
 {
 	_imu_down_sampled = {};
 	_delta_angle_accumulated.setIdentity();

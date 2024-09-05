@@ -37,7 +37,7 @@
 
 #include <aid_sources/range_finder/range_finder_consistency_check.hpp>
 
-void RangeFinderConsistencyCheck::update(float dist_bottom, float dist_bottom_var, float vz, float vz_var,
+void M_RangeFinderConsistencyCheck::update(float dist_bottom, float dist_bottom_var, float vz, float vz_var,
 		bool horizontal_motion, uint64_t time_us)
 {
 	if (horizontal_motion) {
@@ -72,7 +72,7 @@ void RangeFinderConsistencyCheck::update(float dist_bottom, float dist_bottom_va
 	_dist_bottom_prev = dist_bottom;
 }
 
-void RangeFinderConsistencyCheck::updateConsistency(float vz, uint64_t time_us)
+void M_RangeFinderConsistencyCheck::updateConsistency(float vz, uint64_t time_us)
 {
 	if (fabsf(vz) < _min_vz_for_valid_consistency) {
 		// We can only check consistency if there is vertical motion

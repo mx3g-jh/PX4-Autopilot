@@ -38,12 +38,12 @@
 
 #include "ekf.h"
 
-void Ekf::controlGnssHeightFusion(const gnssSample &gps_sample)
+void M_EKF::controlGnssHeightFusion(const gnssSample &gps_sample)
 {
 	static constexpr const char *HGT_SRC_NAME = "GNSS";
 
 	auto &aid_src = _aid_src_gnss_hgt;
-	HeightBiasEstimator &bias_est = _gps_hgt_b_est;
+	M_HeightBiasEstimator &bias_est = _gps_hgt_b_est;
 
 	bias_est.predict(_dt_ekf_avg);
 
@@ -151,7 +151,7 @@ void Ekf::controlGnssHeightFusion(const gnssSample &gps_sample)
 	}
 }
 
-void Ekf::stopGpsHgtFusion()
+void M_EKF::stopGpsHgtFusion()
 {
 	if (_control_status.flags.gps_hgt) {
 

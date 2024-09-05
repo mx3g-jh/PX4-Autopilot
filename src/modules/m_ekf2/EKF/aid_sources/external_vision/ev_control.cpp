@@ -38,7 +38,7 @@
 
 #include "ekf.h"
 
-void Ekf::controlExternalVisionFusion(const imuSample &imu_sample)
+void M_EKF::controlExternalVisionFusion(const imuSample &imu_sample)
 {
 	_ev_pos_b_est.predict(_dt_ekf_avg);
 	_ev_hgt_b_est.predict(_dt_ekf_avg);
@@ -88,7 +88,7 @@ void Ekf::controlExternalVisionFusion(const imuSample &imu_sample)
 	}
 }
 
-void Ekf::updateEvAttitudeErrorFilter(extVisionSample &ev_sample, bool ev_reset)
+void M_EKF::updateEvAttitudeErrorFilter(extVisionSample &ev_sample, bool ev_reset)
 {
 	const Quatf q_error((_state.quat_nominal * ev_sample.quat.inversed()).normalized());
 

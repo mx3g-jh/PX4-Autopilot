@@ -260,6 +260,20 @@ set(msg_files
 	WheelEncoders.msg
 	Wind.msg
 	YawEstimatorStatus.msg
+	EstimatorStatusFlags_m.msg
+	EstimatorStatus_m.msg
+	EstimatorStates_m.msg
+	EstimatorSensorBias_m.msg
+	EstimatorSelectorStatus_m.msg
+	EstimatorInnovations_m.msg
+	EstimatorGpsStatus_m.msg
+	EstimatorEventFlags_m.msg
+	EstimatorBias3d_m.msg
+	EstimatorBias_m.msg
+	EstimatorAidSource3d_m.msg
+	EstimatorAidSource2d_m.msg
+	EstimatorAidSource1d_m.msg
+	Ekf2Timestamps_m.msg
 )
 list(SORT msg_files)
 

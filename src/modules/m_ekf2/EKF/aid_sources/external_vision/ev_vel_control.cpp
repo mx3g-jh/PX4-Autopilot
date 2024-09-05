@@ -37,13 +37,13 @@
  */
 
 #include "ekf.h"
-#include <ekf_derivation/generated/compute_ev_body_vel_hx.h>
-#include <ekf_derivation/generated/compute_ev_body_vel_hy.h>
-#include <ekf_derivation/generated/compute_ev_body_vel_hz.h>
+#include <ekf_derivation/compute_ev_body_vel_hx.h>
+#include <ekf_derivation/compute_ev_body_vel_hy.h>
+#include <ekf_derivation/compute_ev_body_vel_hz.h>
 
-void Ekf::controlEvVelFusion(const imuSample &imu_sample, const extVisionSample &ev_sample,
-			     const bool common_starting_conditions_passing, const bool ev_reset, const bool quality_sufficient,
-			     estimator_aid_source3d_s &aid_src)
+void M_EKF::controlEvVelFusion(const imuSample &imu_sample, const extVisionSample &ev_sample,
+			       const bool common_starting_conditions_passing, const bool ev_reset, const bool quality_sufficient,
+			       estimator_aid_source3d_s &aid_src)
 {
 	static constexpr const char *AID_SRC_NAME = "EV velocity";
 
@@ -256,7 +256,7 @@ void Ekf::controlEvVelFusion(const imuSample &imu_sample, const extVisionSample 
 	}
 }
 
-bool Ekf::fuseEvVelocity(estimator_aid_source3d_s &aid_src, const extVisionSample &ev_sample)
+bool M_EKF::fuseEvVelocity(estimator_aid_source3d_s &aid_src, const extVisionSample &ev_sample)
 {
 	if (ev_sample.vel_frame == VelocityFrame::BODY_FRAME_FRD) {
 
@@ -268,13 +268,13 @@ bool Ekf::fuseEvVelocity(estimator_aid_source3d_s &aid_src, const extVisionSampl
 			current_aid_src.timestamp_sample = aid_src.timestamp_sample;
 
 			if (index == 0) {
-				sym::ComputeEvBodyVelHx(state_vector, &H);
+				m_sym::ComputeEvBodyVelHx(state_vector, &H);
 
 			} else if (index == 1) {
-				sym::ComputeEvBodyVelHy(state_vector, &H);
+				m_sym::ComputeEvBodyVelHy(state_vector, &H);
 
 			} else {
-				sym::ComputeEvBodyVelHz(state_vector, &H);
+				m_sym::ComputeEvBodyVelHz(state_vector, &H);
 			}
 
 			const float innov_var = (H.T() * P * H)(0, 0) + aid_src.observation_variance[index];
@@ -318,7 +318,7 @@ bool Ekf::fuseEvVelocity(estimator_aid_source3d_s &aid_src, const extVisionSampl
 	}
 }
 
-void Ekf::stopEvVelFusion()
+void M_EKF::stopEvVelFusion()
 {
 	if (_control_status.flags.ev_vel) {
 
@@ -326,8 +326,8 @@ void Ekf::stopEvVelFusion()
 	}
 }
 
-void Ekf::resetVelocityToEV(const Vector3f &measurement, const Vector3f &measurement_var,
-			    const VelocityFrame &vel_frame)
+void M_EKF::resetVelocityToEV(const Vector3f &measurement, const Vector3f &measurement_var,
+			      const VelocityFrame &vel_frame)
 {
 	if (vel_frame == VelocityFrame::BODY_FRAME_FRD) {
 		const Vector3f measurement_var_ekf_frame = rotateVarianceToEkf(measurement_var);
@@ -339,7 +339,7 @@ void Ekf::resetVelocityToEV(const Vector3f &measurement, const Vector3f &measure
 
 }
 
-Vector3f Ekf::rotateVarianceToEkf(const Vector3f &measurement_var)
+Vector3f M_EKF::rotateVarianceToEkf(const Vector3f &measurement_var)
 {
 	// rotate the covariance matrix into the EKF frame
 	const matrix::SquareMatrix<float, 3> R_cov = _R_to_earth * matrix::diag(measurement_var) * _R_to_earth.transpose();

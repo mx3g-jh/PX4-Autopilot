@@ -33,7 +33,7 @@
 
 #include "ekf.h"
 
-bool Ekf::fuseHorizontalVelocity(estimator_aid_source2d_s &aid_src)
+bool M_EKF::fuseHorizontalVelocity(estimator_aid_source2d_s &aid_src)
 {
 	// vx, vy
 	if (!aid_src.innovation_rejected
@@ -54,7 +54,7 @@ bool Ekf::fuseHorizontalVelocity(estimator_aid_source2d_s &aid_src)
 	return aid_src.fused;
 }
 
-bool Ekf::fuseVelocity(estimator_aid_source3d_s &aid_src)
+bool M_EKF::fuseVelocity(estimator_aid_source3d_s &aid_src)
 {
 	// vx, vy, vz
 	if (!aid_src.innovation_rejected
@@ -78,7 +78,7 @@ bool Ekf::fuseVelocity(estimator_aid_source3d_s &aid_src)
 	return aid_src.fused;
 }
 
-void Ekf::resetHorizontalVelocityTo(const Vector2f &new_horz_vel, const Vector2f &new_horz_vel_var)
+void M_EKF::resetHorizontalVelocityTo(const Vector2f &new_horz_vel, const Vector2f &new_horz_vel_var)
 {
 	const Vector2f delta_horz_vel = new_horz_vel - Vector2f(_state.vel);
 	_state.vel.xy() = new_horz_vel;
@@ -108,7 +108,7 @@ void Ekf::resetHorizontalVelocityTo(const Vector2f &new_horz_vel, const Vector2f
 	_time_last_hor_vel_fuse = _time_delayed_us;
 }
 
-void Ekf::resetVerticalVelocityTo(float new_vert_vel, float new_vert_vel_var)
+void M_EKF::resetVerticalVelocityTo(float new_vert_vel, float new_vert_vel_var)
 {
 	const float delta_vert_vel = new_vert_vel - _state.vel(2);
 	_state.vel(2) = new_vert_vel;
@@ -134,7 +134,7 @@ void Ekf::resetVerticalVelocityTo(float new_vert_vel, float new_vert_vel_var)
 	_time_last_ver_vel_fuse = _time_delayed_us;
 }
 
-void Ekf::resetHorizontalVelocityToZero()
+void M_EKF::resetHorizontalVelocityToZero()
 {
 	ECL_INFO("reset velocity to zero");
 	_information_events.flags.reset_vel_to_zero = true;
@@ -143,7 +143,7 @@ void Ekf::resetHorizontalVelocityToZero()
 	resetHorizontalVelocityTo(Vector2f{0.f, 0.f}, 25.f);
 }
 
-void Ekf::resetVerticalVelocityToZero()
+void M_EKF::resetVerticalVelocityToZero()
 {
 	// we don't know what the vertical velocity is, so set it to zero
 	// Set the variance to a value large enough to allow the state to converge quickly
@@ -151,7 +151,7 @@ void Ekf::resetVerticalVelocityToZero()
 	resetVerticalVelocityTo(0.0f, 10.f);
 }
 
-void Ekf::resetVelocityTo(const Vector3f &new_vel, const Vector3f &new_vel_var)
+void M_EKF::resetVelocityTo(const Vector3f &new_vel, const Vector3f &new_vel_var)
 {
 	resetHorizontalVelocityTo(Vector2f(new_vel), Vector2f(new_vel_var(0), new_vel_var(1)));
 	resetVerticalVelocityTo(new_vel(2), new_vel_var(2));

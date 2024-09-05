@@ -34,7 +34,7 @@
 /**
  * @file airspeed_fusion.cpp
  * airspeed fusion methods.
- * equations generated using EKF/python/ekf_derivation/main.py
+ * equations generated using M_EKF/python/ekf_derivation/main.py
  *
  * @author Carl Olsson <carlolsson.co@gmail.com>
  * @author Roman Bast <bapstroman@gmail.com>
@@ -44,13 +44,13 @@
 
 #include "ekf.h"
 
-#include <ekf_derivation/generated/compute_airspeed_h_and_k.h>
-#include <ekf_derivation/generated/compute_airspeed_innov_and_innov_var.h>
-#include <ekf_derivation/generated/compute_wind_init_and_cov_from_airspeed.h>
+#include <ekf_derivation/compute_airspeed_h_and_k.h>
+#include <ekf_derivation/compute_airspeed_innov_and_innov_var.h>
+#include <ekf_derivation/compute_wind_init_and_cov_from_airspeed.h>
 
 #include <mathlib/mathlib.h>
 
-void Ekf::controlAirDataFusion(const imuSample &imu_delayed)
+void M_EKF::controlAirDataFusion(const imuSample &imu_delayed)
 {
 	// control activation and initialisation/reset of wind states required for airspeed fusion
 
@@ -149,7 +149,7 @@ void Ekf::controlAirDataFusion(const imuSample &imu_delayed)
 	}
 }
 
-void Ekf::updateAirspeed(const airspeedSample &airspeed_sample, estimator_aid_source1d_s &aid_src) const
+void M_EKF::updateAirspeed(const airspeedSample &airspeed_sample, estimator_aid_source1d_s &aid_src) const
 {
 	// Variance for true airspeed measurement - (m/sec)^2
 	const float R = sq(math::constrain(_params.eas_noise, 0.5f, 5.0f) *
@@ -157,8 +157,8 @@ void Ekf::updateAirspeed(const airspeedSample &airspeed_sample, estimator_aid_so
 
 	float innov = 0.f;
 	float innov_var = 0.f;
-	sym::ComputeAirspeedInnovAndInnovVar(_state.vector(), P, airspeed_sample.true_airspeed, R, FLT_EPSILON,
-					     &innov, &innov_var);
+	m_sym::ComputeAirspeedInnovAndInnovVar(_state.vector(), P, airspeed_sample.true_airspeed, R, FLT_EPSILON,
+					       &innov, &innov_var);
 
 	updateAidSourceStatus(aid_src,
 			      airspeed_sample.time_us,                 // sample timestamp
@@ -169,7 +169,7 @@ void Ekf::updateAirspeed(const airspeedSample &airspeed_sample, estimator_aid_so
 			      math::max(_params.tas_innov_gate, 1.f)); // innovation gate
 }
 
-void Ekf::fuseAirspeed(const airspeedSample &airspeed_sample, estimator_aid_source1d_s &aid_src)
+void M_EKF::fuseAirspeed(const airspeedSample &airspeed_sample, estimator_aid_source1d_s &aid_src)
 {
 	if (aid_src.innovation_rejected) {
 		return;
@@ -207,7 +207,7 @@ void Ekf::fuseAirspeed(const airspeedSample &airspeed_sample, estimator_aid_sour
 	VectorState H; // Observation jacobian
 	VectorState K; // Kalman gain vector
 
-	sym::ComputeAirspeedHAndK(_state.vector(), P, innov_var, FLT_EPSILON, &H, &K);
+	m_sym::ComputeAirspeedHAndK(_state.vector(), P, innov_var, FLT_EPSILON, &H, &K);
 
 	if (update_wind_only) {
 		const Vector2f K_wind = K.slice<State::wind_vel.dof, 1>(State::wind_vel.idx, 0);
@@ -229,7 +229,7 @@ void Ekf::fuseAirspeed(const airspeedSample &airspeed_sample, estimator_aid_sour
 	}
 }
 
-void Ekf::stopAirspeedFusion()
+void M_EKF::stopAirspeedFusion()
 {
 	if (_control_status.flags.fuse_aspd) {
 		ECL_INFO("stopping airspeed fusion");
@@ -241,7 +241,7 @@ void Ekf::stopAirspeedFusion()
 	}
 }
 
-void Ekf::resetWindUsingAirspeed(const airspeedSample &airspeed_sample)
+void M_EKF::resetWindUsingAirspeed(const airspeedSample &airspeed_sample)
 {
 	constexpr float sideslip_var = sq(math::radians(15.0f));
 
@@ -250,8 +250,8 @@ void Ekf::resetWindUsingAirspeed(const airspeedSample &airspeed_sample)
 				      * math::constrain(airspeed_sample.eas2tas, 0.9f, 10.0f));
 
 	matrix::SquareMatrix<float, State::wind_vel.dof> P_wind;
-	sym::ComputeWindInitAndCovFromAirspeed(_state.vel, euler_yaw, airspeed_sample.true_airspeed, getVelocityVariance(),
-					       getYawVar(), sideslip_var, airspeed_var, &_state.wind_vel, &P_wind);
+	m_sym::ComputeWindInitAndCovFromAirspeed(_state.vel, euler_yaw, airspeed_sample.true_airspeed, getVelocityVariance(),
+			getYawVar(), sideslip_var, airspeed_var, &_state.wind_vel, &P_wind);
 
 	resetStateCovariance<State::wind_vel>(P_wind);
 
@@ -260,7 +260,7 @@ void Ekf::resetWindUsingAirspeed(const airspeedSample &airspeed_sample)
 	resetAidSourceStatusZeroInnovation(_aid_src_airspeed);
 }
 
-void Ekf::resetVelUsingAirspeed(const airspeedSample &airspeed_sample)
+void M_EKF::resetVelUsingAirspeed(const airspeedSample &airspeed_sample)
 {
 	const float euler_yaw = getEulerYaw(_R_to_earth);
 

@@ -35,21 +35,21 @@
  * Downsamples IMU data to a lower rate such that EKF predicition can happen less frequent
  * @author Kamil Ritz <ka.ritz@hotmail.com>
  */
-#ifndef EKF_IMU_DOWN_SAMPLER_HPP
-#define EKF_IMU_DOWN_SAMPLER_HPP
+#ifndef M_EKF_IMU_DOWN_SAMPLER_HPP
+#define M_EKF_IMU_DOWN_SAMPLER_HPP
 
 #include <mathlib/mathlib.h>
 #include <matrix/math.hpp>
 
 #include "../common.h"
 
-using namespace estimator;
+using namespace m_estimator;
 
-class ImuDownSampler
+class M_ImuDownSampler
 {
 public:
-	explicit ImuDownSampler(int32_t &target_dt_us);
-	~ImuDownSampler() = default;
+	explicit M_ImuDownSampler(int32_t &target_dt_us);
+	~M_ImuDownSampler() = default;
 
 	bool update(const imuSample &imu_sample_new);
 
@@ -76,4 +76,4 @@ private:
 
 	float _delta_ang_dt_avg{0.005f};
 };
-#endif // !EKF_IMU_DOWN_SAMPLER_HPP
+#endif // !M_EKF_IMU_DOWN_SAMPLER_HPP

@@ -36,11 +36,11 @@
  */
 
 #include "ekf.h"
-#include "ekf_derivation/generated/compute_hagl_innov_var.h"
+#include "ekf_derivation/compute_hagl_innov_var.h"
 
 #include <mathlib/mathlib.h>
 
-void Ekf::initTerrain()
+void M_EKF::initTerrain()
 {
 	// assume a ground clearance
 	_state.terrain = _state.pos(2) + _params.rng_gnd_clearance;
@@ -49,7 +49,7 @@ void Ekf::initTerrain()
 	P.uncorrelateCovarianceSetVariance<State::terrain.dof>(State::terrain.idx, sq(_params.rng_gnd_clearance));
 }
 
-void Ekf::controlTerrainFakeFusion()
+void M_EKF::controlTerrainFakeFusion()
 {
 	// If we are on ground, store the local position and time to use as a reference
 	if (!_control_status.flags.in_air) {
@@ -75,14 +75,14 @@ void Ekf::controlTerrainFakeFusion()
 	}
 }
 
-bool Ekf::isTerrainEstimateValid() const
+bool M_EKF::isTerrainEstimateValid() const
 {
 	bool valid = false;
 
 	if (_time_last_terrain_fuse != 0) {
 		// Assume being valid when the uncertainty is small compared to the height above ground
 		float hagl_var = INFINITY;
-		sym::ComputeHaglInnovVar(P, 0.f, &hagl_var);
+		m_sym::ComputeHaglInnovVar(P, 0.f, &hagl_var);
 
 		if (hagl_var < fmaxf(sq(0.1f * getHagl()), 0.2f)) {
 			valid = true;

@@ -31,28 +31,28 @@
  *
  ****************************************************************************/
 
-#ifndef EKF_ESTIMATOR_AID_SOURCE_HPP
-#define EKF_ESTIMATOR_AID_SOURCE_HPP
+#ifndef M_EKF_ESTIMATOR_AID_SOURCE_HPP
+#define M_EKF_ESTIMATOR_AID_SOURCE_HPP
 
 #include <cstdint>
 
 #include <lib/matrix/matrix/math.hpp>
 
 // forward declarations
-class Ekf;
+class M_EKF;
 
-namespace estimator
+namespace m_estimator
 {
 struct imuSample;
 };
 
-class EstimatorAidSource
+class M_EstimatorAidSource
 {
 public:
-	EstimatorAidSource() = default;
-	virtual ~EstimatorAidSource() = default;
+	M_EstimatorAidSource() = default;
+	virtual ~M_EstimatorAidSource() = default;
 
-	virtual bool update(Ekf &ekf, const estimator::imuSample &imu_delayed) = 0;
+	virtual bool update(M_EKF &ekf, const m_estimator::imuSample &imu_delayed) = 0;
 
 	virtual void reset() = 0;
 
@@ -61,4 +61,4 @@ private:
 
 };
 
-#endif // !EKF_ESTIMATOR_AID_SOURCE_HPP
+#endif // !M_EKF_ESTIMATOR_AID_SOURCE_HPP

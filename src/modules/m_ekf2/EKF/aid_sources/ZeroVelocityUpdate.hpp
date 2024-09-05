@@ -31,19 +31,19 @@
  *
  ****************************************************************************/
 
-#ifndef EKF_ZERO_VELOCITY_UPDATE_HPP
-#define EKF_ZERO_VELOCITY_UPDATE_HPP
+#ifndef M_EKF_ZERO_VELOCITY_UPDATE_HPP
+#define M_EKF_ZERO_VELOCITY_UPDATE_HPP
 
 #include "EstimatorAidSource.hpp"
 
-class ZeroVelocityUpdate : public EstimatorAidSource
+class M_ZeroVelocityUpdate : public M_EstimatorAidSource
 {
 public:
-	ZeroVelocityUpdate();
-	virtual ~ZeroVelocityUpdate() = default;
+	M_ZeroVelocityUpdate();
+	virtual ~M_ZeroVelocityUpdate() = default;
 
 	void reset() override;
-	bool update(Ekf &ekf, const estimator::imuSample &imu_delayed) override;
+	bool update(M_EKF &ekf, const m_estimator::imuSample &imu_delayed) override;
 
 	const auto &time_last_fuse() const { return _time_last_fuse; }
 
@@ -53,4 +53,4 @@ private:
 
 };
 
-#endif // !EKF_ZERO_VELOCITY_UPDATE_HPP
+#endif // !M_EKF_ZERO_VELOCITY_UPDATE_HPP

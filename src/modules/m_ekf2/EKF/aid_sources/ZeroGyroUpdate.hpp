@@ -31,19 +31,19 @@
  *
  ****************************************************************************/
 
-#ifndef EKF_ZERO_GYRO_UPDATE_HPP
-#define EKF_ZERO_GYRO_UPDATE_HPP
+#ifndef M_EKF_ZERO_GYRO_UPDATE_HPP
+#define M_EKF_ZERO_GYRO_UPDATE_HPP
 
 #include "EstimatorAidSource.hpp"
 
-class ZeroGyroUpdate : public EstimatorAidSource
+class M_ZeroGyroUpdate : public M_EstimatorAidSource
 {
 public:
-	ZeroGyroUpdate();
-	virtual ~ZeroGyroUpdate() = default;
+	M_ZeroGyroUpdate();
+	virtual ~M_ZeroGyroUpdate() = default;
 
 	void reset() override;
-	bool update(Ekf &ekf, const estimator::imuSample &imu_delayed) override;
+	bool update(M_EKF &ekf, const m_estimator::imuSample &imu_delayed) override;
 
 private:
 
@@ -51,4 +51,4 @@ private:
 	float _zgup_delta_ang_dt{0.f};
 };
 
-#endif // !EKF_ZERO_GYRO_UPDATE_HPP
+#endif // !M_EKF_ZERO_GYRO_UPDATE_HPP

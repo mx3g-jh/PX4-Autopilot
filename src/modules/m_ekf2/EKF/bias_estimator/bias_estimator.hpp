@@ -47,14 +47,14 @@
  * @author Mathieu Bresciani 	<mathieu@auterion.com>
  */
 
-#ifndef EKF_BIAS_ESTIMATOR_HPP
-#define EKF_BIAS_ESTIMATOR_HPP
+#ifndef M_EKF_BIAS_ESTIMATOR_HPP
+#define M_EKF_BIAS_ESTIMATOR_HPP
 
 #include <matrix/math.hpp>
 #include <mathlib/mathlib.h>
 #include <mathlib/math/filter/AlphaFilter.hpp>
 
-class BiasEstimator
+class M_BiasEstimator
 {
 public:
 	struct status {
@@ -65,10 +65,10 @@ public:
 		float innov_test_ratio{INFINITY};
 	};
 
-	BiasEstimator() {}
-	BiasEstimator(float state_init, float state_var_init): _state{state_init}, _state_var{state_var_init} {};
+	M_BiasEstimator() {}
+	M_BiasEstimator(float state_init, float state_var_init): _state{state_init}, _state_var{state_var_init} {};
 
-	virtual ~BiasEstimator() = default;
+	virtual ~M_BiasEstimator() = default;
 
 	void reset()
 	{
@@ -135,4 +135,4 @@ private:
 	static constexpr float _process_var_boost_gain{1.0e3f};
 };
 
-#endif // !EKF_BIAS_ESTIMATOR_HPP
+#endif // !M_EKF_BIAS_ESTIMATOR_HPP

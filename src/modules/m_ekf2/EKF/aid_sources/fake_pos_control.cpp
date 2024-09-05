@@ -38,7 +38,7 @@
 
 #include "ekf.h"
 
-void Ekf::controlFakePosFusion()
+void M_EKF::controlFakePosFusion()
 {
 	auto &aid_src = _aid_src_fake_pos;
 
@@ -92,7 +92,7 @@ void Ekf::controlFakePosFusion()
 	}
 }
 
-void Ekf::resetFakePosFusion()
+void M_EKF::resetFakePosFusion()
 {
 	ECL_INFO("reset fake position fusion");
 	_last_known_pos.xy() = _state.pos.xy();
@@ -103,8 +103,8 @@ void Ekf::resetFakePosFusion()
 	_aid_src_fake_pos.time_last_fuse = _time_delayed_us;
 }
 
-bool Ekf::runFakePosStateMachine(const bool enable_conditions_passing, bool status_flag,
-				 estimator_aid_source2d_s &aid_src)
+bool M_EKF::runFakePosStateMachine(const bool enable_conditions_passing, bool status_flag,
+				   estimator_aid_source2d_s &aid_src)
 {
 	if (status_flag) {
 		if (enable_conditions_passing) {

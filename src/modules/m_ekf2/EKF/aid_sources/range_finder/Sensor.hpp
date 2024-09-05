@@ -39,20 +39,20 @@
  *
  */
 
-#ifndef EKF_SENSOR_HPP
-#define EKF_SENSOR_HPP
+#ifndef M_EKF_SENSOR_HPP
+#define M_EKF_SENSOR_HPP
 
 #include <cstdint>
 
-namespace estimator
+namespace m_estimator
 {
-namespace sensor
+namespace m_sensor
 {
 
-class Sensor
+class M_Sensor
 {
 public:
-	virtual ~Sensor() {};
+	virtual ~M_Sensor() {};
 
 	/*
 	 * run sanity checks on the current data
@@ -79,6 +79,6 @@ public:
 	virtual bool isRegularlySendingData() const = 0;
 };
 
-} // namespace sensor
-} // namespace estimator
-#endif // !EKF_SENSOR_HPP
+} // namespace m_sensor
+} // namespace m_estimator
+#endif // !M_EKF_SENSOR_HPP

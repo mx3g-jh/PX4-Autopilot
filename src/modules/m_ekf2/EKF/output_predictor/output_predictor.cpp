@@ -39,7 +39,7 @@ using matrix::Quatf;
 using matrix::Vector2f;
 using matrix::Vector3f;
 
-void OutputPredictor::print_status()
+void M_OutputPredictor::print_status()
 {
 	printf("[output predictor] IMU dt: %.6f, EKF dt: %.6f\n",
 	       (double)_dt_update_states_avg, (double)_dt_correct_states_avg);
@@ -69,7 +69,7 @@ void OutputPredictor::print_status()
 	       _output_vert_buffer.entries(), _output_vert_buffer.get_length(), _output_vert_buffer.get_total_size());
 }
 
-void OutputPredictor::alignOutputFilter(const Quatf &quat_state, const Vector3f &vel_state, const Vector3f &pos_state)
+void M_OutputPredictor::alignOutputFilter(const Quatf &quat_state, const Vector3f &vel_state, const Vector3f &pos_state)
 {
 	const outputSample &output_delayed = _output_buffer.get_oldest();
 
@@ -92,7 +92,7 @@ void OutputPredictor::alignOutputFilter(const Quatf &quat_state, const Vector3f 
 	_output_new = _output_buffer.get_newest();
 }
 
-void OutputPredictor::reset()
+void M_OutputPredictor::reset()
 {
 	// TODO: who resets the output buffer content?
 	_output_new = {};
@@ -124,7 +124,7 @@ void OutputPredictor::reset()
 	}
 }
 
-void OutputPredictor::resetQuaternion(const Quatf &quat_change)
+void M_OutputPredictor::resetQuaternion(const Quatf &quat_change)
 {
 	// add the reset amount to the output observer buffered data
 	for (uint8_t i = 0; i < _output_buffer.get_length(); i++) {
@@ -136,7 +136,7 @@ void OutputPredictor::resetQuaternion(const Quatf &quat_change)
 	_output_new.quat_nominal = quat_change * _output_new.quat_nominal;
 }
 
-void OutputPredictor::resetHorizontalVelocityTo(const Vector2f &delta_horz_vel)
+void M_OutputPredictor::resetHorizontalVelocityTo(const Vector2f &delta_horz_vel)
 {
 	for (uint8_t index = 0; index < _output_buffer.get_length(); index++) {
 		_output_buffer[index].vel.xy() += delta_horz_vel;
@@ -145,7 +145,7 @@ void OutputPredictor::resetHorizontalVelocityTo(const Vector2f &delta_horz_vel)
 	_output_new.vel.xy() += delta_horz_vel;
 }
 
-void OutputPredictor::resetVerticalVelocityTo(float delta_vert_vel)
+void M_OutputPredictor::resetVerticalVelocityTo(float delta_vert_vel)
 {
 	for (uint8_t index = 0; index < _output_buffer.get_length(); index++) {
 		_output_buffer[index].vel(2) += delta_vert_vel;
@@ -156,7 +156,7 @@ void OutputPredictor::resetVerticalVelocityTo(float delta_vert_vel)
 	_output_vert_new.vert_vel += delta_vert_vel;
 }
 
-void OutputPredictor::resetHorizontalPositionTo(const Vector2f &delta_horz_pos)
+void M_OutputPredictor::resetHorizontalPositionTo(const Vector2f &delta_horz_pos)
 {
 	for (uint8_t index = 0; index < _output_buffer.get_length(); index++) {
 		_output_buffer[index].pos.xy() += delta_horz_pos;
@@ -165,7 +165,7 @@ void OutputPredictor::resetHorizontalPositionTo(const Vector2f &delta_horz_pos)
 	_output_new.pos.xy() += delta_horz_pos;
 }
 
-void OutputPredictor::resetVerticalPositionTo(const float new_vert_pos, const float vert_pos_change)
+void M_OutputPredictor::resetVerticalPositionTo(const float new_vert_pos, const float vert_pos_change)
 {
 	// apply the change in height / height rate to our newest height / height rate estimate
 	// which have already been taken out from the output buffer
@@ -181,7 +181,7 @@ void OutputPredictor::resetVerticalPositionTo(const float new_vert_pos, const fl
 	_output_vert_new.vert_vel_integ = new_vert_pos;
 }
 
-void OutputPredictor::calculateOutputStates(const uint64_t time_us, const Vector3f &delta_angle,
+void M_OutputPredictor::calculateOutputStates(const uint64_t time_us, const Vector3f &delta_angle,
 		const float delta_angle_dt, const Vector3f &delta_velocity, const float delta_velocity_dt)
 {
 	// Use full rate IMU data at the current time horizon
@@ -260,7 +260,7 @@ void OutputPredictor::calculateOutputStates(const uint64_t time_us, const Vector
 	_unaided_yaw = matrix::wrap_pi(_unaided_yaw + spin_del_ang_D);
 }
 
-void OutputPredictor::correctOutputStates(const uint64_t time_delayed_us,
+void M_OutputPredictor::correctOutputStates(const uint64_t time_delayed_us,
 		const Quatf &quat_state, const Vector3f &vel_state, const Vector3f &pos_state, const matrix::Vector3f &gyro_bias,
 		const matrix::Vector3f &accel_bias)
 {
@@ -345,7 +345,7 @@ void OutputPredictor::correctOutputStates(const uint64_t time_delayed_us,
 	applyCorrectionToOutputBuffer(vel_correction, pos_correction);
 }
 
-void OutputPredictor::applyCorrectionToVerticalOutputBuffer(float vert_vel_correction)
+void M_OutputPredictor::applyCorrectionToVerticalOutputBuffer(float vert_vel_correction)
 {
 	// loop through the vertical output filter state history starting at the oldest and apply the corrections to the
 	// vert_vel states and propagate vert_vel_integ forward using the corrected vert_vel
@@ -380,7 +380,7 @@ void OutputPredictor::applyCorrectionToVerticalOutputBuffer(float vert_vel_corre
 	_output_vert_new.dt = 0.0f;
 }
 
-void OutputPredictor::applyCorrectionToOutputBuffer(const Vector3f &vel_correction, const Vector3f &pos_correction)
+void M_OutputPredictor::applyCorrectionToOutputBuffer(const Vector3f &vel_correction, const Vector3f &pos_correction)
 {
 	// loop through the output filter state history and apply the corrections to the velocity and position states
 	for (uint8_t index = 0; index < _output_buffer.get_length(); index++) {

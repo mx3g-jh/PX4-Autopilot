@@ -57,9 +57,9 @@
 #include <uORB/topics/wind.h>
 
 #if CONSTRAINED_MEMORY
-# define EKF2_MAX_INSTANCES 2
+# define M_EKF2_MAX_INSTANCES 2
 #else
-# define EKF2_MAX_INSTANCES 9
+# define M_EKF2_MAX_INSTANCES 9
 #endif
 
 using namespace time_literals;
@@ -146,13 +146,13 @@ private:
 	static constexpr float _rel_err_score_lim{1.0f}; // +- limit applied to the relative error score
 	static constexpr float _rel_err_thresh{0.5f};    // the relative score difference needs to be greater than this to switch from an otherwise healthy instance
 
-	EstimatorInstance _instance[EKF2_MAX_INSTANCES] {
+	EstimatorInstance _instance[M_EKF2_MAX_INSTANCES] {
 		{this, 0},
 		{this, 1},
-#if EKF2_MAX_INSTANCES > 2
+#if M_EKF2_MAX_INSTANCES > 2
 		{this, 2},
 		{this, 3},
-#if EKF2_MAX_INSTANCES > 4
+#if M_EKF2_MAX_INSTANCES > 4
 		{this, 4},
 		{this, 5},
 		{this, 6},
@@ -170,7 +170,7 @@ private:
 	static_assert(IMU_STATUS_SIZE == sizeof(estimator_selector_status_s::accumulated_accel_error) / sizeof(
 			      estimator_selector_status_s::accumulated_accel_error[0]),
 		      "increase estimator_selector_status_s::accumulated_accel_error size");
-	static_assert(EKF2_MAX_INSTANCES <= sizeof(estimator_selector_status_s::combined_test_ratio) / sizeof(
+	static_assert(M_EKF2_MAX_INSTANCES <= sizeof(estimator_selector_status_s::combined_test_ratio) / sizeof(
 			      estimator_selector_status_s::combined_test_ratio[0]),
 		      "increase estimator_selector_status_s::combined_test_ratio size");
 

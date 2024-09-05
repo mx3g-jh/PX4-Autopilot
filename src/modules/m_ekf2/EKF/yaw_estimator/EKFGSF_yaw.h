@@ -31,18 +31,18 @@
  *
  ****************************************************************************/
 
-#ifndef EKF_EKFGSF_YAW_H
-#define EKF_EKFGSF_YAW_H
+#ifndef M_EKF_M_EKFGSF_YAW_H
+#define M_EKF_M_EKFGSF_YAW_H
 
 #include <lib/mathlib/mathlib.h>
 #include <lib/matrix/matrix/math.hpp>
 
 static constexpr uint8_t N_MODELS_EKFGSF = 5;
 
-class EKFGSF_yaw
+class M_EKFGSF_yaw
 {
 public:
-	EKFGSF_yaw();
+	M_EKFGSF_yaw();
 
 	// Update Filter States - this should be called whenever new IMU data is available
 	void predict(const matrix::Vector3f &delta_ang, const float delta_ang_dt,
@@ -150,4 +150,4 @@ private:
 	// return the probability of the state estimate for the specified EKF assuming a gaussian error distribution
 	float gaussianDensity(const uint8_t model_index) const;
 };
-#endif // !EKF_EKFGSF_YAW_H
+#endif // !M_EKF_M_EKFGSF_YAW_H

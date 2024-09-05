@@ -33,11 +33,11 @@
 
 #include "ekf.h"
 
-#include <ekf_derivation/generated/compute_yaw_innov_var_and_h.h>
+#include <ekf_derivation/compute_yaw_innov_var_and_h.h>
 
 #include <mathlib/mathlib.h>
 
-bool Ekf::fuseYaw(estimator_aid_source1d_s &aid_src_status, const VectorState &H_YAW)
+bool M_EKF::fuseYaw(estimator_aid_source1d_s &aid_src_status, const VectorState &H_YAW)
 {
 	// check if the innovation variance calculation is badly conditioned
 	if (aid_src_status.innovation_variance >= aid_src_status.observation_variance) {
@@ -115,12 +115,12 @@ bool Ekf::fuseYaw(estimator_aid_source1d_s &aid_src_status, const VectorState &H
 	return false;
 }
 
-void Ekf::computeYawInnovVarAndH(float variance, float &innovation_variance, VectorState &H_YAW) const
+void M_EKF::computeYawInnovVarAndH(float variance, float &innovation_variance, VectorState &H_YAW) const
 {
-	sym::ComputeYawInnovVarAndH(_state.vector(), P, variance, &innovation_variance, &H_YAW);
+	m_sym::ComputeYawInnovVarAndH(_state.vector(), P, variance, &innovation_variance, &H_YAW);
 }
 
-void Ekf::resetQuatStateYaw(float yaw, float yaw_variance)
+void M_EKF::resetQuatStateYaw(float yaw, float yaw_variance)
 {
 	// save a copy of the quaternion state for later use in calculating the amount of reset change
 	const Quatf quat_before_reset = _state.quat_nominal;

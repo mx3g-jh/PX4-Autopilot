@@ -43,15 +43,15 @@
 
 #include "ekf.h"
 
-#include <ekf_derivation/generated/compute_mag_y_innov_var_and_h.h>
-#include <ekf_derivation/generated/compute_mag_z_innov_var_and_h.h>
+#include <ekf_derivation/compute_mag_y_innov_var_and_h.h>
+#include <ekf_derivation/compute_mag_z_innov_var_and_h.h>
 
-#include <ekf_derivation/generated/compute_mag_declination_pred_innov_var_and_h.h>
+#include <ekf_derivation/compute_mag_declination_pred_innov_var_and_h.h>
 
 #include <mathlib/mathlib.h>
 
-bool Ekf::fuseMag(const Vector3f &mag, const float R_MAG, VectorState &H, estimator_aid_source3d_s &aid_src,
-		  bool update_all_states, bool update_tilt)
+bool M_EKF::fuseMag(const Vector3f &mag, const float R_MAG, VectorState &H, estimator_aid_source3d_s &aid_src,
+		    bool update_all_states, bool update_tilt)
 {
 	// if any axis failed, abort the mag fusion
 	if (aid_src.innovation_rejected) {
@@ -70,7 +70,7 @@ bool Ekf::fuseMag(const Vector3f &mag, const float R_MAG, VectorState &H, estima
 
 		} else if (index == 1) {
 			// recalculate innovation variance because state covariances have changed due to previous fusion (linearise using the same initial state for all axes)
-			sym::ComputeMagYInnovVarAndH(state_vector, P, R_MAG, FLT_EPSILON, &aid_src.innovation_variance[index], &H);
+			m_sym::ComputeMagYInnovVarAndH(state_vector, P, R_MAG, FLT_EPSILON, &aid_src.innovation_variance[index], &H);
 
 			// recalculate innovation using the updated state
 			aid_src.innovation[index] = _state.quat_nominal.rotateVectorInverse(_state.mag_I)(index) + _state.mag_B(index) - mag(
@@ -84,7 +84,7 @@ bool Ekf::fuseMag(const Vector3f &mag, const float R_MAG, VectorState &H, estima
 			}
 
 			// recalculate innovation variance because state covariances have changed due to previous fusion (linearise using the same initial state for all axes)
-			sym::ComputeMagZInnovVarAndH(state_vector, P, R_MAG, FLT_EPSILON, &aid_src.innovation_variance[index], &H);
+			m_sym::ComputeMagZInnovVarAndH(state_vector, P, R_MAG, FLT_EPSILON, &aid_src.innovation_variance[index], &H);
 
 			// recalculate innovation using the updated state
 			aid_src.innovation[index] = _state.quat_nominal.rotateVectorInverse(_state.mag_I)(index) + _state.mag_B(index) - mag(
@@ -151,13 +151,13 @@ bool Ekf::fuseMag(const Vector3f &mag, const float R_MAG, VectorState &H, estima
 	return false;
 }
 
-bool Ekf::fuseDeclination(float decl_measurement_rad, float R, bool update_all_states)
+bool M_EKF::fuseDeclination(float decl_measurement_rad, float R, bool update_all_states)
 {
 	VectorState H;
 	float decl_pred;
 	float innovation_variance;
 
-	sym::ComputeMagDeclinationPredInnovVarAndH(_state.vector(), P, R, FLT_EPSILON,
+	m_sym::ComputeMagDeclinationPredInnovVarAndH(_state.vector(), P, R, FLT_EPSILON,
 			&decl_pred, &innovation_variance, &H);
 
 	const float innovation = wrap_pi(decl_pred - decl_measurement_rad);
@@ -191,7 +191,7 @@ bool Ekf::fuseDeclination(float decl_measurement_rad, float R, bool update_all_s
 	return is_fused;
 }
 
-float Ekf::calculate_synthetic_mag_z_measurement(const Vector3f &mag_meas, const Vector3f &mag_earth_predicted)
+float M_EKF::calculate_synthetic_mag_z_measurement(const Vector3f &mag_meas, const Vector3f &mag_earth_predicted)
 {
 	// theoretical magnitude of the magnetometer Z component value given X and Y sensor measurement and our knowledge
 	// of the earth magnetic field vector at the current location

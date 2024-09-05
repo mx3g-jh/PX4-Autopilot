@@ -41,9 +41,9 @@
 
 #include <lib/world_magnetic_model/geo_mag_declination.h>
 
-#include <ekf_derivation/generated/compute_mag_innov_innov_var_and_hx.h>
+#include <ekf_derivation/compute_mag_innov_innov_var_and_hx.h>
 
-void Ekf::controlMagFusion(const imuSample &imu_sample)
+void M_EKF::controlMagFusion(const imuSample &imu_sample)
 {
 	static constexpr const char *AID_SRC_NAME = "mag";
 	estimator_aid_source3d_s &aid_src = _aid_src_mag;
@@ -138,7 +138,7 @@ void Ekf::controlMagFusion(const imuSample &imu_sample)
 
 		// Observation jacobian and Kalman gain vectors
 		VectorState H;
-		sym::ComputeMagInnovInnovVarAndHx(_state.vector(), P, mag_sample.mag, R_MAG, FLT_EPSILON, &mag_innov, &innov_var, &H);
+		m_sym::ComputeMagInnovInnovVarAndHx(_state.vector(), P, mag_sample.mag, R_MAG, FLT_EPSILON, &mag_innov, &innov_var, &H);
 
 		updateAidSourceStatus(aid_src,
 				      mag_sample.time_us,                      // sample timestamp
@@ -317,7 +317,7 @@ void Ekf::controlMagFusion(const imuSample &imu_sample)
 	}
 }
 
-void Ekf::stopMagFusion()
+void M_EKF::stopMagFusion()
 {
 	if (_control_status.flags.mag) {
 		ECL_INFO("stopping mag fusion");
@@ -358,7 +358,7 @@ void Ekf::stopMagFusion()
 	}
 }
 
-bool Ekf::checkHaglYawResetReq() const
+bool M_EKF::checkHaglYawResetReq() const
 {
 #if defined(CONFIG_EKF2_TERRAIN)
 
@@ -377,7 +377,7 @@ bool Ekf::checkHaglYawResetReq() const
 	return false;
 }
 
-void Ekf::resetMagStates(const Vector3f &mag, bool reset_heading)
+void M_EKF::resetMagStates(const Vector3f &mag, bool reset_heading)
 {
 	// reinit mag states
 	const Vector3f mag_I_before_reset = _state.mag_I;
@@ -455,7 +455,7 @@ void Ekf::resetMagStates(const Vector3f &mag, bool reset_heading)
 	}
 }
 
-void Ekf::checkMagHeadingConsistency(const magSample &mag_sample)
+void M_EKF::checkMagHeadingConsistency(const magSample &mag_sample)
 {
 	// use mag bias if variance good
 	Vector3f mag_bias{0.f, 0.f, 0.f};
@@ -497,7 +497,7 @@ void Ekf::checkMagHeadingConsistency(const magSample &mag_sample)
 	}
 }
 
-bool Ekf::checkMagField(const Vector3f &mag_sample)
+bool M_EKF::checkMagField(const Vector3f &mag_sample)
 {
 	_control_status.flags.mag_field_disturbed = false;
 
@@ -559,13 +559,13 @@ bool Ekf::checkMagField(const Vector3f &mag_sample)
 	return ((_time_delayed_us - _time_last_mag_check_failing) > (uint64_t)_min_mag_health_time_us);
 }
 
-bool Ekf::isMeasuredMatchingExpected(const float measured, const float expected, const float gate)
+bool M_EKF::isMeasuredMatchingExpected(const float measured, const float expected, const float gate)
 {
 	return (measured >= expected - gate)
 	       && (measured <= expected + gate);
 }
 
-void Ekf::resetMagHeading(const Vector3f &mag)
+void M_EKF::resetMagHeading(const Vector3f &mag)
 {
 	// use mag bias if variance good (unless configured for HEADING only)
 	Vector3f mag_bias{0.f, 0.f, 0.f};
@@ -601,7 +601,7 @@ void Ekf::resetMagHeading(const Vector3f &mag)
 	_control_status.flags.mag_heading_consistent = true;
 }
 
-float Ekf::getMagDeclination()
+float M_EKF::getMagDeclination()
 {
 	// set source of magnetic declination for internal use
 	if (_control_status.flags.mag_aligned_in_flight) {
@@ -625,7 +625,7 @@ float Ekf::getMagDeclination()
 	return 0.f;
 }
 
-bool Ekf::updateWorldMagneticModel(const double latitude_deg, const double longitude_deg)
+bool M_EKF::updateWorldMagneticModel(const double latitude_deg, const double longitude_deg)
 {
 	// set the magnetic field data returned by the geo library using the current GPS position
 	const float declination_rad = math::radians(get_mag_declination_degrees(latitude_deg, longitude_deg));

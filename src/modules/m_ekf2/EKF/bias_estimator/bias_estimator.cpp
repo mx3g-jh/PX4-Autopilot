@@ -39,7 +39,7 @@
 
 #include "bias_estimator.hpp"
 
-void BiasEstimator::predict(const float dt)
+void M_BiasEstimator::predict(const float dt)
 {
 	// State is constant
 	// Predict state covariance only
@@ -62,12 +62,12 @@ void BiasEstimator::predict(const float dt)
 	_status.bias_var = _state_var;
 }
 
-void BiasEstimator::constrainStateVar()
+void M_BiasEstimator::constrainStateVar()
 {
 	_state_var = math::constrain(_state_var, 1e-8f, _state_var_max);
 }
 
-void BiasEstimator::fuseBias(const float measurement, const float measurement_var)
+void M_BiasEstimator::fuseBias(const float measurement, const float measurement_var)
 {
 	const float innov_var = _state_var + math::max(sq(0.01f), measurement_var);
 	const float innov = measurement - _state;
@@ -85,28 +85,28 @@ void BiasEstimator::fuseBias(const float measurement, const float measurement_va
 	_status = packStatus(innov, innov_var, innov_test_ratio);
 }
 
-inline float BiasEstimator::computeInnovTestRatio(const float innov, const float innov_var) const
+inline float M_BiasEstimator::computeInnovTestRatio(const float innov, const float innov_var) const
 {
 	return innov * innov / (_gate_size * _gate_size * innov_var);
 }
 
-inline bool BiasEstimator::isTestRatioPassing(const float innov_test_ratio) const
+inline bool M_BiasEstimator::isTestRatioPassing(const float innov_test_ratio) const
 {
 	return innov_test_ratio < 1.f;
 }
 
-inline void BiasEstimator::updateState(const float K, const float innov)
+inline void M_BiasEstimator::updateState(const float K, const float innov)
 {
 	_state = _state + K * innov;
 }
 
-inline void BiasEstimator::updateStateCovariance(const float K)
+inline void M_BiasEstimator::updateStateCovariance(const float K)
 {
 	_state_var -= K * _state_var;
 	constrainStateVar();
 }
 
-inline void BiasEstimator::updateOffsetDetection(const float innov, const float innov_test_ratio)
+inline void M_BiasEstimator::updateOffsetDetection(const float innov, const float innov_test_ratio)
 {
 	const float signed_innov_test_ratio = matrix::sign(innov) * innov_test_ratio;
 	_signed_innov_test_ratio_lpf.update(math::constrain(signed_innov_test_ratio, -1.f, 1.f));
@@ -121,7 +121,7 @@ inline void BiasEstimator::updateOffsetDetection(const float innov, const float 
 	}
 }
 
-inline bool BiasEstimator::isOffsetDetected() const
+inline bool M_BiasEstimator::isOffsetDetected() const
 {
 	// There is an offset in the estimate if the average of innovation is statistically too large
 	// or if the sign of the innovation is constantly the same
@@ -130,7 +130,7 @@ inline bool BiasEstimator::isOffsetDetected() const
 	       || (_time_since_last_negative_innov > _innov_sequence_monitnoring_time_constant);
 }
 
-inline BiasEstimator::status BiasEstimator::packStatus(const float innov, const float innov_var,
+inline M_BiasEstimator::status M_BiasEstimator::packStatus(const float innov, const float innov_var,
 		const float innov_test_ratio) const
 {
 	// Send back status for logging

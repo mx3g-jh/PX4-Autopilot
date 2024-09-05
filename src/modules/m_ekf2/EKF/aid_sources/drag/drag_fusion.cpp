@@ -37,13 +37,13 @@
  */
 
 #include "ekf.h"
-#include <ekf_derivation/generated/compute_drag_x_innov_var_and_h.h>
-#include <ekf_derivation/generated/compute_drag_y_innov_var_and_h.h>
+#include <ekf_derivation/compute_drag_x_innov_var_and_h.h>
+#include <ekf_derivation/compute_drag_y_innov_var_and_h.h>
 
 #include <mathlib/mathlib.h>
 #include <lib/atmosphere/atmosphere.h>
 
-void Ekf::controlDragFusion(const imuSample &imu_delayed)
+void M_EKF::controlDragFusion(const imuSample &imu_delayed)
 {
 	if ((_params.drag_ctrl > 0) && _drag_buffer) {
 
@@ -63,7 +63,7 @@ void Ekf::controlDragFusion(const imuSample &imu_delayed)
 	}
 }
 
-void Ekf::fuseDrag(const dragSample &drag_sample)
+void M_EKF::fuseDrag(const dragSample &drag_sample)
 {
 	const float R_ACC = fmaxf(_params.drag_noise, 0.5f); // observation noise variance in specific force drag (m/sec**2)**2
 	const float rho = fmaxf(_air_density, 0.1f); // air density (kg/m**3)
@@ -134,16 +134,16 @@ void Ekf::fuseDrag(const dragSample &drag_sample)
 		innovation(axis_index) = pred_acc - mea_acc;
 
 		if (axis_index == 0) {
-			sym::ComputeDragXInnovVarAndH(state_vector_prev, P, rho, bcoef_inv(axis_index), mcoef_corrrected, R_ACC, FLT_EPSILON,
-						      &innovation_variance(axis_index), &H);
+			m_sym::ComputeDragXInnovVarAndH(state_vector_prev, P, rho, bcoef_inv(axis_index), mcoef_corrrected, R_ACC, FLT_EPSILON,
+							&innovation_variance(axis_index), &H);
 
 			if (!using_bcoef_x && !using_mcoef) {
 				continue;
 			}
 
 		} else if (axis_index == 1) {
-			sym::ComputeDragYInnovVarAndH(state_vector_prev, P, rho, bcoef_inv(axis_index), mcoef_corrrected, R_ACC, FLT_EPSILON,
-						      &innovation_variance(axis_index), &H);
+			m_sym::ComputeDragYInnovVarAndH(state_vector_prev, P, rho, bcoef_inv(axis_index), mcoef_corrrected, R_ACC, FLT_EPSILON,
+							&innovation_variance(axis_index), &H);
 
 			if (!using_bcoef_y && !using_mcoef) {
 				continue;

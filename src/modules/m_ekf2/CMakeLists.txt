@@ -33,7 +33,7 @@
 
 set(EKF_DERIVATION_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/EKF/ekf_derivation)
 
-set(EKF_GENERATED_FILES ${EKF_DERIVATION_SRC_DIR}/generated/state.h)
+set(EKF_GENERATED_FILES ${EKF_DERIVATION_SRC_DIR}/state.h)
 set(EKF_GENERATED_DERIVATION_INCLUDE_PATH "${EKF_DERIVATION_SRC_DIR}/..")
 
 set(EKF_LIBS)
@@ -163,8 +163,8 @@ px4_add_module(
 	SRCS
 		${EKF_SRCS}
 
-		EKF2.cpp
-		EKF2.hpp
+		M_EKF2.cpp
+		M_EKF2.hpp
 		M_EKF2Selector.cpp
 		M_EKF2Selector.hpp
 
@@ -178,8 +178,7 @@ px4_add_module(
 		world_magnetic_model
 
 		${EKF_LIBS}
-		bias_estimator
-		output_predictor
-	UNITY_BUILD
+		m_bias_estimator
+		m_output_predictor
 	)
 

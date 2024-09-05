@@ -38,13 +38,13 @@
 
 #include "ekf.h"
 
-void Ekf::controlEvHeightFusion(const imuSample &imu_sample, const extVisionSample &ev_sample,
-				const bool common_starting_conditions_passing, const bool ev_reset, const bool quality_sufficient,
-				estimator_aid_source1d_s &aid_src)
+void M_EKF::controlEvHeightFusion(const imuSample &imu_sample, const extVisionSample &ev_sample,
+				  const bool common_starting_conditions_passing, const bool ev_reset, const bool quality_sufficient,
+				  estimator_aid_source1d_s &aid_src)
 {
 	static constexpr const char *AID_SRC_NAME = "EV height";
 
-	HeightBiasEstimator &bias_est = _ev_hgt_b_est;
+	M_HeightBiasEstimator &bias_est = _ev_hgt_b_est;
 
 	// bias_est.predict(_dt_ekf_avg) called by controlExternalVisionFusion()
 
@@ -187,7 +187,7 @@ void Ekf::controlEvHeightFusion(const imuSample &imu_sample, const extVisionSamp
 	}
 }
 
-void Ekf::stopEvHgtFusion()
+void M_EKF::stopEvHgtFusion()
 {
 	if (_control_status.flags.ev_hgt) {
 

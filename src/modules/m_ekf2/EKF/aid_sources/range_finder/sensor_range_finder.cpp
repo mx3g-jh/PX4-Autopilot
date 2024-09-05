@@ -42,25 +42,25 @@
 
 #include <lib/matrix/matrix/math.hpp>
 
-namespace estimator
+namespace m_estimator
 {
-namespace sensor
+namespace m_sensor
 {
 
-void SensorRangeFinder::runChecks(const uint64_t current_time_us, const matrix::Dcmf &R_to_earth)
+void M_SensorRangeFinder::runChecks(const uint64_t current_time_us, const matrix::Dcmf &R_to_earth)
 {
 	updateSensorToEarthRotation(R_to_earth);
 	updateValidity(current_time_us);
 }
 
-void SensorRangeFinder::updateSensorToEarthRotation(const matrix::Dcmf &R_to_earth)
+void M_SensorRangeFinder::updateSensorToEarthRotation(const matrix::Dcmf &R_to_earth)
 {
 	// calculate 2,2 element of rotation matrix from sensor frame to earth frame
 	// this is required for use of range finder and flow data
 	_cos_tilt_rng_to_earth = R_to_earth(2, 0) * _sin_pitch_offset + R_to_earth(2, 2) * _cos_pitch_offset;
 }
 
-void SensorRangeFinder::updateValidity(uint64_t current_time_us)
+void M_SensorRangeFinder::updateValidity(uint64_t current_time_us)
 {
 	updateDtDataLpf(current_time_us);
 
@@ -95,7 +95,7 @@ void SensorRangeFinder::updateValidity(uint64_t current_time_us)
 	}
 }
 
-void SensorRangeFinder::updateDtDataLpf(uint64_t current_time_us)
+void M_SensorRangeFinder::updateDtDataLpf(uint64_t current_time_us)
 {
 	// Calculate a first order IIR low-pass filtered time of arrival between samples using a 2 second time constant.
 	float alpha = 0.5f * _dt_update;
@@ -105,17 +105,17 @@ void SensorRangeFinder::updateDtDataLpf(uint64_t current_time_us)
 	_dt_data_lpf = fminf(_dt_data_lpf, 4e6f);
 }
 
-inline bool SensorRangeFinder::isSampleOutOfDate(uint64_t current_time_us) const
+inline bool M_SensorRangeFinder::isSampleOutOfDate(uint64_t current_time_us) const
 {
 	return (current_time_us - _sample.time_us) > 2 * RNG_MAX_INTERVAL;
 }
 
-inline bool SensorRangeFinder::isDataInRange() const
+inline bool M_SensorRangeFinder::isDataInRange() const
 {
 	return (_sample.rng >= _rng_valid_min_val) && (_sample.rng <= _rng_valid_max_val);
 }
 
-void SensorRangeFinder::updateStuckCheck()
+void M_SensorRangeFinder::updateStuckCheck()
 {
 	if (!isStuckDetectorEnabled()) {
 		// Stuck detector disabled
@@ -147,7 +147,7 @@ void SensorRangeFinder::updateStuckCheck()
 	}
 }
 
-void SensorRangeFinder::updateFogCheck(const float dist_bottom, const uint64_t time_us)
+void M_SensorRangeFinder::updateFogCheck(const float dist_bottom, const uint64_t time_us)
 {
 	if (_max_fog_dist > 0.f && time_us - _time_last_valid_us < 1e6) {
 
@@ -165,5 +165,5 @@ void SensorRangeFinder::updateFogCheck(const float dist_bottom, const uint64_t t
 	}
 }
 
-} // namespace sensor
-} // namespace estimator
+} // namespace m_sensor
+} // namespace m_estimator

@@ -31,8 +31,8 @@
  *
  ****************************************************************************/
 
-#ifndef EKF_OUTPUT_PREDICTOR_H
-#define EKF_OUTPUT_PREDICTOR_H
+#ifndef M_EKF_OUTPUT_PREDICTOR_H
+#define M_EKF_OUTPUT_PREDICTOR_H
 
 #include <matrix/math.hpp>
 
@@ -40,15 +40,15 @@
 
 #include <lib/geo/geo.h>
 
-class OutputPredictor
+class M_OutputPredictor
 {
 public:
-	OutputPredictor()
+	M_OutputPredictor()
 	{
 		reset();
 	};
 
-	~OutputPredictor() = default;
+	~M_OutputPredictor() = default;
 
 	// modify output filter to match the the EKF state at the fusion time horizon
 	void alignOutputFilter(const matrix::Quatf &quat_state, const matrix::Vector3f &vel_state,
@@ -159,8 +159,8 @@ private:
 		float    dt{0.f};             ///< delta time (sec)
 	};
 
-	RingBuffer<outputSample> _output_buffer{12};
-	RingBuffer<outputVert> _output_vert_buffer{12};
+	M_RingBuffer<outputSample> _output_buffer{12};
+	M_RingBuffer<outputVert> _output_vert_buffer{12};
 
 	matrix::Vector3f _accel_bias{};
 	matrix::Vector3f _gyro_bias{};
@@ -194,4 +194,4 @@ private:
 	float _pos_tau{0.25f};                   ///< position state correction time constant (1/sec)
 };
 
-#endif // !EKF_OUTPUT_PREDICTOR_H
+#endif // !M_EKF_OUTPUT_PREDICTOR_H

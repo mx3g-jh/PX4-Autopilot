@@ -37,26 +37,26 @@
  * Template RingBuffer.
  */
 
-#ifndef EKF_RINGBUFFER_H
-#define EKF_RINGBUFFER_H
+#ifndef M_EKF_RINGBUFFER_H
+#define M_EKF_RINGBUFFER_H
 
 #include <inttypes.h>
 #include <cstdio>
 #include <cstring>
 
 template <typename data_type>
-class RingBuffer
+class M_RingBuffer
 {
 public:
-	explicit RingBuffer(size_t size) { allocate(size); }
-	RingBuffer() = delete;
-	~RingBuffer() { delete[] _buffer; }
+	explicit M_RingBuffer(size_t size) { allocate(size); }
+	M_RingBuffer() = delete;
+	~M_RingBuffer() { delete[] _buffer; }
 
 	// no copy, assignment, move, move assignment
-	RingBuffer(const RingBuffer &) = delete;
-	RingBuffer &operator=(const RingBuffer &) = delete;
-	RingBuffer(RingBuffer &&) = delete;
-	RingBuffer &operator=(RingBuffer &&) = delete;
+	M_RingBuffer(const M_RingBuffer &) = delete;
+	M_RingBuffer &operator=(const M_RingBuffer &) = delete;
+	M_RingBuffer(M_RingBuffer &&) = delete;
+	M_RingBuffer &operator=(M_RingBuffer &&) = delete;
 
 	bool allocate(uint8_t size)
 	{
@@ -192,4 +192,4 @@ private:
 	bool _first_write{true};
 };
 
-#endif // !EKF_RINGBUFFER_H
+#endif // !M_EKF_RINGBUFFER_H

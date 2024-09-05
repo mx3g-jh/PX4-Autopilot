@@ -37,7 +37,7 @@
 
 #include "ekf.h"
 
-void Ekf::controlHeightFusion(const imuSample &imu_delayed)
+void M_EKF::controlHeightFusion(const imuSample &imu_delayed)
 {
 	checkVerticalAccelerationHealth(imu_delayed);
 
@@ -58,7 +58,7 @@ void Ekf::controlHeightFusion(const imuSample &imu_delayed)
 	checkHeightSensorRefFallback();
 }
 
-void Ekf::checkHeightSensorRefFallback()
+void M_EKF::checkHeightSensorRefFallback()
 {
 	if (_height_sensor_ref != HeightSensor::UNKNOWN) {
 		// The reference sensor is running, all good
@@ -119,7 +119,7 @@ void Ekf::checkHeightSensorRefFallback()
 	}
 }
 
-void Ekf::checkVerticalAccelerationHealth(const imuSample &imu_delayed)
+void M_EKF::checkVerticalAccelerationHealth(const imuSample &imu_delayed)
 {
 	// Check for IMU accelerometer vibration induced clipping as evidenced by the vertical
 	// innovations being positive and not stale.
@@ -176,7 +176,7 @@ void Ekf::checkVerticalAccelerationHealth(const imuSample &imu_delayed)
 	}
 }
 
-Likelihood Ekf::estimateInertialNavFallingLikelihood() const
+Likelihood M_EKF::estimateInertialNavFallingLikelihood() const
 {
 	bool likelihood_high = false;
 	bool likelihood_medium = false;

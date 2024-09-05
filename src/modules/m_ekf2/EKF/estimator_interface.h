@@ -39,8 +39,8 @@
  *
  */
 
-#ifndef EKF_ESTIMATOR_INTERFACE_H
-#define EKF_ESTIMATOR_INTERFACE_H
+#ifndef M_EKF_ESTIMATOR_INTERFACE_H
+#define M_EKF_ESTIMATOR_INTERFACE_H
 
 #if defined(MODULE_NAME)
 #include <px4_platform_common/log.h>
@@ -76,9 +76,9 @@
 #include <mathlib/mathlib.h>
 #include <mathlib/math/filter/AlphaFilter.hpp>
 
-using namespace estimator;
+using namespace m_estimator;
 
-class EstimatorInterface
+class M_EstimatorInterface
 {
 public:
 	void setIMUData(const imuSample &imu_sample);
@@ -107,7 +107,7 @@ public:
 #endif // CONFIG_EKF2_AIRSPEED
 
 #if defined(CONFIG_EKF2_RANGE_FINDER)
-	void setRangeData(const estimator::sensor::rangeSample &range_sample);
+	void setRangeData(const m_estimator::m_sensor::rangeSample &range_sample);
 
 	// set sensor limitations reported by the rangefinder
 	void set_rangefinder_limits(float min_distance, float max_distance)
@@ -115,7 +115,7 @@ public:
 		_range_sensor.setLimits(min_distance, max_distance);
 	}
 
-	const estimator::sensor::rangeSample &get_rng_sample_delayed() { return *(_range_sensor.getSampleAddress()); }
+	const m_estimator::m_sensor::rangeSample &get_rng_sample_delayed() { return *(_range_sensor.getSampleAddress()); }
 #endif // CONFIG_EKF2_RANGE_FINDER
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW)
@@ -310,12 +310,12 @@ public:
 	const MapProjection &global_origin() const { return _pos_ref; }
 	float getEkfGlobalOriginAltitude() const { return PX4_ISFINITE(_gps_alt_ref) ? _gps_alt_ref : 0.f; }
 
-	OutputPredictor &output_predictor() { return _output_predictor; };
+	M_OutputPredictor &output_predictor() { return _output_predictor; };
 
 protected:
 
-	EstimatorInterface() = default;
-	virtual ~EstimatorInterface();
+	M_EstimatorInterface() = default;
+	virtual ~M_EstimatorInterface();
 
 	virtual bool init(uint64_t timestamp) = 0;
 
@@ -343,7 +343,7 @@ protected:
 	uint64_t _time_delayed_us{0}; // captures the imu sample on the delayed time horizon
 	uint64_t _time_latest_us{0}; // imu sample capturing the newest imu data
 
-	OutputPredictor _output_predictor{};
+	M_OutputPredictor _output_predictor{};
 
 #if defined(CONFIG_EKF2_AIRSPEED)
 	airspeedSample _airspeed_sample_delayed {};
@@ -354,15 +354,15 @@ protected:
 #endif // CONFIG_EKF2_EXTERNAL_VISION
 
 #if defined(CONFIG_EKF2_RANGE_FINDER)
-	RingBuffer<sensor::rangeSample> *_range_buffer {nullptr};
+	M_RingBuffer<m_sensor::rangeSample> *_range_buffer {nullptr};
 	uint64_t _time_last_range_buffer_push{0};
 
-	sensor::SensorRangeFinder _range_sensor{};
-	RangeFinderConsistencyCheck _rng_consistency_check;
+	m_sensor::M_SensorRangeFinder _range_sensor{};
+	M_RangeFinderConsistencyCheck _rng_consistency_check;
 #endif // CONFIG_EKF2_RANGE_FINDER
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW)
-	RingBuffer<flowSample> 	*_flow_buffer {nullptr};
+	M_RingBuffer<flowSample> 	*_flow_buffer {nullptr};
 
 	flowSample _flow_sample_delayed{};
 
@@ -385,7 +385,7 @@ protected:
 	float _gpos_origin_epv{0.0f}; // vertical position uncertainty of the global origin
 
 #if defined(CONFIG_EKF2_GNSS)
-	RingBuffer<gnssSample> *_gps_buffer {nullptr};
+	M_RingBuffer<gnssSample> *_gps_buffer {nullptr};
 	uint64_t _time_last_gps_buffer_push{0};
 
 	gnssSample _gps_sample_delayed{};
@@ -404,7 +404,7 @@ protected:
 #endif // CONFIG_EKF2_GNSS
 
 #if defined(CONFIG_EKF2_DRAG_FUSION)
-	RingBuffer<dragSample> *_drag_buffer {nullptr};
+	M_RingBuffer<dragSample> *_drag_buffer {nullptr};
 	dragSample _drag_down_sampled{};	// down sampled drag specific force data (filter prediction rate -> observation rate)
 #endif // CONFIG_EKF2_DRAG_FUSION
 
@@ -419,28 +419,28 @@ protected:
 
 	// data buffer instances
 	static constexpr uint8_t kBufferLengthDefault = 12;
-	RingBuffer<imuSample> _imu_buffer{kBufferLengthDefault};
+	M_RingBuffer<imuSample> _imu_buffer{kBufferLengthDefault};
 
 #if defined(CONFIG_EKF2_MAGNETOMETER)
-	RingBuffer<magSample> *_mag_buffer {nullptr};
+	M_RingBuffer<magSample> *_mag_buffer {nullptr};
 	uint64_t _time_last_mag_buffer_push{0};
 #endif // CONFIG_EKF2_MAGNETOMETER
 
 #if defined(CONFIG_EKF2_AIRSPEED)
-	RingBuffer<airspeedSample> *_airspeed_buffer {nullptr};
+	M_RingBuffer<airspeedSample> *_airspeed_buffer {nullptr};
 #endif // CONFIG_EKF2_AIRSPEED
 
 #if defined(CONFIG_EKF2_EXTERNAL_VISION)
-	RingBuffer<extVisionSample> *_ext_vision_buffer {nullptr};
+	M_RingBuffer<extVisionSample> *_ext_vision_buffer {nullptr};
 	uint64_t _time_last_ext_vision_buffer_push{0};
 #endif // CONFIG_EKF2_EXTERNAL_VISION
 #if defined(CONFIG_EKF2_AUXVEL)
-	RingBuffer<auxVelSample> *_auxvel_buffer {nullptr};
+	M_RingBuffer<auxVelSample> *_auxvel_buffer {nullptr};
 #endif // CONFIG_EKF2_AUXVEL
-	RingBuffer<systemFlagUpdate> *_system_flag_buffer {nullptr};
+	M_RingBuffer<systemFlagUpdate> *_system_flag_buffer {nullptr};
 
 #if defined(CONFIG_EKF2_BAROMETER)
-	RingBuffer<baroSample> *_baro_buffer {nullptr};
+	M_RingBuffer<baroSample> *_baro_buffer {nullptr};
 	uint64_t _time_last_baro_buffer_push{0};
 #endif // CONFIG_EKF2_BAROMETER
 
@@ -486,6 +486,6 @@ protected:
 
 	void printBufferAllocationFailed(const char *buffer_name);
 
-	ImuDownSampler _imu_down_sampler{_params.filter_update_interval_us};
+	M_ImuDownSampler _imu_down_sampler{_params.filter_update_interval_us};
 };
-#endif // !EKF_ESTIMATOR_INTERFACE_H
+#endif // !M_EKF_ESTIMATOR_INTERFACE_H

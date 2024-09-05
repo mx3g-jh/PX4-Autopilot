@@ -42,14 +42,14 @@
  */
 
 #include "ekf.h"
-#include <ekf_derivation/generated/predict_covariance.h>
+#include <ekf_derivation/predict_covariance.h>
 
 #include <math.h>
 #include <mathlib/mathlib.h>
 
 // Sets initial values for the covariance matrix
 // Do not call before quaternion states have been initialised
-void Ekf::initialiseCovariance()
+void M_EKF::initialiseCovariance()
 {
 	P.zero();
 
@@ -110,7 +110,7 @@ void Ekf::initialiseCovariance()
 #endif // CONFIG_EKF2_TERRAIN
 }
 
-void Ekf::predictCovariance(const imuSample &imu_delayed)
+void M_EKF::predictCovariance(const imuSample &imu_delayed)
 {
 	// predict the covariance
 	const float dt = 0.5f * (imu_delayed.delta_vel_dt + imu_delayed.delta_ang_dt);
@@ -134,10 +134,10 @@ void Ekf::predictCovariance(const imuSample &imu_delayed)
 	}
 
 	// calculate variances and upper diagonal covariances for quaternion, velocity, position and gyro bias states
-	P = sym::PredictCovariance(_state.vector(), P,
-				   imu_delayed.delta_vel / imu_delayed.delta_vel_dt, accel_var,
-				   imu_delayed.delta_ang / imu_delayed.delta_ang_dt, gyro_var,
-				   dt);
+	P = m_sym::PredictCovariance(_state.vector(), P,
+				     imu_delayed.delta_vel / imu_delayed.delta_vel_dt, accel_var,
+				     imu_delayed.delta_ang / imu_delayed.delta_ang_dt, gyro_var,
+				     dt);
 
 	// Construct the process noise variance diagonal for those states with a stationary process model
 	// These are kinematic states and their error growth is controlled separately by the IMU noise variances
@@ -240,7 +240,7 @@ void Ekf::predictCovariance(const imuSample &imu_delayed)
 	constrainStateVariances();
 }
 
-void Ekf::constrainStateVariances()
+void M_EKF::constrainStateVariances()
 {
 	// NOTE: This limiting is a last resort and should not be relied on
 	// TODO: Split covariance prediction into separate F*P*transpose(F) and Q contributions
@@ -276,14 +276,14 @@ void Ekf::constrainStateVariances()
 #endif // CONFIG_EKF2_TERRAIN
 }
 
-void Ekf::constrainStateVar(const IdxDof &state, float min, float max)
+void M_EKF::constrainStateVar(const IdxDof &state, float min, float max)
 {
 	for (unsigned i = state.idx; i < (state.idx + state.dof); i++) {
 		P(i, i) = math::constrain(P(i, i), min, max);
 	}
 }
 
-void Ekf::constrainStateVarLimitRatio(const IdxDof &state, float min, float max, float max_ratio)
+void M_EKF::constrainStateVarLimitRatio(const IdxDof &state, float min, float max, float max_ratio)
 {
 	// the ratio of a max and min variance must not exceed max_ratio
 	float state_var_max = 0.f;
@@ -302,7 +302,7 @@ void Ekf::constrainStateVarLimitRatio(const IdxDof &state, float min, float max,
 	}
 }
 
-void Ekf::resetQuatCov(const float yaw_noise)
+void M_EKF::resetQuatCov(const float yaw_noise)
 {
 	const float tilt_var = sq(math::max(_params.initial_tilt_err, 0.01f));
 	float yaw_var = sq(0.01f);
@@ -316,24 +316,24 @@ void Ekf::resetQuatCov(const float yaw_noise)
 	resetQuatCov(Vector3f(tilt_var, tilt_var, yaw_var));
 }
 
-void Ekf::resetQuatCov(const Vector3f &rot_var_ned)
+void M_EKF::resetQuatCov(const Vector3f &rot_var_ned)
 {
 	P.uncorrelateCovarianceSetVariance<State::quat_nominal.dof>(State::quat_nominal.idx, rot_var_ned);
 }
 
-void Ekf::resetGyroBiasCov()
+void M_EKF::resetGyroBiasCov()
 {
 	// Zero the corresponding covariances and set
 	// variances to the values use for initial alignment
 	P.uncorrelateCovarianceSetVariance<State::gyro_bias.dof>(State::gyro_bias.idx, sq(_params.switch_on_gyro_bias));
 }
 
-void Ekf::resetGyroBiasZCov()
+void M_EKF::resetGyroBiasZCov()
 {
 	P.uncorrelateCovarianceSetVariance<1>(State::gyro_bias.idx + 2, sq(_params.switch_on_gyro_bias));
 }
 
-void Ekf::resetAccelBiasCov()
+void M_EKF::resetAccelBiasCov()
 {
 	// Zero the corresponding covariances and set
 	// variances to the values use for initial alignment
@@ -341,14 +341,14 @@ void Ekf::resetAccelBiasCov()
 }
 
 #if defined(CONFIG_EKF2_MAGNETOMETER)
-void Ekf::resetMagEarthCov()
+void M_EKF::resetMagEarthCov()
 {
 	ECL_INFO("reset mag earth covariance");
 
 	P.uncorrelateCovarianceSetVariance<State::mag_I.dof>(State::mag_I.idx, sq(_params.mag_noise));
 }
 
-void Ekf::resetMagBiasCov()
+void M_EKF::resetMagBiasCov()
 {
 	ECL_INFO("reset mag bias covariance");
 

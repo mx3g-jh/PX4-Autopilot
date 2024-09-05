@@ -35,17 +35,17 @@
 
 #include "../ekf.h"
 
-ZeroVelocityUpdate::ZeroVelocityUpdate()
+M_ZeroVelocityUpdate::M_ZeroVelocityUpdate()
 {
 	reset();
 }
 
-void ZeroVelocityUpdate::reset()
+void M_ZeroVelocityUpdate::reset()
 {
 	_time_last_fuse = 0;
 }
 
-bool ZeroVelocityUpdate::update(Ekf &ekf, const estimator::imuSample &imu_delayed)
+bool M_ZeroVelocityUpdate::update(M_EKF &ekf, const m_estimator::imuSample &imu_delayed)
 {
 	// Fuse zero velocity at a limited rate (every 200 milliseconds)
 	const bool zero_velocity_update_data_ready = (_time_last_fuse + 200'000 < imu_delayed.time_us);

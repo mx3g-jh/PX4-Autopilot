@@ -39,10 +39,10 @@
 
 #include <mathlib/mathlib.h>
 #include <float.h>
-#include <ekf_derivation/generated/compute_flow_xy_innov_var_and_hx.h>
-#include <ekf_derivation/generated/compute_flow_y_innov_var_and_h.h>
+#include <ekf_derivation/compute_flow_xy_innov_var_and_hx.h>
+#include <ekf_derivation/compute_flow_y_innov_var_and_h.h>
 
-bool Ekf::fuseOptFlow(VectorState &H, const bool update_terrain)
+bool M_EKF::fuseOptFlow(VectorState &H, const bool update_terrain)
 {
 	const auto state_vector = _state.vector();
 
@@ -73,7 +73,7 @@ bool Ekf::fuseOptFlow(VectorState &H, const bool update_terrain)
 			// recalculate innovation variance because state covariances have changed due to previous fusion (linearise using the same initial state for all axes)
 			const float R_LOS = _aid_src_optical_flow.observation_variance[1];
 			const float epsilon = 1e-3f;
-			sym::ComputeFlowYInnovVarAndH(state_vector, P, R_LOS, epsilon, &_aid_src_optical_flow.innovation_variance[1], &H);
+			m_sym::ComputeFlowYInnovVarAndH(state_vector, P, R_LOS, epsilon, &_aid_src_optical_flow.innovation_variance[1], &H);
 
 			// recalculate the innovation using the updated state
 			const Vector3f flow_gyro_corrected = _flow_sample_delayed.gyro_rate - _flow_gyro_bias;
@@ -111,7 +111,7 @@ bool Ekf::fuseOptFlow(VectorState &H, const bool update_terrain)
 	return false;
 }
 
-float Ekf::predictFlowRange() const
+float M_EKF::predictFlowRange() const
 {
 	// calculate the sensor position relative to the IMU
 	const Vector3f pos_offset_body = _params.flow_pos_body - _params.imu_pos_body;
@@ -134,7 +134,7 @@ float Ekf::predictFlowRange() const
 	return flow_range;
 }
 
-Vector2f Ekf::predictFlow(const Vector3f &flow_gyro) const
+Vector2f M_EKF::predictFlow(const Vector3f &flow_gyro) const
 {
 	// calculate the sensor position relative to the IMU
 	const Vector3f pos_offset_body = _params.flow_pos_body - _params.imu_pos_body;
@@ -155,7 +155,7 @@ Vector2f Ekf::predictFlow(const Vector3f &flow_gyro) const
 	return Vector2f(vel_body(1) / range, -vel_body(0) / range);
 }
 
-float Ekf::calcOptFlowMeasVar(const flowSample &flow_sample) const
+float M_EKF::calcOptFlowMeasVar(const flowSample &flow_sample) const
 {
 	// calculate the observation noise variance - scaling noise linearly across flow quality range
 	const float R_LOS_best = fmaxf(_params.flow_noise, 0.05f);

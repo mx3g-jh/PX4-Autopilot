@@ -37,16 +37,16 @@
  * using the estimated velocity as a reference in order to detect sensor faults
  */
 
-#ifndef EKF_RANGE_FINDER_CONSISTENCY_CHECK_HPP
-#define EKF_RANGE_FINDER_CONSISTENCY_CHECK_HPP
+#ifndef M_EKF_RANGE_FINDER_CONSISTENCY_CHECK_HPP
+#define M_EKF_RANGE_FINDER_CONSISTENCY_CHECK_HPP
 
 #include <mathlib/math/filter/AlphaFilter.hpp>
 
-class RangeFinderConsistencyCheck final
+class M_RangeFinderConsistencyCheck final
 {
 public:
-	RangeFinderConsistencyCheck() = default;
-	~RangeFinderConsistencyCheck() = default;
+	M_RangeFinderConsistencyCheck() = default;
+	~M_RangeFinderConsistencyCheck() = default;
 
 	void update(float dist_bottom, float dist_bottom_var, float vz, float vz_var, bool horizontal_motion, uint64_t time_us);
 
@@ -80,4 +80,4 @@ private:
 	static constexpr uint64_t _consistency_hyst_time_us = 1e6;
 };
 
-#endif // !EKF_RANGE_FINDER_CONSISTENCY_CHECK_HPP
+#endif // !M_EKF_RANGE_FINDER_CONSISTENCY_CHECK_HPP

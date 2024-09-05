@@ -45,7 +45,7 @@
 #include <lib/world_magnetic_model/geo_mag_declination.h>
 #include <cstdlib>
 
-bool Ekf::isHeightResetRequired() const
+bool M_EKF::isHeightResetRequired() const
 {
 	// check if height is continuously failing because of accel errors
 	const bool continuous_bad_accel_hgt = isTimedOut(_time_good_vert_accel, (uint64_t)_params.bad_acc_reset_delay_us);
@@ -56,14 +56,14 @@ bool Ekf::isHeightResetRequired() const
 	return (continuous_bad_accel_hgt || hgt_fusion_timeout);
 }
 
-Vector3f Ekf::calcEarthRateNED(float lat_rad) const
+Vector3f M_EKF::calcEarthRateNED(float lat_rad) const
 {
 	return Vector3f(CONSTANTS_EARTH_SPIN_RATE * cosf(lat_rad),
 			0.0f,
 			-CONSTANTS_EARTH_SPIN_RATE * sinf(lat_rad));
 }
 
-bool Ekf::getEkfGlobalOrigin(uint64_t &origin_time, double &latitude, double &longitude, float &origin_alt) const
+bool M_EKF::getEkfGlobalOrigin(uint64_t &origin_time, double &latitude, double &longitude, float &origin_alt) const
 {
 	origin_time = _pos_ref.getProjectionReferenceTimestamp();
 	latitude = _pos_ref.getProjectionReferenceLat();
@@ -72,7 +72,7 @@ bool Ekf::getEkfGlobalOrigin(uint64_t &origin_time, double &latitude, double &lo
 	return _NED_origin_initialised;
 }
 
-bool Ekf::checkLatLonValidity(const double latitude, const double longitude)
+bool M_EKF::checkLatLonValidity(const double latitude, const double longitude)
 {
 	const bool lat_valid = (PX4_ISFINITE(latitude) && (abs(latitude) <= 90));
 	const bool lon_valid = (PX4_ISFINITE(longitude) && (abs(longitude) <= 180));
@@ -80,14 +80,14 @@ bool Ekf::checkLatLonValidity(const double latitude, const double longitude)
 	return (lat_valid && lon_valid);
 }
 
-bool Ekf::checkAltitudeValidity(const float altitude)
+bool M_EKF::checkAltitudeValidity(const float altitude)
 {
 	// sanity check valid altitude anywhere between the Mariana Trench and edge of Space
 	return (PX4_ISFINITE(altitude) && ((altitude > -12'000.f) && (altitude < 100'000.f)));
 }
 
-bool Ekf::setEkfGlobalOrigin(const double latitude, const double longitude, const float altitude, const float eph,
-			     const float epv)
+bool M_EKF::setEkfGlobalOrigin(const double latitude, const double longitude, const float altitude, const float eph,
+			       const float epv)
 {
 	if (!setLatLonOrigin(latitude, longitude, eph)) {
 		return false;
@@ -99,7 +99,7 @@ bool Ekf::setEkfGlobalOrigin(const double latitude, const double longitude, cons
 	return true;
 }
 
-bool Ekf::setLatLonOrigin(const double latitude, const double longitude, const float eph)
+bool M_EKF::setLatLonOrigin(const double latitude, const double longitude, const float eph)
 {
 	if (!checkLatLonValidity(latitude, longitude)) {
 		return false;
@@ -133,7 +133,7 @@ bool Ekf::setLatLonOrigin(const double latitude, const double longitude, const f
 	return true;
 }
 
-bool Ekf::setAltOrigin(const float altitude, const float epv)
+bool M_EKF::setAltOrigin(const float altitude, const float epv)
 {
 	if (!checkAltitudeValidity(altitude)) {
 		return false;
@@ -165,7 +165,7 @@ bool Ekf::setAltOrigin(const float altitude, const float epv)
 	return true;
 }
 
-bool Ekf::setEkfGlobalOriginFromCurrentPos(const double latitude, const double longitude, const float altitude,
+bool M_EKF::setEkfGlobalOriginFromCurrentPos(const double latitude, const double longitude, const float altitude,
 		const float eph, const float epv)
 {
 	if (!setLatLonOriginFromCurrentPos(latitude, longitude, eph)) {
@@ -178,7 +178,7 @@ bool Ekf::setEkfGlobalOriginFromCurrentPos(const double latitude, const double l
 	return true;
 }
 
-bool Ekf::setLatLonOriginFromCurrentPos(const double latitude, const double longitude, const float eph)
+bool M_EKF::setLatLonOriginFromCurrentPos(const double latitude, const double longitude, const float eph)
 {
 	if (!checkLatLonValidity(latitude, longitude)) {
 		return false;
@@ -203,7 +203,7 @@ bool Ekf::setLatLonOriginFromCurrentPos(const double latitude, const double long
 	return true;
 }
 
-bool Ekf::setAltOriginFromCurrentPos(const float altitude, const float epv)
+bool M_EKF::setAltOriginFromCurrentPos(const float altitude, const float epv)
 {
 	if (!checkAltitudeValidity(altitude)) {
 		return false;
@@ -218,7 +218,7 @@ bool Ekf::setAltOriginFromCurrentPos(const float altitude, const float epv)
 	return true;
 }
 
-void Ekf::get_ekf_gpos_accuracy(float *ekf_eph, float *ekf_epv) const
+void M_EKF::get_ekf_gpos_accuracy(float *ekf_eph, float *ekf_epv) const
 {
 	float eph = INFINITY;
 	float epv = INFINITY;
@@ -242,7 +242,7 @@ void Ekf::get_ekf_gpos_accuracy(float *ekf_eph, float *ekf_epv) const
 	*ekf_epv = epv;
 }
 
-void Ekf::get_ekf_lpos_accuracy(float *ekf_eph, float *ekf_epv) const
+void M_EKF::get_ekf_lpos_accuracy(float *ekf_eph, float *ekf_epv) const
 {
 	// TODO - allow for baro drift in vertical position error
 	float hpos_err = sqrtf(P.trace<2>(State::pos.idx));
@@ -272,7 +272,7 @@ void Ekf::get_ekf_lpos_accuracy(float *ekf_eph, float *ekf_epv) const
 	*ekf_epv = sqrtf(P(State::pos.idx + 2, State::pos.idx + 2));
 }
 
-void Ekf::get_ekf_vel_accuracy(float *ekf_evh, float *ekf_evv) const
+void M_EKF::get_ekf_vel_accuracy(float *ekf_evh, float *ekf_evv) const
 {
 	float hvel_err = sqrtf(P.trace<2>(State::vel.idx));
 
@@ -318,7 +318,7 @@ void Ekf::get_ekf_vel_accuracy(float *ekf_evh, float *ekf_evv) const
 	*ekf_evv = sqrtf(P(State::vel.idx + 2, State::vel.idx + 2));
 }
 
-void Ekf::get_ekf_ctrl_limits(float *vxy_max, float *vz_max, float *hagl_min, float *hagl_max) const
+void M_EKF::get_ekf_ctrl_limits(float *vxy_max, float *vz_max, float *hagl_min, float *hagl_max) const
 {
 	// Do not require limiting by default
 	*vxy_max = NAN;
@@ -374,7 +374,7 @@ void Ekf::get_ekf_ctrl_limits(float *vxy_max, float *vz_max, float *hagl_min, fl
 #endif // CONFIG_EKF2_RANGE_FINDER
 }
 
-void Ekf::resetGyroBias()
+void M_EKF::resetGyroBias()
 {
 	// Zero the gyro bias states
 	_state.gyro_bias.zero();
@@ -382,7 +382,7 @@ void Ekf::resetGyroBias()
 	resetGyroBiasCov();
 }
 
-void Ekf::resetAccelBias()
+void M_EKF::resetAccelBias()
 {
 	// Zero the accel bias states
 	_state.accel_bias.zero();
@@ -390,7 +390,7 @@ void Ekf::resetAccelBias()
 	resetAccelBiasCov();
 }
 
-float Ekf::getHeadingInnovationTestRatio() const
+float M_EKF::getHeadingInnovationTestRatio() const
 {
 	// return the largest heading innovation test ratio
 	float test_ratio = -1.f;
@@ -428,7 +428,7 @@ float Ekf::getHeadingInnovationTestRatio() const
 	return NAN;
 }
 
-float Ekf::getHorizontalVelocityInnovationTestRatio() const
+float M_EKF::getHorizontalVelocityInnovationTestRatio() const
 {
 	// return the largest velocity innovation test ratio
 	float test_ratio = -1.f;
@@ -470,7 +470,7 @@ float Ekf::getHorizontalVelocityInnovationTestRatio() const
 	return NAN;
 }
 
-float Ekf::getVerticalVelocityInnovationTestRatio() const
+float M_EKF::getVerticalVelocityInnovationTestRatio() const
 {
 	// return the largest velocity innovation test ratio
 	float test_ratio = -1.f;
@@ -498,7 +498,7 @@ float Ekf::getVerticalVelocityInnovationTestRatio() const
 	return NAN;
 }
 
-float Ekf::getHorizontalPositionInnovationTestRatio() const
+float M_EKF::getHorizontalPositionInnovationTestRatio() const
 {
 	// return the largest position innovation test ratio
 	float test_ratio = -1.f;
@@ -538,7 +538,7 @@ float Ekf::getHorizontalPositionInnovationTestRatio() const
 	return NAN;
 }
 
-float Ekf::getVerticalPositionInnovationTestRatio() const
+float M_EKF::getVerticalPositionInnovationTestRatio() const
 {
 	// return the combined vertical position innovation test ratio
 	float hgt_sum = 0.f;
@@ -587,7 +587,7 @@ float Ekf::getVerticalPositionInnovationTestRatio() const
 	return NAN;
 }
 
-float Ekf::getAirspeedInnovationTestRatio() const
+float M_EKF::getAirspeedInnovationTestRatio() const
 {
 #if defined(CONFIG_EKF2_AIRSPEED)
 
@@ -601,7 +601,7 @@ float Ekf::getAirspeedInnovationTestRatio() const
 	return NAN;
 }
 
-float Ekf::getSyntheticSideslipInnovationTestRatio() const
+float M_EKF::getSyntheticSideslipInnovationTestRatio() const
 {
 #if defined(CONFIG_EKF2_SIDESLIP)
 
@@ -615,7 +615,7 @@ float Ekf::getSyntheticSideslipInnovationTestRatio() const
 	return NAN;
 }
 
-float Ekf::getHeightAboveGroundInnovationTestRatio() const
+float M_EKF::getHeightAboveGroundInnovationTestRatio() const
 {
 	// return the combined HAGL innovation test ratio
 	float hagl_sum = 0.f;
@@ -651,7 +651,7 @@ float Ekf::getHeightAboveGroundInnovationTestRatio() const
 	return NAN;
 }
 
-uint16_t Ekf::get_ekf_soln_status() const
+uint16_t M_EKF::get_ekf_soln_status() const
 {
 	// LEGACY Mavlink bitmask containing state of estimator solution (see Mavlink ESTIMATOR_STATUS_FLAGS)
 	union ekf_solution_status_u {
@@ -718,7 +718,7 @@ uint16_t Ekf::get_ekf_soln_status() const
 	return soln_status.value;
 }
 
-void Ekf::fuse(const VectorState &K, float innovation)
+void M_EKF::fuse(const VectorState &K, float innovation)
 {
 	// quat_nominal
 	Quatf delta_quat(matrix::AxisAnglef(K.slice<State::quat_nominal.dof, 1>(State::quat_nominal.idx,
@@ -770,13 +770,13 @@ void Ekf::fuse(const VectorState &K, float innovation)
 #endif // CONFIG_EKF2_TERRAIN
 }
 
-void Ekf::updateDeadReckoningStatus()
+void M_EKF::updateDeadReckoningStatus()
 {
 	updateHorizontalDeadReckoningstatus();
 	updateVerticalDeadReckoningStatus();
 }
 
-void Ekf::updateHorizontalDeadReckoningstatus()
+void M_EKF::updateHorizontalDeadReckoningstatus()
 {
 	bool inertial_dead_reckoning = true;
 	bool aiding_expected_in_air = false;
@@ -876,7 +876,7 @@ void Ekf::updateHorizontalDeadReckoningstatus()
 	_control_status.flags.inertial_dead_reckoning = inertial_dead_reckoning;
 }
 
-void Ekf::updateVerticalDeadReckoningStatus()
+void M_EKF::updateVerticalDeadReckoningStatus()
 {
 	if (isVerticalPositionAidingActive()) {
 		_time_last_v_pos_aiding = _time_last_hgt_fuse;
@@ -897,31 +897,31 @@ void Ekf::updateVerticalDeadReckoningStatus()
 	}
 }
 
-Vector3f Ekf::getRotVarBody() const
+Vector3f M_EKF::getRotVarBody() const
 {
 	const matrix::SquareMatrix3f rot_cov_body = getStateCovariance<State::quat_nominal>();
 	return matrix::SquareMatrix3f(_R_to_earth.T() * rot_cov_body * _R_to_earth).diag();
 }
 
-Vector3f Ekf::getRotVarNed() const
+Vector3f M_EKF::getRotVarNed() const
 {
 	const matrix::SquareMatrix3f rot_cov_ned = getStateCovariance<State::quat_nominal>();
 	return rot_cov_ned.diag();
 }
 
-float Ekf::getYawVar() const
+float M_EKF::getYawVar() const
 {
 	return getRotVarNed()(2);
 }
 
-float Ekf::getTiltVariance() const
+float M_EKF::getTiltVariance() const
 {
 	const Vector3f rot_var_ned = getRotVarNed();
 	return rot_var_ned(0) + rot_var_ned(1);
 }
 
 #if defined(CONFIG_EKF2_BAROMETER)
-void Ekf::updateGroundEffect()
+void M_EKF::updateGroundEffect()
 {
 	if (_control_status.flags.in_air && !_control_status.flags.fixed_wing) {
 #if defined(CONFIG_EKF2_TERRAIN)
@@ -947,7 +947,7 @@ void Ekf::updateGroundEffect()
 #endif // CONFIG_EKF2_BAROMETER
 
 
-void Ekf::updateIMUBiasInhibit(const imuSample &imu_delayed)
+void M_EKF::updateIMUBiasInhibit(const imuSample &imu_delayed)
 {
 	// inhibit learning of imu accel bias if the manoeuvre levels are too high to protect against the effect of sensor nonlinearities or bad accel data is detected
 	// xy accel bias learning is also disabled on ground as those states are poorly observable when perpendicular to the gravity vector
@@ -1005,7 +1005,7 @@ void Ekf::updateIMUBiasInhibit(const imuSample &imu_delayed)
 	}
 }
 
-bool Ekf::fuseDirectStateMeasurement(const float innov, const float innov_var, const float R, const int state_index)
+bool M_EKF::fuseDirectStateMeasurement(const float innov, const float innov_var, const float R, const int state_index)
 {
 	VectorState K;  // Kalman gain vector for any single observation - sequential fusion is used.
 

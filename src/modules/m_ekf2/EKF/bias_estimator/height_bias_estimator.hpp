@@ -35,21 +35,21 @@
  * @file height_bias_estimator.hpp
  */
 
-#ifndef EKF_HEIGHT_BIAS_ESTIMATOR_HPP
-#define EKF_HEIGHT_BIAS_ESTIMATOR_HPP
+#ifndef M_EKF_HEIGHT_BIAS_ESTIMATOR_HPP
+#define M_EKF_HEIGHT_BIAS_ESTIMATOR_HPP
 
 #include "bias_estimator.hpp"
 #include "../common.h"
 
-class HeightBiasEstimator: public BiasEstimator
+class M_HeightBiasEstimator: public M_BiasEstimator
 {
 public:
-	HeightBiasEstimator(HeightSensor sensor, const HeightSensor &sensor_ref):
-		BiasEstimator(0.f, 0.f),
+	M_HeightBiasEstimator(HeightSensor sensor, const HeightSensor &sensor_ref):
+		M_BiasEstimator(0.f, 0.f),
 		_sensor(sensor),
 		_sensor_ref(sensor_ref)
 	{}
-	virtual ~HeightBiasEstimator() = default;
+	virtual ~M_HeightBiasEstimator() = default;
 
 	void setFusionActive() { _is_sensor_fusion_active = true; }
 	void setFusionInactive() { _is_sensor_fusion_active = false; }
@@ -57,14 +57,14 @@ public:
 	virtual void predict(float dt) override
 	{
 		if ((_sensor_ref != _sensor) && _is_sensor_fusion_active) {
-			BiasEstimator::predict(dt);
+			M_BiasEstimator::predict(dt);
 		}
 	}
 
 	virtual void fuseBias(float bias, float bias_var) override
 	{
 		if ((_sensor_ref != _sensor) && _is_sensor_fusion_active) {
-			BiasEstimator::fuseBias(bias, bias_var);
+			M_BiasEstimator::fuseBias(bias, bias_var);
 		}
 	}
 
@@ -75,4 +75,4 @@ private:
 	bool _is_sensor_fusion_active{false}; // TODO: replace by const ref and remove setter when migrating _control_status.flags from union to bool
 };
 
-#endif // !EKF_HEIGHT_BIAS_ESTIMATOR_HPP
+#endif // !M_EKF_HEIGHT_BIAS_ESTIMATOR_HPP

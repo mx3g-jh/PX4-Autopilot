@@ -35,19 +35,19 @@
  * @file position_bias_estimator.hpp
  */
 
-#ifndef EKF_POSITION_BIAS_ESTIMATOR_HPP
-#define EKF_POSITION_BIAS_ESTIMATOR_HPP
+#ifndef M_EKF_POSITION_BIAS_ESTIMATOR_HPP
+#define M_EKF_POSITION_BIAS_ESTIMATOR_HPP
 
 #include "bias_estimator.hpp"
 
-class PositionBiasEstimator
+class M_PositionBiasEstimator
 {
 public:
-	PositionBiasEstimator(PositionSensor sensor, const PositionSensor &sensor_ref):
+	M_PositionBiasEstimator(PositionSensor sensor, const PositionSensor &sensor_ref):
 		_sensor(sensor),
 		_sensor_ref(sensor_ref)
 	{}
-	virtual ~PositionBiasEstimator() = default;
+	virtual ~M_PositionBiasEstimator() = default;
 
 	bool fusionActive() const { return _is_sensor_fusion_active; }
 
@@ -96,7 +96,7 @@ public:
 	Vector2f getBiasVar() const { return Vector2f(_bias[0].getBiasVar(), _bias[1].getBiasVar()); }
 	float getBiasVar(int index) const { return _bias[index].getBiasVar(); }
 
-	const BiasEstimator::status &getStatus(int index) const { return _bias[index].getStatus(); }
+	const M_BiasEstimator::status &getStatus(int index) const { return _bias[index].getStatus(); }
 
 	void reset()
 	{
@@ -105,7 +105,7 @@ public:
 	}
 
 private:
-	BiasEstimator _bias[2] {};
+	M_BiasEstimator _bias[2] {};
 
 	const PositionSensor _sensor;
 	const PositionSensor &_sensor_ref;
@@ -113,4 +113,4 @@ private:
 	bool _is_sensor_fusion_active{false}; // TODO: replace by const ref and remove setter when migrating _control_status.flags from union to bool
 };
 
-#endif // !EKF_POSITION_BIAS_ESTIMATOR_HPP
+#endif // !M_EKF_POSITION_BIAS_ESTIMATOR_HPP

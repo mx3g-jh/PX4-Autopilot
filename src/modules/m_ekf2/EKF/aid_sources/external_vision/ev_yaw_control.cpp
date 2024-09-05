@@ -38,9 +38,9 @@
 
 #include "ekf.h"
 
-void Ekf::controlEvYawFusion(const imuSample &imu_sample, const extVisionSample &ev_sample,
-			     const bool common_starting_conditions_passing, const bool ev_reset, const bool quality_sufficient,
-			     estimator_aid_source1d_s &aid_src)
+void M_EKF::controlEvYawFusion(const imuSample &imu_sample, const extVisionSample &ev_sample,
+			       const bool common_starting_conditions_passing, const bool ev_reset, const bool quality_sufficient,
+			       estimator_aid_source1d_s &aid_src)
 {
 	static constexpr const char *AID_SRC_NAME = "EV yaw";
 
@@ -189,7 +189,7 @@ void Ekf::controlEvYawFusion(const imuSample &imu_sample, const extVisionSample 
 	}
 }
 
-void Ekf::stopEvYawFusion()
+void M_EKF::stopEvYawFusion()
 {
 #if defined(CONFIG_EKF2_EXTERNAL_VISION)
 

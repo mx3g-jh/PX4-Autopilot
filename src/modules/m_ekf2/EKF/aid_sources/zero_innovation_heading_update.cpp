@@ -38,7 +38,7 @@
 
 #include "ekf.h"
 
-void Ekf::controlZeroInnovationHeadingUpdate()
+void M_EKF::controlZeroInnovationHeadingUpdate()
 {
 	const bool yaw_aiding = _control_status.flags.mag_hdg || _control_status.flags.mag_3D
 				|| _control_status.flags.ev_yaw || _control_status.flags.gnss_yaw;

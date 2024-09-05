@@ -38,17 +38,17 @@
  * @author Mathieu Bresciani <brescianimathieu@gmail.com>
  *
  */
-#ifndef EKF_SENSOR_RANGE_FINDER_HPP
-#define EKF_SENSOR_RANGE_FINDER_HPP
+#ifndef M_EKF_SENSOR_RANGE_FINDER_HPP
+#define M_EKF_SENSOR_RANGE_FINDER_HPP
 
 #include "Sensor.hpp"
 
 #include <matrix/math.hpp>
 #include <lib/mathlib/math/filter/MedianFilter.hpp>
 
-namespace estimator
+namespace m_estimator
 {
-namespace sensor
+namespace m_sensor
 {
 
 struct rangeSample {
@@ -60,11 +60,11 @@ struct rangeSample {
 static constexpr uint64_t RNG_MAX_INTERVAL =
 	200e3;  ///< Maximum allowable time interval between range finder measurements (uSec)
 
-class SensorRangeFinder : public Sensor
+class M_SensorRangeFinder : public M_Sensor
 {
 public:
-	SensorRangeFinder() = default;
-	~SensorRangeFinder() override = default;
+	M_SensorRangeFinder() = default;
+	~M_SensorRangeFinder() override = default;
 
 	void runChecks(uint64_t current_time_us, const matrix::Dcmf &R_to_earth);
 	bool isHealthy() const override { return _is_sample_valid; }
@@ -186,6 +186,6 @@ private:
 	float _prev_median_dist{0.f};
 };
 
-} // namespace sensor
-} // namespace estimator
-#endif // !EKF_SENSOR_RANGE_FINDER_HPP
+} // namespace m_sensor
+} // namespace m_estimator
+#endif // !M_EKF_SENSOR_RANGE_FINDER_HPP

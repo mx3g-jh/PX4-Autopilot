@@ -43,7 +43,7 @@
 #include "ekf.h"
 #include <mathlib/mathlib.h>
 
-void Ekf::controlFusionModes(const imuSample &imu_delayed)
+void M_EKF::controlFusionModes(const imuSample &imu_delayed)
 {
 	// Store the status to enable change detection
 	_control_status_prev.value = _control_status.value;

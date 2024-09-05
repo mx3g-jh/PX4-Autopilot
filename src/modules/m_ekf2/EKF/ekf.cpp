@@ -43,7 +43,7 @@
 
 #include <mathlib/mathlib.h>
 
-bool Ekf::init(uint64_t timestamp)
+bool M_EKF::init(uint64_t timestamp)
 {
 	if (!_initialised) {
 		_initialised = initialise_interface(timestamp);
@@ -53,7 +53,7 @@ bool Ekf::init(uint64_t timestamp)
 	return _initialised;
 }
 
-void Ekf::reset()
+void M_EKF::reset()
 {
 	ECL_INFO("reset");
 
@@ -101,7 +101,7 @@ void Ekf::reset()
 
 	_output_predictor.reset();
 
-	// Ekf private fields
+	// M_EKF private fields
 	_time_last_horizontal_aiding = 0;
 	_time_last_v_pos_aiding = 0;
 	_time_last_v_vel_aiding = 0;
@@ -135,7 +135,7 @@ void Ekf::reset()
 	updateParameters();
 }
 
-bool Ekf::update()
+bool M_EKF::update()
 {
 	if (!_filter_initialised) {
 		_filter_initialised = initialiseFilter();
@@ -177,7 +177,7 @@ bool Ekf::update()
 	return false;
 }
 
-bool Ekf::initialiseFilter()
+bool M_EKF::initialiseFilter()
 {
 	// Filter accel for tilt initialization
 	const imuSample &imu_init = _imu_buffer.get_newest();
@@ -210,7 +210,7 @@ bool Ekf::initialiseFilter()
 	return true;
 }
 
-bool Ekf::initialiseTilt()
+bool M_EKF::initialiseTilt()
 {
 	const float accel_norm = _accel_lpf.getState().norm();
 	const float gyro_norm = _gyro_lpf.getState().norm();
@@ -228,7 +228,7 @@ bool Ekf::initialiseTilt()
 	return true;
 }
 
-void Ekf::predictState(const imuSample &imu_delayed)
+void M_EKF::predictState(const imuSample &imu_delayed)
 {
 	// apply imu bias corrections
 	const Vector3f delta_ang_bias_scaled = getGyroBias() * imu_delayed.delta_ang_dt;
@@ -275,7 +275,7 @@ void Ekf::predictState(const imuSample &imu_delayed)
 	_height_rate_lpf = _height_rate_lpf * (1.0f - alpha_height_rate_lpf) + _state.vel(2) * alpha_height_rate_lpf;
 }
 
-bool Ekf::resetGlobalPosToExternalObservation(const double latitude, const double longitude, const float altitude,
+bool M_EKF::resetGlobalPosToExternalObservation(const double latitude, const double longitude, const float altitude,
 		const float eph,
 		const float epv, uint64_t timestamp_observation)
 {
@@ -371,7 +371,7 @@ bool Ekf::resetGlobalPosToExternalObservation(const double latitude, const doubl
 	return true;
 }
 
-void Ekf::updateParameters()
+void M_EKF::updateParameters()
 {
 	_params.gyro_noise = math::constrain(_params.gyro_noise, 0.f, 1.f);
 	_params.accel_noise = math::constrain(_params.accel_noise, 0.f, 1.f);
@@ -394,7 +394,7 @@ void Ekf::updateParameters()
 }
 
 template<typename T>
-static void printRingBuffer(const char *name, RingBuffer<T> *rb)
+static void printRingBuffer(const char *name, M_RingBuffer<T> *rb)
 {
 	if (rb) {
 		printf("%s: %d/%d entries (%d/%d Bytes) (%zu Bytes per entry)\n",
@@ -404,7 +404,7 @@ static void printRingBuffer(const char *name, RingBuffer<T> *rb)
 	}
 }
 
-void Ekf::print_status()
+void M_EKF::print_status()
 {
 	printf("\nStates: (%.4f seconds ago)\n", (_time_latest_us - _time_delayed_us) * 1e-6);
 	printf("Orientation (%d-%d): [%.3f, %.3f, %.3f, %.3f] (Euler [%.1f, %.1f, %.1f] deg) var: [%.1e, %.1e, %.1e]\n",

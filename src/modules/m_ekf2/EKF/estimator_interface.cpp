@@ -44,7 +44,7 @@
 
 #include <mathlib/mathlib.h>
 
-EstimatorInterface::~EstimatorInterface()
+M_EstimatorInterface::~M_EstimatorInterface()
 {
 #if defined(CONFIG_EKF2_GNSS)
 	delete _gps_buffer;
@@ -76,7 +76,7 @@ EstimatorInterface::~EstimatorInterface()
 }
 
 // Accumulate imu data and store to buffer at desired rate
-void EstimatorInterface::setIMUData(const imuSample &imu_sample)
+void M_EstimatorInterface::setIMUData(const imuSample &imu_sample)
 {
 	// TODO: resolve misplaced responsibility
 	if (!_initialised) {
@@ -120,7 +120,7 @@ void EstimatorInterface::setIMUData(const imuSample &imu_sample)
 }
 
 #if defined(CONFIG_EKF2_MAGNETOMETER)
-void EstimatorInterface::setMagData(const magSample &mag_sample)
+void M_EstimatorInterface::setMagData(const magSample &mag_sample)
 {
 	if (!_initialised) {
 		return;
@@ -128,7 +128,7 @@ void EstimatorInterface::setMagData(const magSample &mag_sample)
 
 	// Allocate the required buffer size if not previously done
 	if (_mag_buffer == nullptr) {
-		_mag_buffer = new RingBuffer<magSample>(_obs_buffer_length);
+		_mag_buffer = new M_RingBuffer<magSample>(_obs_buffer_length);
 
 		if (_mag_buffer == nullptr || !_mag_buffer->valid()) {
 			delete _mag_buffer;
@@ -159,7 +159,7 @@ void EstimatorInterface::setMagData(const magSample &mag_sample)
 #endif // CONFIG_EKF2_MAGNETOMETER
 
 #if defined(CONFIG_EKF2_GNSS)
-void EstimatorInterface::setGpsData(const gnssSample &gnss_sample)
+void M_EstimatorInterface::setGpsData(const gnssSample &gnss_sample)
 {
 	if (!_initialised) {
 		return;
@@ -167,7 +167,7 @@ void EstimatorInterface::setGpsData(const gnssSample &gnss_sample)
 
 	// Allocate the required buffer size if not previously done
 	if (_gps_buffer == nullptr) {
-		_gps_buffer = new RingBuffer<gnssSample>(_obs_buffer_length);
+		_gps_buffer = new M_RingBuffer<gnssSample>(_obs_buffer_length);
 
 		if (_gps_buffer == nullptr || !_gps_buffer->valid()) {
 			delete _gps_buffer;
@@ -206,7 +206,7 @@ void EstimatorInterface::setGpsData(const gnssSample &gnss_sample)
 #endif // CONFIG_EKF2_GNSS
 
 #if defined(CONFIG_EKF2_BAROMETER)
-void EstimatorInterface::setBaroData(const baroSample &baro_sample)
+void M_EstimatorInterface::setBaroData(const baroSample &baro_sample)
 {
 	if (!_initialised) {
 		return;
@@ -214,7 +214,7 @@ void EstimatorInterface::setBaroData(const baroSample &baro_sample)
 
 	// Allocate the required buffer size if not previously done
 	if (_baro_buffer == nullptr) {
-		_baro_buffer = new RingBuffer<baroSample>(_obs_buffer_length);
+		_baro_buffer = new M_RingBuffer<baroSample>(_obs_buffer_length);
 
 		if (_baro_buffer == nullptr || !_baro_buffer->valid()) {
 			delete _baro_buffer;
@@ -245,7 +245,7 @@ void EstimatorInterface::setBaroData(const baroSample &baro_sample)
 #endif // CONFIG_EKF2_BAROMETER
 
 #if defined(CONFIG_EKF2_AIRSPEED)
-void EstimatorInterface::setAirspeedData(const airspeedSample &airspeed_sample)
+void M_EstimatorInterface::setAirspeedData(const airspeedSample &airspeed_sample)
 {
 	if (!_initialised) {
 		return;
@@ -253,7 +253,7 @@ void EstimatorInterface::setAirspeedData(const airspeedSample &airspeed_sample)
 
 	// Allocate the required buffer size if not previously done
 	if (_airspeed_buffer == nullptr) {
-		_airspeed_buffer = new RingBuffer<airspeedSample>(_obs_buffer_length);
+		_airspeed_buffer = new M_RingBuffer<airspeedSample>(_obs_buffer_length);
 
 		if (_airspeed_buffer == nullptr || !_airspeed_buffer->valid()) {
 			delete _airspeed_buffer;
@@ -283,7 +283,7 @@ void EstimatorInterface::setAirspeedData(const airspeedSample &airspeed_sample)
 #endif // CONFIG_EKF2_AIRSPEED
 
 #if defined(CONFIG_EKF2_RANGE_FINDER)
-void EstimatorInterface::setRangeData(const sensor::rangeSample &range_sample)
+void M_EstimatorInterface::setRangeData(const m_sensor::rangeSample &range_sample)
 {
 	if (!_initialised) {
 		return;
@@ -291,7 +291,7 @@ void EstimatorInterface::setRangeData(const sensor::rangeSample &range_sample)
 
 	// Allocate the required buffer size if not previously done
 	if (_range_buffer == nullptr) {
-		_range_buffer = new RingBuffer<sensor::rangeSample>(_obs_buffer_length);
+		_range_buffer = new M_RingBuffer<m_sensor::rangeSample>(_obs_buffer_length);
 
 		if (_range_buffer == nullptr || !_range_buffer->valid()) {
 			delete _range_buffer;
@@ -308,7 +308,7 @@ void EstimatorInterface::setRangeData(const sensor::rangeSample &range_sample)
 	// limit data rate to prevent data being lost
 	if (time_us >= static_cast<int64_t>(_range_buffer->get_newest().time_us + _min_obs_interval_us)) {
 
-		sensor::rangeSample range_sample_new{range_sample};
+		m_sensor::rangeSample range_sample_new{range_sample};
 		range_sample_new.time_us = time_us;
 
 		_range_buffer->push(range_sample_new);
@@ -322,7 +322,7 @@ void EstimatorInterface::setRangeData(const sensor::rangeSample &range_sample)
 #endif // CONFIG_EKF2_RANGE_FINDER
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW)
-void EstimatorInterface::setOpticalFlowData(const flowSample &flow)
+void M_EstimatorInterface::setOpticalFlowData(const flowSample &flow)
 {
 	if (!_initialised) {
 		return;
@@ -330,7 +330,7 @@ void EstimatorInterface::setOpticalFlowData(const flowSample &flow)
 
 	// Allocate the required buffer size if not previously done
 	if (_flow_buffer == nullptr) {
-		_flow_buffer = new RingBuffer<flowSample>(_imu_buffer_length);
+		_flow_buffer = new M_RingBuffer<flowSample>(_imu_buffer_length);
 
 		if (_flow_buffer == nullptr || !_flow_buffer->valid()) {
 			delete _flow_buffer;
@@ -360,7 +360,7 @@ void EstimatorInterface::setOpticalFlowData(const flowSample &flow)
 #endif // CONFIG_EKF2_OPTICAL_FLOW
 
 #if defined(CONFIG_EKF2_EXTERNAL_VISION)
-void EstimatorInterface::setExtVisionData(const extVisionSample &evdata)
+void M_EstimatorInterface::setExtVisionData(const extVisionSample &evdata)
 {
 	if (!_initialised) {
 		return;
@@ -368,7 +368,7 @@ void EstimatorInterface::setExtVisionData(const extVisionSample &evdata)
 
 	// Allocate the required buffer size if not previously done
 	if (_ext_vision_buffer == nullptr) {
-		_ext_vision_buffer = new RingBuffer<extVisionSample>(_obs_buffer_length);
+		_ext_vision_buffer = new M_RingBuffer<extVisionSample>(_obs_buffer_length);
 
 		if (_ext_vision_buffer == nullptr || !_ext_vision_buffer->valid()) {
 			delete _ext_vision_buffer;
@@ -400,7 +400,7 @@ void EstimatorInterface::setExtVisionData(const extVisionSample &evdata)
 #endif // CONFIG_EKF2_EXTERNAL_VISION
 
 #if defined(CONFIG_EKF2_AUXVEL)
-void EstimatorInterface::setAuxVelData(const auxVelSample &auxvel_sample)
+void M_EstimatorInterface::setAuxVelData(const auxVelSample &auxvel_sample)
 {
 	if (!_initialised) {
 		return;
@@ -408,7 +408,7 @@ void EstimatorInterface::setAuxVelData(const auxVelSample &auxvel_sample)
 
 	// Allocate the required buffer size if not previously done
 	if (_auxvel_buffer == nullptr) {
-		_auxvel_buffer = new RingBuffer<auxVelSample>(_obs_buffer_length);
+		_auxvel_buffer = new M_RingBuffer<auxVelSample>(_obs_buffer_length);
 
 		if (_auxvel_buffer == nullptr || !_auxvel_buffer->valid()) {
 			delete _auxvel_buffer;
@@ -437,7 +437,7 @@ void EstimatorInterface::setAuxVelData(const auxVelSample &auxvel_sample)
 }
 #endif // CONFIG_EKF2_AUXVEL
 
-void EstimatorInterface::setSystemFlagData(const systemFlagUpdate &system_flags)
+void M_EstimatorInterface::setSystemFlagData(const systemFlagUpdate &system_flags)
 {
 	if (!_initialised) {
 		return;
@@ -445,7 +445,7 @@ void EstimatorInterface::setSystemFlagData(const systemFlagUpdate &system_flags)
 
 	// Allocate the required buffer size if not previously done
 	if (_system_flag_buffer == nullptr) {
-		_system_flag_buffer = new RingBuffer<systemFlagUpdate>(_obs_buffer_length);
+		_system_flag_buffer = new M_RingBuffer<systemFlagUpdate>(_obs_buffer_length);
 
 		if (_system_flag_buffer == nullptr || !_system_flag_buffer->valid()) {
 			delete _system_flag_buffer;
@@ -473,7 +473,7 @@ void EstimatorInterface::setSystemFlagData(const systemFlagUpdate &system_flags)
 }
 
 #if defined(CONFIG_EKF2_DRAG_FUSION)
-void EstimatorInterface::setDragData(const imuSample &imu)
+void M_EstimatorInterface::setDragData(const imuSample &imu)
 {
 	// down-sample the drag specific force data by accumulating and calculating the mean when
 	// sufficient samples have been collected
@@ -481,7 +481,7 @@ void EstimatorInterface::setDragData(const imuSample &imu)
 
 		// Allocate the required buffer size if not previously done
 		if (_drag_buffer == nullptr) {
-			_drag_buffer = new RingBuffer<dragSample>(_obs_buffer_length);
+			_drag_buffer = new M_RingBuffer<dragSample>(_obs_buffer_length);
 
 			if (_drag_buffer == nullptr || !_drag_buffer->valid()) {
 				delete _drag_buffer;
@@ -536,7 +536,7 @@ void EstimatorInterface::setDragData(const imuSample &imu)
 }
 #endif // CONFIG_EKF2_DRAG_FUSION
 
-bool EstimatorInterface::initialise_interface(uint64_t timestamp)
+bool M_EstimatorInterface::initialise_interface(uint64_t timestamp)
 {
 	const float filter_update_period_ms = _params.filter_update_interval_us / 1000.f;
 
@@ -568,18 +568,18 @@ bool EstimatorInterface::initialise_interface(uint64_t timestamp)
 	return true;
 }
 
-bool EstimatorInterface::isOnlyActiveSourceOfHorizontalAiding(const bool aiding_flag) const
+bool M_EstimatorInterface::isOnlyActiveSourceOfHorizontalAiding(const bool aiding_flag) const
 {
 	return aiding_flag && !isOtherSourceOfHorizontalAidingThan(aiding_flag);
 }
 
-bool EstimatorInterface::isOtherSourceOfHorizontalAidingThan(const bool aiding_flag) const
+bool M_EstimatorInterface::isOtherSourceOfHorizontalAidingThan(const bool aiding_flag) const
 {
 	const int nb_sources = getNumberOfActiveHorizontalAidingSources();
 	return aiding_flag ? nb_sources > 1 : nb_sources > 0;
 }
 
-int EstimatorInterface::getNumberOfActiveHorizontalAidingSources() const
+int M_EstimatorInterface::getNumberOfActiveHorizontalAidingSources() const
 {
 	return int(_control_status.flags.gps)
 	       + int(_control_status.flags.opt_flow)
@@ -591,28 +591,28 @@ int EstimatorInterface::getNumberOfActiveHorizontalAidingSources() const
 	       + int(_control_status.flags.fuse_aspd && _control_status.flags.fuse_beta);
 }
 
-bool EstimatorInterface::isHorizontalAidingActive() const
+bool M_EstimatorInterface::isHorizontalAidingActive() const
 {
 	return getNumberOfActiveHorizontalAidingSources() > 0;
 }
 
-bool EstimatorInterface::isOtherSourceOfVerticalPositionAidingThan(const bool aiding_flag) const
+bool M_EstimatorInterface::isOtherSourceOfVerticalPositionAidingThan(const bool aiding_flag) const
 {
 	const int nb_sources = getNumberOfActiveVerticalPositionAidingSources();
 	return aiding_flag ? nb_sources > 1 : nb_sources > 0;
 }
 
-bool EstimatorInterface::isVerticalPositionAidingActive() const
+bool M_EstimatorInterface::isVerticalPositionAidingActive() const
 {
 	return getNumberOfActiveVerticalPositionAidingSources() > 0;
 }
 
-bool EstimatorInterface::isOnlyActiveSourceOfVerticalPositionAiding(const bool aiding_flag) const
+bool M_EstimatorInterface::isOnlyActiveSourceOfVerticalPositionAiding(const bool aiding_flag) const
 {
 	return aiding_flag && !isOtherSourceOfVerticalPositionAidingThan(aiding_flag);
 }
 
-int EstimatorInterface::getNumberOfActiveVerticalPositionAidingSources() const
+int M_EstimatorInterface::getNumberOfActiveVerticalPositionAidingSources() const
 {
 	return int(_control_status.flags.gps_hgt)
 	       + int(_control_status.flags.baro_hgt)
@@ -620,23 +620,23 @@ int EstimatorInterface::getNumberOfActiveVerticalPositionAidingSources() const
 	       + int(_control_status.flags.ev_hgt);
 }
 
-bool EstimatorInterface::isVerticalAidingActive() const
+bool M_EstimatorInterface::isVerticalAidingActive() const
 {
 	return isVerticalPositionAidingActive() || isVerticalVelocityAidingActive();
 }
 
-bool EstimatorInterface::isVerticalVelocityAidingActive() const
+bool M_EstimatorInterface::isVerticalVelocityAidingActive() const
 {
 	return getNumberOfActiveVerticalVelocityAidingSources() > 0;
 }
 
-int EstimatorInterface::getNumberOfActiveVerticalVelocityAidingSources() const
+int M_EstimatorInterface::getNumberOfActiveVerticalVelocityAidingSources() const
 {
 	return int(_control_status.flags.gps)
 	       + int(_control_status.flags.ev_vel);
 }
 
-void EstimatorInterface::printBufferAllocationFailed(const char *buffer_name)
+void M_EstimatorInterface::printBufferAllocationFailed(const char *buffer_name)
 {
 	if (buffer_name) {
 		ECL_ERR("%s buffer allocation failed", buffer_name);

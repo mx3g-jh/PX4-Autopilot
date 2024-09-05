@@ -59,7 +59,7 @@ M_EKF2Selector::~M_EKF2Selector()
 
 void M_EKF2Selector::Stop()
 {
-	for (int i = 0; i < EKF2_MAX_INSTANCES; i++) {
+	for (int i = 0; i < M_EKF2_MAX_INSTANCES; i++) {
 		_instance[i].estimator_attitude_sub.unregisterCallback();
 		_instance[i].estimator_status_sub.unregisterCallback();
 	}
@@ -255,7 +255,7 @@ bool M_EKF2Selector::UpdateErrorScores()
 	const hrt_abstime status_timeout = 50_ms;
 
 	// calculate individual error scores
-	for (uint8_t i = 0; i < EKF2_MAX_INSTANCES; i++) {
+	for (uint8_t i = 0; i < M_EKF2_MAX_INSTANCES; i++) {
 		const bool prev_healthy = _instance[i].healthy.get_state();
 
 		estimator_status_s status;
@@ -714,7 +714,7 @@ void M_EKF2Selector::Run()
 
 	// if no valid instance then force select first instance with valid IMU
 	if (_selected_instance == INVALID_INSTANCE) {
-		for (uint8_t i = 0; i < EKF2_MAX_INSTANCES; i++) {
+		for (uint8_t i = 0; i < M_EKF2_MAX_INSTANCES; i++) {
 			if ((_instance[i].accel_device_id != 0)
 			    && (_instance[i].gyro_device_id != 0)) {
 
@@ -846,7 +846,7 @@ void M_EKF2Selector::PublishEstimatorSelectorStatus()
 	selector_status.gyro_fault_detected = _gyro_fault_detected;
 	selector_status.accel_fault_detected = _accel_fault_detected;
 
-	for (int i = 0; i < EKF2_MAX_INSTANCES; i++) {
+	for (int i = 0; i < M_EKF2_MAX_INSTANCES; i++) {
 		selector_status.combined_test_ratio[i] = _instance[i].combined_test_ratio;
 		selector_status.relative_test_ratio[i] = _instance[i].relative_test_ratio;
 		selector_status.healthy[i] = _instance[i].healthy.get_state();
