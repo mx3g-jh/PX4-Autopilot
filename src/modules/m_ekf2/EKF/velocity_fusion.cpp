@@ -33,7 +33,7 @@
 
 #include "ekf.h"
 
-bool M_EKF::fuseHorizontalVelocity(estimator_aid_source2d_s &aid_src)
+bool M_EKF::fuseHorizontalVelocity(estimator_aid_source2 &aid_src)
 {
 	// vx, vy
 	if (!aid_src.innovation_rejected
@@ -54,7 +54,7 @@ bool M_EKF::fuseHorizontalVelocity(estimator_aid_source2d_s &aid_src)
 	return aid_src.fused;
 }
 
-bool M_EKF::fuseVelocity(estimator_aid_source3d_s &aid_src)
+bool M_EKF::fuseVelocity(estimator_aid_source3 &aid_src)
 {
 	// vx, vy, vz
 	if (!aid_src.innovation_rejected

@@ -149,7 +149,7 @@ void M_EKF::controlAirDataFusion(const imuSample &imu_delayed)
 	}
 }
 
-void M_EKF::updateAirspeed(const airspeedSample &airspeed_sample, estimator_aid_source1d_s &aid_src) const
+void M_EKF::updateAirspeed(const airspeedSample &airspeed_sample, estimator_aid_source1 &aid_src) const
 {
 	// Variance for true airspeed measurement - (m/sec)^2
 	const float R = sq(math::constrain(_params.eas_noise, 0.5f, 5.0f) *
@@ -169,7 +169,7 @@ void M_EKF::updateAirspeed(const airspeedSample &airspeed_sample, estimator_aid_
 			      math::max(_params.tas_innov_gate, 1.f)); // innovation gate
 }
 
-void M_EKF::fuseAirspeed(const airspeedSample &airspeed_sample, estimator_aid_source1d_s &aid_src)
+void M_EKF::fuseAirspeed(const airspeedSample &airspeed_sample, estimator_aid_source1 &aid_src)
 {
 	if (aid_src.innovation_rejected) {
 		return;

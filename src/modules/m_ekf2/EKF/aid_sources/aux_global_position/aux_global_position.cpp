@@ -73,7 +73,7 @@ void M_AuxGlobalPosition::update(M_EKF &ekf, const m_estimator::imuSample &imu_d
 			return;
 		}
 
-		estimator_aid_source2d_s aid_src{};
+		estimator_aid_source2 aid_src{};
 		Vector2f position;
 
 		if (ekf.global_origin_valid()) {

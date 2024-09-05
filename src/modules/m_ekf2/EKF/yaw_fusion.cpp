@@ -37,7 +37,7 @@
 
 #include <mathlib/mathlib.h>
 
-bool M_EKF::fuseYaw(estimator_aid_source1d_s &aid_src_status, const VectorState &H_YAW)
+bool M_EKF::fuseYaw(estimator_aid_source1 &aid_src_status, const VectorState &H_YAW)
 {
 	// check if the innovation variance calculation is badly conditioned
 	if (aid_src_status.innovation_variance >= aid_src_status.observation_variance) {

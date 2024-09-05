@@ -233,7 +233,7 @@ void M_EKF::controlRangeHaglFusion(const imuSample &imu_sample)
 	}
 }
 
-void M_EKF::updateRangeHagl(estimator_aid_source1d_s &aid_src)
+void M_EKF::updateRangeHagl(estimator_aid_source1 &aid_src)
 {
 	const float measurement = math::max(_range_sensor.getDistBottom(), _params.rng_gnd_clearance);
 	const float measurement_variance = getRngVar();
@@ -268,7 +268,7 @@ float M_EKF::getRngVar() const
 		       0.f);
 }
 
-void M_EKF::resetTerrainToRng(estimator_aid_source1d_s &aid_src)
+void M_EKF::resetTerrainToRng(estimator_aid_source1 &aid_src)
 {
 	const float new_terrain = _state.pos(2) + aid_src.observation;
 	const float delta_terrain = new_terrain - _state.terrain;

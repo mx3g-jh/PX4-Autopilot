@@ -50,7 +50,7 @@
 
 #include <mathlib/mathlib.h>
 
-bool M_EKF::fuseMag(const Vector3f &mag, const float R_MAG, VectorState &H, estimator_aid_source3d_s &aid_src,
+bool M_EKF::fuseMag(const Vector3f &mag, const float R_MAG, VectorState &H, estimator_aid_source3 &aid_src,
 		    bool update_all_states, bool update_tilt)
 {
 	// if any axis failed, abort the mag fusion

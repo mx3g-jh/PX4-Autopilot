@@ -179,7 +179,7 @@ void M_EKF::controlGpsFusion(const imuSample &imu_delayed)
 	}
 }
 
-void M_EKF::updateGnssVel(const imuSample &imu_sample, const gnssSample &gnss_sample, estimator_aid_source3d_s &aid_src)
+void M_EKF::updateGnssVel(const imuSample &imu_sample, const gnssSample &gnss_sample, estimator_aid_source3 &aid_src)
 {
 	// correct velocity for offset relative to IMU
 	const Vector3f pos_offset_body = _params.gps_pos_body - _params.imu_pos_body;
@@ -211,7 +211,7 @@ void M_EKF::updateGnssVel(const imuSample &imu_sample, const gnssSample &gnss_sa
 	}
 }
 
-void M_EKF::updateGnssPos(const gnssSample &gnss_sample, estimator_aid_source2d_s &aid_src)
+void M_EKF::updateGnssPos(const gnssSample &gnss_sample, estimator_aid_source2 &aid_src)
 {
 	// correct position and height for offset relative to IMU
 	const Vector3f pos_offset_body = _params.gps_pos_body - _params.imu_pos_body;
@@ -241,7 +241,7 @@ void M_EKF::updateGnssPos(const gnssSample &gnss_sample, estimator_aid_source2d_
 			      math::max(_params.gps_pos_innov_gate, 1.f));            // innovation gate
 }
 
-void M_EKF::controlGnssYawEstimator(estimator_aid_source3d_s &aid_src_vel)
+void M_EKF::controlGnssYawEstimator(estimator_aid_source3 &aid_src_vel)
 {
 	// update yaw estimator velocity (basic sanity check on GNSS velocity data)
 	const float vel_var = aid_src_vel.observation_variance[0];
@@ -305,7 +305,7 @@ bool M_EKF::tryYawEmergencyReset()
 	return success;
 }
 
-void M_EKF::resetVelocityToGnss(estimator_aid_source3d_s &aid_src)
+void M_EKF::resetVelocityToGnss(estimator_aid_source3 &aid_src)
 {
 	_information_events.flags.reset_vel_to_gps = true;
 	resetVelocityTo(Vector3f(aid_src.observation), Vector3f(aid_src.observation_variance));
@@ -313,7 +313,7 @@ void M_EKF::resetVelocityToGnss(estimator_aid_source3d_s &aid_src)
 	resetAidSourceStatusZeroInnovation(aid_src);
 }
 
-void M_EKF::resetHorizontalPositionToGnss(estimator_aid_source2d_s &aid_src)
+void M_EKF::resetHorizontalPositionToGnss(estimator_aid_source2 &aid_src)
 {
 	_information_events.flags.reset_pos_to_gps = true;
 	resetHorizontalPositionTo(Vector2f(aid_src.observation), Vector2f(aid_src.observation_variance));

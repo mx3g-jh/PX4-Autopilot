@@ -74,7 +74,7 @@ void M_EKF::controlBetaFusion(const imuSample &imu_delayed)
 	}
 }
 
-void M_EKF::updateSideslip(estimator_aid_source1d_s &aid_src) const
+void M_EKF::updateSideslip(estimator_aid_source1 &aid_src) const
 {
 	float observation = 0.f;
 	const float R = math::max(sq(_params.beta_noise), sq(0.01f)); // observation noise variance
@@ -92,7 +92,7 @@ void M_EKF::updateSideslip(estimator_aid_source1d_s &aid_src) const
 			      math::max(_params.beta_innov_gate, 1.f)); // innovation gate
 }
 
-bool M_EKF::fuseSideslip(estimator_aid_source1d_s &sideslip)
+bool M_EKF::fuseSideslip(estimator_aid_source1 &sideslip)
 {
 	if (sideslip.innovation_rejected) {
 		return false;

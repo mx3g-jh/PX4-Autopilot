@@ -46,7 +46,7 @@
 void M_EKF::controlMagFusion(const imuSample &imu_sample)
 {
 	static constexpr const char *AID_SRC_NAME = "mag";
-	estimator_aid_source3d_s &aid_src = _aid_src_mag;
+	estimator_aid_source3 &aid_src = _aid_src_mag;
 
 	// reset the flight alignment flag so that the mag fields will be
 	//  re-initialised next time we achieve flight altitude

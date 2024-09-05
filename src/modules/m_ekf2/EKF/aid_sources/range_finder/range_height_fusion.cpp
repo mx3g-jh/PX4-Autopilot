@@ -34,7 +34,7 @@
 #include "ekf.h"
 #include "ekf_derivation/compute_hagl_h.h"
 
-bool M_EKF::fuseHaglRng(estimator_aid_source1d_s &aid_src, bool update_height, bool update_terrain)
+bool M_EKF::fuseHaglRng(estimator_aid_source1 &aid_src, bool update_height, bool update_terrain)
 {
 	if (aid_src.innovation_rejected) {
 		_innov_check_fail_status.flags.reject_hagl = true;

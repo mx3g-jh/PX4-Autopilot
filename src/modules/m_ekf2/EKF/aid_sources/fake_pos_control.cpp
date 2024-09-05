@@ -104,7 +104,7 @@ void M_EKF::resetFakePosFusion()
 }
 
 bool M_EKF::runFakePosStateMachine(const bool enable_conditions_passing, bool status_flag,
-				   estimator_aid_source2d_s &aid_src)
+				   estimator_aid_source2 &aid_src)
 {
 	if (status_flag) {
 		if (enable_conditions_passing) {

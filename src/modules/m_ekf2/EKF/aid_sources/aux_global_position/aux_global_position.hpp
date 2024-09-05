@@ -116,7 +116,7 @@ private:
 	};
 	reset_counters_s _reset_counters{};
 
-	uORB::PublicationMulti<estimator_aid_source2d_s> _estimator_aid_src_aux_global_position_pub{ORB_ID(estimator_aid_src_aux_global_position)};
+	uORB::PublicationMulti<estimator_aid_source2> _estimator_aid_src_aux_global_position_pub{ORB_ID(estimator_aid_src_aux_global_position)};
 	uORB::Subscription _aux_global_position_sub{ORB_ID(aux_global_position)};
 
 	DEFINE_PARAMETERS(

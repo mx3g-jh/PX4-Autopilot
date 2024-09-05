@@ -55,9 +55,7 @@
 
 #include "ekf_derivation/state.h"
 
-#include <uORB/topics/estimator_aid_source1d.h>
-#include <uORB/topics/estimator_aid_source2d.h>
-#include <uORB/topics/estimator_aid_source3d.h>
+#include "struct_def.h"
 
 #include "aid_sources/ZeroGyroUpdate.hpp"
 #include "aid_sources/ZeroVelocityUpdate.hpp"
@@ -622,7 +620,7 @@ private:
 	SquareMatrixState P{};	///< state covariance matrix
 
 #if defined(CONFIG_EKF2_DRAG_FUSION)
-	estimator_aid_source2d_s _aid_src_drag {};
+	estimator_aid_source2 _aid_src_drag {};
 #endif // CONFIG_EKF2_DRAG_FUSION
 
 #if defined(CONFIG_EKF2_TERRAIN)
@@ -631,11 +629,11 @@ private:
 #endif // CONFIG_EKF2_TERRAIN
 
 #if defined(CONFIG_EKF2_RANGE_FINDER)
-	estimator_aid_source1d_s _aid_src_rng_hgt {};
+	estimator_aid_source1 _aid_src_rng_hgt {};
 #endif // CONFIG_EKF2_RANGE_FINDER
 
 #if defined(CONFIG_EKF2_OPTICAL_FLOW)
-	estimator_aid_source2d_s _aid_src_optical_flow {};
+	estimator_aid_source2 _aid_src_optical_flow {};
 
 	// optical flow processing
 	Vector3f _flow_gyro_bias{};	///< bias errors in optical flow sensor rate gyro outputs (rad/sec)
@@ -649,20 +647,20 @@ private:
 #endif // CONFIG_EKF2_OPTICAL_FLOW
 
 #if defined(CONFIG_EKF2_AIRSPEED)
-	estimator_aid_source1d_s _aid_src_airspeed {};
+	estimator_aid_source1 _aid_src_airspeed {};
 #endif // CONFIG_EKF2_AIRSPEED
 #if defined(CONFIG_EKF2_SIDESLIP)
-	estimator_aid_source1d_s _aid_src_sideslip {};
+	estimator_aid_source1 _aid_src_sideslip {};
 #endif // CONFIG_EKF2_SIDESLIP
 
-	estimator_aid_source2d_s _aid_src_fake_pos{};
-	estimator_aid_source1d_s _aid_src_fake_hgt{};
+	estimator_aid_source2 _aid_src_fake_pos{};
+	estimator_aid_source1 _aid_src_fake_hgt{};
 
 #if defined(CONFIG_EKF2_EXTERNAL_VISION)
-	estimator_aid_source1d_s _aid_src_ev_hgt {};
-	estimator_aid_source2d_s _aid_src_ev_pos{};
-	estimator_aid_source3d_s _aid_src_ev_vel{};
-	estimator_aid_source1d_s _aid_src_ev_yaw{};
+	estimator_aid_source1 _aid_src_ev_hgt {};
+	estimator_aid_source2 _aid_src_ev_pos{};
+	estimator_aid_source3 _aid_src_ev_vel{};
+	estimator_aid_source1 _aid_src_ev_yaw{};
 
 	uint8_t _nb_ev_pos_reset_available{0};
 	uint8_t _nb_ev_vel_reset_available{0};
@@ -688,21 +686,21 @@ private:
 
 	M_HeightBiasEstimator _gps_hgt_b_est{HeightSensor::GNSS, _height_sensor_ref};
 
-	estimator_aid_source1d_s _aid_src_gnss_hgt{};
-	estimator_aid_source2d_s _aid_src_gnss_pos{};
-	estimator_aid_source3d_s _aid_src_gnss_vel{};
+	estimator_aid_source1 _aid_src_gnss_hgt{};
+	estimator_aid_source2 _aid_src_gnss_pos{};
+	estimator_aid_source3 _aid_src_gnss_vel{};
 
 # if defined(CONFIG_EKF2_GNSS_YAW)
-	estimator_aid_source1d_s _aid_src_gnss_yaw {};
+	estimator_aid_source1 _aid_src_gnss_yaw {};
 # endif // CONFIG_EKF2_GNSS_YAW
 #endif // CONFIG_EKF2_GNSS
 
 #if defined(CONFIG_EKF2_GRAVITY_FUSION)
-	estimator_aid_source3d_s _aid_src_gravity {};
+	estimator_aid_source3 _aid_src_gravity {};
 #endif // CONFIG_EKF2_GRAVITY_FUSION
 
 #if defined(CONFIG_EKF2_AUXVEL)
-	estimator_aid_source2d_s _aid_src_aux_vel {};
+	estimator_aid_source2 _aid_src_aux_vel {};
 #endif // CONFIG_EKF2_AUXVEL
 
 	// Variables used by the initial filter alignment
@@ -711,7 +709,7 @@ private:
 	AlphaFilter<Vector3f> _gyro_lpf{0.1f};	///< filtered gyro measurement used for alignment excessive movement check (rad/sec)
 
 #if defined(CONFIG_EKF2_BAROMETER)
-	estimator_aid_source1d_s _aid_src_baro_hgt {};
+	estimator_aid_source1 _aid_src_baro_hgt {};
 
 	// Variables used to perform in flight resets and switch between height sources
 	AlphaFilter<float> _baro_lpf{0.1f};	///< filtered barometric height measurement (m)
@@ -727,7 +725,7 @@ private:
 	AlphaFilter<float> _mag_heading_innov_lpf{0.1f};
 	uint32_t _min_mag_health_time_us{1'000'000}; ///< magnetometer is marked as healthy only after this amount of time
 
-	estimator_aid_source3d_s _aid_src_mag{};
+	estimator_aid_source3 _aid_src_mag{};
 
 	AlphaFilter<Vector3f> _mag_lpf{0.1f};	///< filtered magnetometer measurement for instant reset (Gauss)
 	uint32_t _mag_counter{0};		///< number of magnetometer samples read during initialisation
@@ -774,14 +772,14 @@ private:
 	bool setAltOriginFromCurrentPos(float altitude, float epv = NAN);
 
 	// update quaternion states and covariances using an innovation, observation variance and Jacobian vector
-	bool fuseYaw(estimator_aid_source1d_s &aid_src_status, const VectorState &H_YAW);
+	bool fuseYaw(estimator_aid_source1 &aid_src_status, const VectorState &H_YAW);
 	void computeYawInnovVarAndH(float variance, float &innovation_variance, VectorState &H_YAW) const;
 
 	void updateIMUBiasInhibit(const imuSample &imu_delayed);
 
 #if defined(CONFIG_EKF2_MAGNETOMETER)
 	// ekf sequential fusion of magnetometer measurements
-	bool fuseMag(const Vector3f &mag, const float R_MAG, VectorState &H, estimator_aid_source3d_s &aid_src,
+	bool fuseMag(const Vector3f &mag, const float R_MAG, VectorState &H, estimator_aid_source3 &aid_src,
 		     bool update_all_states = false, bool update_tilt = false);
 
 	// fuse magnetometer declination measurement
@@ -794,8 +792,8 @@ private:
 	// control fusion of air data observations
 	void controlAirDataFusion(const imuSample &imu_delayed);
 
-	void updateAirspeed(const airspeedSample &airspeed_sample, estimator_aid_source1d_s &aid_src) const;
-	void fuseAirspeed(const airspeedSample &airspeed_sample, estimator_aid_source1d_s &aid_src);
+	void updateAirspeed(const airspeedSample &airspeed_sample, estimator_aid_source1 &aid_src) const;
+	void fuseAirspeed(const airspeedSample &airspeed_sample, estimator_aid_source1 &aid_src);
 
 	void stopAirspeedFusion();
 
@@ -809,8 +807,8 @@ private:
 	void controlBetaFusion(const imuSample &imu_delayed);
 
 	// fuse synthetic zero sideslip measurement
-	void updateSideslip(estimator_aid_source1d_s &_aid_src_sideslip) const;
-	bool fuseSideslip(estimator_aid_source1d_s &_aid_src_sideslip);
+	void updateSideslip(estimator_aid_source1 &_aid_src_sideslip) const;
+	bool fuseSideslip(estimator_aid_source1 &_aid_src_sideslip);
 #endif // CONFIG_EKF2_SIDESLIP
 
 #if defined(CONFIG_EKF2_DRAG_FUSION)
@@ -845,16 +843,16 @@ private:
 	void resetVerticalVelocityToZero();
 
 	// horizontal and vertical position aid source
-	void updateVerticalPositionAidStatus(estimator_aid_source1d_s &aid_src, const uint64_t &time_us,
+	void updateVerticalPositionAidStatus(estimator_aid_source1 &aid_src, const uint64_t &time_us,
 					     const float observation, const float observation_variance, const float innovation_gate = 1.f) const;
 
 	// horizontal and vertical position fusion
-	bool fuseHorizontalPosition(estimator_aid_source2d_s &pos_aid_src);
-	bool fuseVerticalPosition(estimator_aid_source1d_s &hgt_aid_src);
+	bool fuseHorizontalPosition(estimator_aid_source2 &pos_aid_src);
+	bool fuseVerticalPosition(estimator_aid_source1 &hgt_aid_src);
 
 	// 2d & 3d velocity fusion
-	bool fuseHorizontalVelocity(estimator_aid_source2d_s &vel_aid_src);
-	bool fuseVelocity(estimator_aid_source3d_s &vel_aid_src);
+	bool fuseHorizontalVelocity(estimator_aid_source2 &vel_aid_src);
+	bool fuseVelocity(estimator_aid_source3 &vel_aid_src);
 
 #if defined(CONFIG_EKF2_TERRAIN)
 	void initTerrain();
@@ -863,9 +861,9 @@ private:
 
 # if defined(CONFIG_EKF2_RANGE_FINDER)
 	// update the terrain vertical position estimate using a height above ground measurement from the range finder
-	bool fuseHaglRng(estimator_aid_source1d_s &aid_src, bool update_height, bool update_terrain);
-	void updateRangeHagl(estimator_aid_source1d_s &aid_src);
-	void resetTerrainToRng(estimator_aid_source1d_s &aid_src);
+	bool fuseHaglRng(estimator_aid_source1 &aid_src, bool update_height, bool update_terrain);
+	void updateRangeHagl(estimator_aid_source1 &aid_src);
+	void resetTerrainToRng(estimator_aid_source1 &aid_src);
 	float getRngVar() const;
 # endif // CONFIG_EKF2_RANGE_FINDER
 
@@ -974,28 +972,28 @@ private:
 	void updateEvAttitudeErrorFilter(extVisionSample &ev_sample, bool ev_reset);
 	void controlEvHeightFusion(const imuSample &imu_sample, const extVisionSample &ev_sample,
 				   const bool common_starting_conditions_passing, const bool ev_reset, const bool quality_sufficient,
-				   estimator_aid_source1d_s &aid_src);
+				   estimator_aid_source1 &aid_src);
 	void controlEvPosFusion(const imuSample &imu_sample, const extVisionSample &ev_sample,
 				const bool common_starting_conditions_passing, const bool ev_reset, const bool quality_sufficient,
-				estimator_aid_source2d_s &aid_src);
+				estimator_aid_source2 &aid_src);
 	void controlEvVelFusion(const imuSample &imu_sample, const extVisionSample &ev_sample,
 				const bool common_starting_conditions_passing, const bool ev_reset, const bool quality_sufficient,
-				estimator_aid_source3d_s &aid_src);
+				estimator_aid_source3 &aid_src);
 	void controlEvYawFusion(const imuSample &imu_sample, const extVisionSample &ev_sample,
 				const bool common_starting_conditions_passing, const bool ev_reset, const bool quality_sufficient,
-				estimator_aid_source1d_s &aid_src);
+				estimator_aid_source1 &aid_src);
 	void resetVelocityToEV(const Vector3f &measurement, const Vector3f &measurement_var, const VelocityFrame &vel_frame);
 	Vector3f rotateVarianceToEkf(const Vector3f &measurement_var);
 
-	void startEvPosFusion(const Vector2f &measurement, const Vector2f &measurement_var, estimator_aid_source2d_s &aid_src);
+	void startEvPosFusion(const Vector2f &measurement, const Vector2f &measurement_var, estimator_aid_source2 &aid_src);
 	void updateEvPosFusion(const Vector2f &measurement, const Vector2f &measurement_var, bool quality_sufficient,
-			       bool reset, estimator_aid_source2d_s &aid_src);
+			       bool reset, estimator_aid_source2 &aid_src);
 	void stopEvPosFusion();
 	void stopEvHgtFusion();
 	void stopEvVelFusion();
 	void stopEvYawFusion();
-	bool fuseEvVelocity(estimator_aid_source3d_s &aid_src, const extVisionSample &ev_sample);
-	void fuseBodyVelocity(estimator_aid_source1d_s &aid_src, float &innov_var, VectorState &H)
+	bool fuseEvVelocity(estimator_aid_source3 &aid_src, const extVisionSample &ev_sample);
+	void fuseBodyVelocity(estimator_aid_source1 &aid_src, float &innov_var, VectorState &H)
 	{
 		VectorState Kfusion = P * H / innov_var;
 		aid_src.fused = measurementUpdate(Kfusion, H, aid_src.observation_variance, aid_src.innovation);
@@ -1006,12 +1004,12 @@ private:
 	// control fusion of GPS observations
 	void controlGpsFusion(const imuSample &imu_delayed);
 	void stopGpsFusion();
-	void updateGnssVel(const imuSample &imu_sample, const gnssSample &gnss_sample, estimator_aid_source3d_s &aid_src);
-	void updateGnssPos(const gnssSample &gnss_sample, estimator_aid_source2d_s &aid_src);
-	void controlGnssYawEstimator(estimator_aid_source3d_s &aid_src_vel);
+	void updateGnssVel(const imuSample &imu_sample, const gnssSample &gnss_sample, estimator_aid_source3 &aid_src);
+	void updateGnssPos(const gnssSample &gnss_sample, estimator_aid_source2 &aid_src);
+	void controlGnssYawEstimator(estimator_aid_source3 &aid_src_vel);
 	bool tryYawEmergencyReset();
-	void resetVelocityToGnss(estimator_aid_source3d_s &aid_src);
-	void resetHorizontalPositionToGnss(estimator_aid_source2d_s &aid_src);
+	void resetVelocityToGnss(estimator_aid_source3 &aid_src);
+	void resetHorizontalPositionToGnss(estimator_aid_source2 &aid_src);
 	bool shouldResetGpsFusion() const;
 
 	/*
@@ -1147,7 +1145,7 @@ private:
 	}
 
 	void resetFakePosFusion();
-	bool runFakePosStateMachine(bool enable_condition_passing, bool status_flag, estimator_aid_source2d_s &aid_src);
+	bool runFakePosStateMachine(bool enable_condition_passing, bool status_flag, estimator_aid_source2 &aid_src);
 
 	// reset the quaternion states and covariances to the new yaw value, preserving the roll and pitch
 	// yaw : Euler yaw angle (rad)
@@ -1165,7 +1163,7 @@ private:
 #endif // CONFIG_EKF2_EXTERNAL_VISION
 
 	// state was reset to aid source, keep observation and update all other fields appropriately (zero innovation, etc)
-	void resetAidSourceStatusZeroInnovation(estimator_aid_source1d_s &status) const
+	void resetAidSourceStatusZeroInnovation(estimator_aid_source1 &status) const
 	{
 		status.time_last_fuse = _time_delayed_us;
 
@@ -1181,7 +1179,7 @@ private:
 	}
 
 	// helper used for populating and filtering estimator aid source struct for logging
-	void updateAidSourceStatus(estimator_aid_source1d_s &status, const uint64_t &timestamp_sample,
+	void updateAidSourceStatus(estimator_aid_source1 &status, const uint64_t &timestamp_sample,
 				   const float &observation, const float &observation_variance,
 				   const float &innovation, const float &innovation_variance,
 				   float innovation_gate = 1.f) const

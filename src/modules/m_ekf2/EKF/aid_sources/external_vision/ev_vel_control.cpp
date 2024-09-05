@@ -43,7 +43,7 @@
 
 void M_EKF::controlEvVelFusion(const imuSample &imu_sample, const extVisionSample &ev_sample,
 			       const bool common_starting_conditions_passing, const bool ev_reset, const bool quality_sufficient,
-			       estimator_aid_source3d_s &aid_src)
+			       estimator_aid_source3 &aid_src)
 {
 	static constexpr const char *AID_SRC_NAME = "EV velocity";
 
@@ -256,12 +256,12 @@ void M_EKF::controlEvVelFusion(const imuSample &imu_sample, const extVisionSampl
 	}
 }
 
-bool M_EKF::fuseEvVelocity(estimator_aid_source3d_s &aid_src, const extVisionSample &ev_sample)
+bool M_EKF::fuseEvVelocity(estimator_aid_source3 &aid_src, const extVisionSample &ev_sample)
 {
 	if (ev_sample.vel_frame == VelocityFrame::BODY_FRAME_FRD) {
 
 		VectorState H;
-		estimator_aid_source1d_s current_aid_src;
+		estimator_aid_source1 current_aid_src;
 		const auto state_vector = _state.vector();
 
 		for (uint8_t index = 0; index <= 2; index++) {
