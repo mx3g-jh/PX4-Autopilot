@@ -19,3 +19,4 @@ bmp581 start -s
 ist8310 start -X -b 3 -R 18
 
 icp201xx -I -a 0x63 -b 4 start
+icp201xx -I start
