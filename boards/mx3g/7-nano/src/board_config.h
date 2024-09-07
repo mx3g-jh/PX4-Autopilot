@@ -60,10 +60,10 @@
 
 /* Configuration ************************************************************************************/
 
-#define BOARD_HAS_LTC44XX_VALIDS      1 //  N Bricks
-#define BOARD_HAS_USB_VALID           1 // LTC Has USB valid
-#define BOARD_HAS_NBAT_V              1d // 2 Digital Voltage
-#define BOARD_HAS_NBAT_I              1d // 2 Digital Current
+// #define BOARD_HAS_LTC44XX_VALIDS      1 //  N Bricks
+// #define BOARD_HAS_USB_VALID           1 // LTC Has USB valid
+// #define BOARD_HAS_NBAT_V              1d // 2 Digital Voltage
+// #define BOARD_HAS_NBAT_I              1d // 2 Digital Current
 
 /* PX4FMU GPIOs ***********************************************************************************/
 
@@ -157,7 +157,7 @@
 	 (1 << ADC_HW_VER_SENSE_CHANNEL)           | \
 	 (1 << ADC_HW_REV_SENSE_CHANNEL))
 
-#define UAVCAN_NUM_IFACES_RUNTIME  1
+#define UAVCAN_NUM_IFACES_RUNTIME  2
 
 /* PE6 is nARMED
  *  The GPIO will be set as input while not armed HW will have external HW Pull UP.

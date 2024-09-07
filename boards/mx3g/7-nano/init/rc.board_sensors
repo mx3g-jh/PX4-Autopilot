@@ -16,7 +16,6 @@ bmp581 start -s
 
 # SPI6
 
-
-icp201xx start -I -a 0x63 -b 4
-
 ist8310 start -X -b 3 -R 18
+
+icp201xx -I -a 0x63 -b 4 start

@@ -2,12 +2,10 @@
 #
 # board specific defaults
 #------------------------------------------------------------------------------
-
-# By disabling all 3 INA modules, we use the
-# i2c_launcher instead.
-param set-default SENS_EN_INA238 0
-param set-default SENS_EN_INA228 0
-param set-default SENS_EN_INA226 0
+param set-default BAT1_SOURCE 0
+param set-default BAT1_N_CELLS 3
+param set-default BAT1_V_DIV 31.0
+param set-default BAT1_A_PER_V 24.0
 
 if ver hwbasecmp 009 010 011
 then

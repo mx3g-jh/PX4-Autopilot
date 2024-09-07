@@ -1,10 +1,10 @@
 {
     "board_id": 7000,
     "magic": "PX4FWv1",
-    "description": "Firmware for the PX4FMUv6X board",
+    "description": "Firmware for the CUAV 7-NANO board",
     "image": "",
     "build_time": 0,
-    "summary": "PX4FMUv6X",
+    "summary": "7-NANO",
     "version": "0.1",
     "image_size": 0,
     "image_maxsize": 1966080,
